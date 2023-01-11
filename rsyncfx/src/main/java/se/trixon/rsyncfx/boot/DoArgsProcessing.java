@@ -25,7 +25,7 @@ import org.openide.LifecycleManager;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.util.PomInfo;
-import se.trixon.rsyncfx.Dummy;
+import se.trixon.rsyncfx.App;
 
 /**
  *
@@ -33,22 +33,12 @@ import se.trixon.rsyncfx.Dummy;
  */
 public class DoArgsProcessing implements ArgsProcessor {
 
-    private final ResourceBundle mBundle = NbBundle.getBundle(DoArgsProcessing.class);
-
-    @Arg(shortName = 'l', longName = "list")
+    @Arg(longName = "list")
     @Description(
             shortDescription = "#DoArgsProcessing.list.desc"
     )
     @Messages("DoArgsProcessing.list.desc=list jobs")
     public boolean mListOption;
-
-    @Arg(shortName = 'v', longName = "version")
-    @Description(
-            shortDescription = "#DoArgsProcessing.version.desc"
-    )
-    @Messages("DoArgsProcessing.version.desc=print the version information and exit")
-    public boolean mVersionOption;
-
     @Arg(longName = "start")
     @Description(
             displayName = "#DoArgsProcessing.start.name",
@@ -60,8 +50,16 @@ public class DoArgsProcessing implements ArgsProcessor {
     })
     public String mStartOption;
 
+    @Arg(longName = "version")
+    @Description(
+            shortDescription = "#DoArgsProcessing.version.desc"
+    )
+    @Messages("DoArgsProcessing.version.desc=print the version information and exit")
+    public boolean mVersionOption;
+    private final ResourceBundle mBundle = NbBundle.getBundle(DoArgsProcessing.class);
+
     {
-        DoOnStart.GUI = false;
+        Installer.GUI = false;
     }
 
     public DoArgsProcessing() {
@@ -81,7 +79,7 @@ public class DoArgsProcessing implements ArgsProcessor {
     }
 
     private void displayVersion() {
-        var pomInfo = new PomInfo(Dummy.class, "se.trixon.rsyncfx", "rsyncfx");
+        var pomInfo = new PomInfo(App.class, "se.trixon.rsyncfx", "rsyncfx");
         System.out.println(mBundle.getString("DoArgsProcessing.version").formatted(pomInfo.getVersion()));
     }
 

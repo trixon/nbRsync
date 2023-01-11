@@ -15,25 +15,24 @@
  */
 package se.trixon.rsyncfx.boot;
 
-import org.openide.LifecycleManager;
-import org.openide.modules.OnStart;
+import org.openide.modules.ModuleInstall;
 import se.trixon.almond.util.SystemHelper;
+import se.trixon.rsyncfx.App;
 
 /**
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-@OnStart
-public class DoOnStart implements Runnable {
+public class Installer extends ModuleInstall {
 
     static boolean GUI = true;
 
     @Override
-    public void run() {
+    public void restored() {
+        //Give ArgsProcessor a chance to disable GUI
         SystemHelper.runLaterDelayed(100, () -> {
             if (GUI) {
-                System.out.println("TODO Start GUI");
-                LifecycleManager.getDefault().exit();
+                App.main(null);
             }
         });
     }
