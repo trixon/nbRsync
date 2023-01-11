@@ -15,19 +15,25 @@
  */
 package se.trixon.rsyncfx.boot;
 
+import java.util.ResourceBundle;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Env;
 import org.openide.LifecycleManager;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import se.trixon.almond.util.PomInfo;
+import se.trixon.rsyncfx.Dummy;
 
 /**
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
 public class DoArgsProcessing implements ArgsProcessor {
+
+    private final ResourceBundle mBundle = NbBundle.getBundle(DoArgsProcessing.class);
 
     @Arg(shortName = 'l', longName = "list")
     @Description(
@@ -75,7 +81,8 @@ public class DoArgsProcessing implements ArgsProcessor {
     }
 
     private void displayVersion() {
-        System.out.println("VERSION");
+        var pomInfo = new PomInfo(Dummy.class, "se.trixon.rsyncfx", "rsyncfx");
+        System.out.println(mBundle.getString("DoArgsProcessing.version").formatted(pomInfo.getVersion()));
     }
 
     private void listJobs() {
