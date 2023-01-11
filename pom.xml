@@ -58,6 +58,7 @@
 
     <properties>
         <netbeans.version>RELEASE160</netbeans.version>
+        <almond.version>17.0.0-SNAPSHOT</almond.version>
         <brandingToken>rsyncfx</brandingToken>
     </properties>
 </project>

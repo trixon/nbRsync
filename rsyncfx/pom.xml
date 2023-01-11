@@ -9,6 +9,7 @@
     </parent>
     <artifactId>rsyncfx</artifactId>
     <packaging>nbm</packaging>
+
     <build>
         <plugins>
             <plugin>
@@ -27,14 +28,53 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-modules</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-ui</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-sendopts</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>se.trixon.almond</groupId>
+            <artifactId>almond-util</artifactId>
+            <version>${almond.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.oshi</groupId>
+                    <artifactId>oshi-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-csv</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netbeans.hint.license>apache20</netbeans.hint.license>
     </properties>
 </project>
