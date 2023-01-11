@@ -13,28 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx.boot;
-
-import org.openide.modules.ModuleInstall;
-import se.trixon.almond.util.SystemHelper;
-import se.trixon.rsyncfx.App;
+package se.trixon.rsyncfx.core.job;
 
 /**
  *
- * @author Patrik Karlström <patrik@trixon.se>
+ * @author Patrik Karlström
  */
-public class Installer extends ModuleInstall {
-
-    static boolean GUI = true;
-
-    @Override
-    public void restored() {
-        //Give ArgsProcessor a chance to disable GUI
-        SystemHelper.runLaterDelayed(100, () -> {
-            if (GUI) {
-                App.main(null);
-            }
-        });
-    }
+public abstract class JobSection {
 
 }

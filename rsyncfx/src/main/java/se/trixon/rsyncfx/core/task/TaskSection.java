@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx.boot;
+package se.trixon.rsyncfx.core.task;
 
-import org.openide.modules.ModuleInstall;
-import se.trixon.almond.util.SystemHelper;
-import se.trixon.rsyncfx.App;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
- * @author Patrik Karlström <patrik@trixon.se>
+ * @author Patrik Karlström
  */
-public class Installer extends ModuleInstall {
+public abstract class TaskSection {
 
-    static boolean GUI = true;
+    public static final String OPT_SEPARATOR = ":::";
+    protected transient final List<String> mCommand = new ArrayList<>();
 
-    @Override
-    public void restored() {
-        //Give ArgsProcessor a chance to disable GUI
-        SystemHelper.runLaterDelayed(100, () -> {
-            if (GUI) {
-                App.main(null);
-            }
-        });
+    public abstract List<String> getCommand();
+
+    protected void add(String command) {
+        if (!mCommand.contains(command)) {
+            mCommand.add(command);
+        }
     }
-
 }

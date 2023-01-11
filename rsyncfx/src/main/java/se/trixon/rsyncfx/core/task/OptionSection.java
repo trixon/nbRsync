@@ -13,28 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx.boot;
+package se.trixon.rsyncfx.core.task;
 
-import org.openide.modules.ModuleInstall;
-import se.trixon.almond.util.SystemHelper;
-import se.trixon.rsyncfx.App;
+import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  *
- * @author Patrik Karlström <patrik@trixon.se>
+ * @author Patrik Karlström
  */
-public class Installer extends ModuleInstall {
+public class OptionSection extends TaskSection implements Serializable {
 
-    static boolean GUI = true;
+    @SerializedName("options")
+    private String mOptions = "";
 
     @Override
-    public void restored() {
-        //Give ArgsProcessor a chance to disable GUI
-        SystemHelper.runLaterDelayed(100, () -> {
-            if (GUI) {
-                App.main(null);
-            }
-        });
+    public List<String> getCommand() {
+        mCommand.clear();
+
+        for (String option : mOptions.split(" ")) {
+            add(option);
+        }
+
+        return mCommand;
     }
 
+    public String getOptions() {
+        return mOptions;
+    }
+
+    public void setOptions(String options) {
+        mOptions = options;
+    }
 }
