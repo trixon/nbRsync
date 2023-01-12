@@ -74,7 +74,7 @@
         <dependency>
             <groupId>com.dlsc.gemsfx</groupId>
             <artifactId>gemsfx</artifactId>
-            <version>1.54.0</version>
+            <version>1.55.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
