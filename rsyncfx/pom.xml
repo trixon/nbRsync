@@ -72,6 +72,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>se.trixon.almond</groupId>
+            <artifactId>almond-nbp-core</artifactId>
+            <version>${almond.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.dlsc.gemsfx</groupId>
             <artifactId>gemsfx</artifactId>
             <version>1.55.0</version>

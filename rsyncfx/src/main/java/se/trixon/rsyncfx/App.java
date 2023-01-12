@@ -23,8 +23,15 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.controlsfx.control.action.Action;
 import org.openide.LifecycleManager;
+import se.trixon.almond.nbp.core.ModuleHelper;
+import se.trixon.almond.util.PomInfo;
+import se.trixon.almond.util.SystemHelper;
+import se.trixon.almond.util.SystemHelperFx;
+import se.trixon.almond.util.fx.AboutModel;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 
 /**
  *
@@ -33,6 +40,7 @@ import se.trixon.almond.util.fx.FxHelper;
 public class App extends Application {
 
     public static final String APP_TITLE = "rsyncFX";
+    private Action mAboutAction;
     private final Options mOptions = Options.getInstance();
     private Stage mStage;
 
@@ -48,7 +56,9 @@ public class App extends Application {
         mStage = stage;
         createUI();
         mStage.show();
-
+        FxHelper.runLaterDelayed(10, () -> {
+            displayAbout();
+        });
     }
 
     @Override
@@ -70,6 +80,18 @@ public class App extends Application {
         scene.setFill(Color.web("#bb6624"));
         FxHelper.applyFontScale(scene);
         mStage.setScene(scene);
+
+        //about
+        var pomInfo = new PomInfo(App.class, "se.trixon.rsyncfx", "rsyncfx");
+        var aboutModel = new AboutModel(SystemHelper.getBundle(App.class, "about"), SystemHelperFx.getResourceAsImageView(App.class, "logo.png"));
+        aboutModel.setAppVersion(pomInfo.getVersion());
+        aboutModel.setAppDate(ModuleHelper.getBuildTime(App.class));
+
+        mAboutAction = AboutPane.getAction(mStage, aboutModel);
+    }
+
+    private void displayAbout() {
+        mAboutAction.handle(null);
     }
 
 }

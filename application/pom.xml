@@ -43,6 +43,7 @@
                     <finalName>rsyncFX-${project.version}</finalName>
                     <etcConfFile>src/main/resources/rsyncfx.conf</etcConfFile>
                     <verifyRuntime>true</verifyRuntime>
+                    <!--<additionalArguments>&#045;&#045;list</additionalArguments>-->
                     <!--<additionalArguments>&#045;&#045;version</additionalArguments>-->
                     <!--<additionalArguments>-J-Xmx2048m</additionalArguments>-->
                     <!--<additionalArguments>&#045;&#045;locale en</additionalArguments>-->
