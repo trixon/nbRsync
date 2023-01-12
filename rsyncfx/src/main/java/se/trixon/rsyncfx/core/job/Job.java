@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import org.apache.commons.lang3.StringUtils;
@@ -36,37 +35,33 @@ public class Job implements Comparable<Job>, Serializable {
 
     public static OUTPUT TO_STRING = OUTPUT.VERBOSE;
 
-    @SerializedName("cron_active")
-    private boolean mCronActive;
-    @SerializedName("cron_items")
-    private String mCronItems = "";
     @SerializedName("description")
     private String mDescription = "";
-    @SerializedName("execute_section")
+    @SerializedName("executeSection")
     private final JobExecuteSection mExecuteSection;
-    private String mHistory = "";
+    private transient String mHistory = "";
     @SerializedName("id")
     private long mId = System.currentTimeMillis();
-    @SerializedName("last_run")
+    @SerializedName("lastRun")
     private long mLastRun = -1;
-    @SerializedName("last_run_exit_code")
+    @SerializedName("lastRunExitCode")
     private int mLastRunExitCode = -1;
-    @SerializedName("log_errors")
+    @SerializedName("logErrors")
     private boolean mLogErrors = true;
-    @SerializedName("log_mode")
+    @SerializedName("logMode")
     private int mLogMode = 0;
-    @SerializedName("log_output")
+    @SerializedName("logOutput")
     private boolean mLogOutput = true;
-    @SerializedName("log_separate_errors")
+    @SerializedName("logSeparateErrors")
     private boolean mLogSeparateErrors = true;
     @SerializedName("name")
     private String mName = "";
     @SerializedName("note")
-    private String mNote = "";
+    private transient String mNote = "";
     private transient StringBuilder mSummaryBuilder;
     @SerializedName("tasks")
     private ArrayList<Long> mTaskIds = new ArrayList<>();
-    private List<Task> mTasks = new LinkedList<>();
+    private transient List<Task> mTasks = new ArrayList<>();
 
     public Job() {
         mExecuteSection = new JobExecuteSection();
@@ -102,10 +97,6 @@ public class Job implements Comparable<Job>, Serializable {
         }
 
         return caption;
-    }
-
-    public String getCronItems() {
-        return mCronItems;
     }
 
     public String getDescription() {
@@ -201,14 +192,10 @@ public class Job implements Comparable<Job>, Serializable {
 
     public List<Task> getTasks() {
         if (mTasks == null) {
-            mTasks = new LinkedList<>();
+            mTasks = new ArrayList<>();
         }
 
         return mTasks;
-    }
-
-    public boolean isCronActive() {
-        return mCronActive;
     }
 
     public boolean isLogErrors() {
@@ -225,14 +212,6 @@ public class Job implements Comparable<Job>, Serializable {
 
     public boolean isValid() {
         return !getName().isEmpty();
-    }
-
-    public void setCronActive(boolean cronActive) {
-        mCronActive = cronActive;
-    }
-
-    public void setCronItems(String cronItems) {
-        mCronItems = cronItems;
     }
 
     public void setDescription(String string) {

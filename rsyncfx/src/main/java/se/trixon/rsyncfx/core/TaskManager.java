@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,6 @@ package se.trixon.rsyncfx.core;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,10 +29,10 @@ import se.trixon.rsyncfx.core.task.Task;
  *
  * @author Patrik Karlström
  */
-class TaskManager {
+public class TaskManager {
 
     private List<String> mHistoryLines = new ArrayList<>();
-    private final LinkedList<Task> mTasks = new LinkedList<>();
+    private final ArrayList<Task> mTasks = new ArrayList<>();
 
     public static TaskManager getInstance() {
         return Holder.INSTANCE;
@@ -45,7 +44,7 @@ class TaskManager {
     public boolean exists(Task task) {
         boolean exists = false;
 
-        for (Task existingTask : mTasks) {
+        for (var existingTask : mTasks) {
             if (task.getId() == existingTask.getId()) {
                 exists = true;
                 break;
@@ -62,7 +61,7 @@ class TaskManager {
     public Task getTaskById(long id) {
         Task foundTask = null;
 
-        for (Task task : mTasks) {
+        for (var task : mTasks) {
             if (task.getId() == id) {
                 foundTask = task;
                 break;
@@ -72,14 +71,15 @@ class TaskManager {
         return foundTask;
     }
 
-    public LinkedList<Task> getTasks() {
+    public ArrayList<Task> getTasks() {
         return mTasks;
     }
 
     public List<Task> getTasks(ArrayList<Long> taskIds) {
-        List<Task> tasks = new LinkedList<>();
-        taskIds.forEach((id) -> {
-            Task task = getTaskById(id);
+        var tasks = new ArrayList<Task>();
+
+        taskIds.forEach(id -> {
+            var task = getTaskById(id);
             if (task != null) {
                 tasks.add(getTaskById(id));
             }
@@ -88,14 +88,14 @@ class TaskManager {
         return tasks;
     }
 
-    public void setTasks(LinkedList<Task> tasks) {
+    public void setTasks(ArrayList<Task> tasks) {
         mTasks.clear();
         mTasks.addAll(tasks);
     }
 
     void loadHistory() {
         try {
-            mHistoryLines = FileUtils.readLines(JotaManager.getInstance().getHistoryFile(), Charset.defaultCharset());
+            mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
             for (Task task : mTasks) {
                 loadHistory(task);
             }
@@ -105,9 +105,9 @@ class TaskManager {
     }
 
     private void loadHistory(Task task) {
-        StringBuilder builder = new StringBuilder();
-        for (String line : mHistoryLines) {
-            String id = String.valueOf(task.getId());
+        var builder = new StringBuilder();
+        for (var line : mHistoryLines) {
+            var id = String.valueOf(task.getId());
             if (StringUtils.contains(line, id)) {
                 builder.append(StringUtils.remove(line, id + " ")).append("\n");
             }

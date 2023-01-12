@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,14 +16,13 @@
 package se.trixon.rsyncfx.core.task;
 
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class OptionSection extends TaskSection implements Serializable {
+public class OptionSection extends TaskSection {
 
     @SerializedName("options")
     private String mOptions = "";

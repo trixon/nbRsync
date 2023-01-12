@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,9 +26,9 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ExcludeSection extends TaskSection implements Serializable {
 
-    @SerializedName("manual_file_path")
+    @SerializedName("manualFilePath")
     private String mManualFilePath;
-    @SerializedName("manual_file_used")
+    @SerializedName("manualFileUsed")
     private boolean mManualFileUsed;
     @SerializedName("options")
     private String mOptions = "";

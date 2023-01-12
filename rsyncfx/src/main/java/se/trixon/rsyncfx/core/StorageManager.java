@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,47 +21,38 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.commons.io.FileUtils;
-import se.trixon.almond.util.Xlog;
+import org.openide.modules.Places;
 
 /**
  *
  * @author Patrik Karlström
  */
-class JotaManager {
+public class StorageManager {
 
-    private final File mDirectory;
     private final File mHistoryFile;
-    private final File mJobBakFile;
     private final JobManager mJobManager = JobManager.getInstance();
-    private JotaJson mJotaJson = new JotaJson();
+    private Storage mStorage = new Storage();
     private final File mLogFile;
+    private final File mProfilesBackupFile;
     private final File mProfilesFile;
     private final TaskManager mTaskManager = TaskManager.getInstance();
+    private final File mUserDirectory;
 
-    public static JotaManager getInstance() {
+    public static StorageManager getInstance() {
         return Holder.INSTANCE;
     }
 
-    private JotaManager() {
-        mDirectory = new File(System.getProperty("user.home"), ".config/jotasync");
-        mHistoryFile = new File(mDirectory, "jotasync.history");
-        mProfilesFile = new File(mDirectory, "jotasync2.profiles");
-        mJobBakFile = new File(mDirectory, "jotasync.profiles.bak");
-        mLogFile = new File(mDirectory, "jotasync.log");
+    private StorageManager() {
+        mUserDirectory = Places.getUserDirectory();
 
-        try {
-            FileUtils.forceMkdir(mDirectory);
-        } catch (IOException ex) {
-            Xlog.timedErr(ex.getLocalizedMessage());
-        }
-    }
-
-    public File getDirectory() {
-        return mDirectory;
+        mProfilesFile = new File(mUserDirectory, "profiles");
+        mProfilesBackupFile = new File(mUserDirectory, "profiles.bak");
+        mHistoryFile = new File(mUserDirectory, "var/history");
+        mLogFile = new File(mUserDirectory, "var/rsync.log");
     }
 
     public int getFileFormatVersion() {
-        return mJotaJson.getFileFormatVersion();
+        return mStorage.getFileFormatVersion();
     }
 
     public File getHistoryFile() {
@@ -84,28 +75,32 @@ class JotaManager {
         return mTaskManager;
     }
 
+    public File getUserDirectory() {
+        return mUserDirectory;
+    }
+
     public void load() throws IOException {
         if (mProfilesFile.exists()) {
-            mJotaJson = mJotaJson.open(mProfilesFile);
-            mTaskManager.setTasks(mJotaJson.getTasks());
-            mJobManager.setJobs(mJotaJson.getJobs());
+            mStorage = mStorage.open(mProfilesFile);
+            mTaskManager.setTasks(mStorage.getTasks());
+            mJobManager.setJobs(mStorage.getJobs());
             mJobManager.loadHistory();
         } else {
-            mJotaJson = new JotaJson();
+            mStorage = new Storage();
         }
     }
 
     public void save() throws IOException {
-        mJotaJson.setJobs(mJobManager.getJobs());
-        mJotaJson.setTasks(mTaskManager.getTasks());
-        String json = mJotaJson.save(mProfilesFile);
+        mStorage.setJobs(mJobManager.getJobs());
+        mStorage.setTasks(mTaskManager.getTasks());
+        String json = mStorage.save(mProfilesFile);
         String tag = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        FileUtils.writeStringToFile(mJobBakFile, String.format("%s=%s\n", tag, json), Charset.defaultCharset(), true);
+        FileUtils.writeStringToFile(mProfilesBackupFile, String.format("%s=%s\n", tag, json), Charset.defaultCharset(), true);
         load();
     }
 
     private static class Holder {
 
-        private static final JotaManager INSTANCE = new JotaManager();
+        private static final StorageManager INSTANCE = new StorageManager();
     }
 }

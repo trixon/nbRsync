@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@ import com.google.gson.annotations.SerializedName;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.core.task.Task;
@@ -33,9 +33,9 @@ import se.trixon.rsyncfx.core.task.Task;
  *
  * @author Patrik Karlström
  */
-public class JotaJson {
+public class Storage {
 
-    private static final int FILE_FORMAT_VERSION = 2;
+    private static final int FILE_FORMAT_VERSION = 1;
     private static final Gson GSON = new GsonBuilder()
             .addSerializationExclusionStrategy(new ExclusionStrategy() {
 
@@ -56,51 +56,51 @@ public class JotaJson {
             .serializeNulls()
             .setPrettyPrinting()
             .create();
-    @SerializedName("format_version")
+    @SerializedName("fileFormatVersion")
     private int mFileFormatVersion;
     @SerializedName("jobs")
-    private final LinkedList<Job> mJobs = new LinkedList<>();
+    private final ArrayList<Job> mJobs = new ArrayList<>();
     @SerializedName("tasks")
-    private final LinkedList<Task> mTasks = new LinkedList<>();
+    private final ArrayList<Task> mTasks = new ArrayList<>();
 
-    public static JotaJson open(File file) throws IOException, JsonSyntaxException {
+    public static Storage open(File file) throws IOException, JsonSyntaxException {
         String json = FileUtils.readFileToString(file, Charset.defaultCharset());
 
-        JotaJson profiles = GSON.fromJson(json, JotaJson.class);
+        var storage = GSON.fromJson(json, Storage.class);
 
-        if (profiles.mFileFormatVersion != FILE_FORMAT_VERSION) {
+        if (storage.mFileFormatVersion != FILE_FORMAT_VERSION) {
             //TODO Handle file format version change
         }
 
-        return profiles;
+        return storage;
     }
 
     public int getFileFormatVersion() {
         return mFileFormatVersion;
     }
 
-    public LinkedList<Job> getJobs() {
+    public ArrayList<Job> getJobs() {
         return mJobs;
     }
 
-    public LinkedList<Task> getTasks() {
+    public ArrayList<Task> getTasks() {
         return mTasks;
     }
 
     public String save(File file) throws IOException {
         mFileFormatVersion = FILE_FORMAT_VERSION;
-        String json = GSON.toJson(this);
+        var json = GSON.toJson(this);
         FileUtils.writeStringToFile(file, json, Charset.defaultCharset());
 
         return json;
     }
 
-    void setJobs(LinkedList<Job> jobs) {
+    void setJobs(ArrayList<Job> jobs) {
         mJobs.clear();
         mJobs.addAll(jobs);
     }
 
-    void setTasks(LinkedList<Task> tasks) {
+    void setTasks(ArrayList<Task> tasks) {
         mTasks.clear();
         mTasks.addAll(tasks);
     }

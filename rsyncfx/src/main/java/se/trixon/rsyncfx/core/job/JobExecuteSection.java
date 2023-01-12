@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,31 +16,30 @@
 package se.trixon.rsyncfx.core.job;
 
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class JobExecuteSection extends JobSection implements Serializable {
+public class JobExecuteSection extends JobSection {
 
     @SerializedName("after")
     private boolean mAfter;
-    @SerializedName("after_command")
+    @SerializedName("afterCommand")
     private String mAfterCommand = "";
-    @SerializedName("after_failure")
+    @SerializedName("afterFailure")
     private boolean mAfterFailure;
-    @SerializedName("after_failure_command")
+    @SerializedName("afterFailureCommand")
     private String mAfterFailureCommand = "";
-    @SerializedName("after_success")
+    @SerializedName("afterSuccess")
     private boolean mAfterSuccess;
-    @SerializedName("after_success_command")
+    @SerializedName("afterSuccessCommand")
     private String mAfterSuccessCommand = "";
     @SerializedName("before")
     private boolean mBefore;
-    @SerializedName("before_command")
+    @SerializedName("beforeCommand")
     private String mBeforeCommand = "";
-    @SerializedName("before_halt_on_error")
+    @SerializedName("beforeHaltOnError")
     private boolean mBeforeHaltOnError;
 
     public String getAfterCommand() {

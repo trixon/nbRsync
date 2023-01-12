@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 package se.trixon.rsyncfx.core.task;
 
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +27,7 @@ import se.trixon.almond.util.Dict;
  *
  * @author Patrik Karlström
  */
-public class Task implements Comparable<Task>, Serializable {
+public class Task implements Comparable<Task> {
 
     private final List<String> mCommand = new ArrayList<>();
     @SerializedName("description")
@@ -37,20 +36,20 @@ public class Task implements Comparable<Task>, Serializable {
     private String mDestination;
     @SerializedName("environment")
     private String mEnvironment = "";
-    @SerializedName("exclude_section")
+    @SerializedName("excludeSection")
     private final ExcludeSection mExcludeSection;
-    @SerializedName("execute_section")
+    @SerializedName("executeSection")
     private final TaskExecuteSection mExecuteSection;
-    private String mHistory = "";
+    private transient String mHistory = "";
     @SerializedName("id")
     private long mId = System.currentTimeMillis();
     @SerializedName("name")
     private String mName = "";
-    @SerializedName("no_additional_dir")
+    @SerializedName("noAdditionalDir")
     private boolean mNoAdditionalDir;
     @SerializedName("note")
     private String mNote = "";
-    @SerializedName("option_section")
+    @SerializedName("optionSection")
     private final OptionSection mOptionSection;
     @SerializedName("source")
     private String mSource;

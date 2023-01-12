@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,22 +18,20 @@ package se.trixon.rsyncfx.core;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.openide.util.Exceptions;
 import se.trixon.rsyncfx.core.job.Job;
 
 /**
  *
  * @author Patrik Karlström
  */
-class JobManager {
+public class JobManager {
 
     private List<String> mHistoryLines = new ArrayList<>();
-    private final LinkedList<Job> mJobs = new LinkedList<>();
+    private final ArrayList<Job> mJobs = new ArrayList<>();
 
     public static JobManager getInstance() {
         return Holder.INSTANCE;
@@ -47,7 +45,7 @@ class JobManager {
     }
 
     public Job getJobById(long id) {
-        for (Job job : mJobs) {
+        for (var job : mJobs) {
             if (job.getId() == id) {
                 return job;
             }
@@ -56,41 +54,43 @@ class JobManager {
         return null;
     }
 
-    public boolean hasJobs() {
-        return getJobs().size() > 0;
+    public ArrayList<Job> getJobs() {
+        return mJobs;
     }
 
-    LinkedList<Job> getJobs() {
-        return mJobs;
+    public boolean hasJobs() {
+        return !getJobs().isEmpty();
     }
 
     void loadHistory() {
         try {
-            mHistoryLines = FileUtils.readLines(JotaManager.getInstance().getHistoryFile(), Charset.defaultCharset());
-            for (Job job : mJobs) {
+            mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
+            for (var job : mJobs) {
                 loadHistory(job);
             }
         } catch (IOException ex) {
-            Logger.getLogger(JobManager.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 
-    void setJobs(LinkedList<Job> jobs) {
+    void setJobs(ArrayList<Job> jobs) {
         mJobs.clear();
         mJobs.addAll(jobs);
-        mJobs.forEach((job) -> {
+        mJobs.forEach(job -> {
             job.setTasks(TaskManager.getInstance().getTasks(job.getTaskIds()));
         });
     }
 
     private void loadHistory(Job job) {
-        StringBuilder builder = new StringBuilder();
-        for (String line : mHistoryLines) {
-            String id = String.valueOf(job.getId());
+        var builder = new StringBuilder();
+
+        for (var line : mHistoryLines) {
+            var id = String.valueOf(job.getId());
             if (StringUtils.contains(line, id)) {
                 builder.append(StringUtils.remove(line, id + " ")).append("\n");
             }
         }
+
         job.setHistory(builder.toString());
     }
 

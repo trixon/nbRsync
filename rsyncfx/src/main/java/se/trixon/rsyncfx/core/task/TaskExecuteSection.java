@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,40 +16,39 @@
 package se.trixon.rsyncfx.core.task;
 
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class TaskExecuteSection extends TaskSection implements Serializable {
+public class TaskExecuteSection extends TaskSection {
 
     @SerializedName("after")
     private boolean mAfter;
-    @SerializedName("after_command")
+    @SerializedName("afterCommand")
     private String mAfterCommand = "";
-    @SerializedName("after_failure")
+    @SerializedName("afterFailure")
     private boolean mAfterFailure;
-    @SerializedName("after_failure_command")
+    @SerializedName("afterFailureCommand")
     private String mAfterFailureCommand = "";
-    @SerializedName("after_failure_halt_on_error")
+    @SerializedName("afterFailureHaltOnError")
     private boolean mAfterFailureHaltOnError;
-    @SerializedName("after_halt_on_error")
+    @SerializedName("afterHaltOnError")
     private boolean mAfterHaltOnError;
-    @SerializedName("after_success")
+    @SerializedName("afterSuccess")
     private boolean mAfterSuccess;
-    @SerializedName("after_success_command")
+    @SerializedName("afterSuccessCommand")
     private String mAfterSuccessCommand = "";
-    @SerializedName("after_success_halt_on_error")
+    @SerializedName("afterSuccessHaltOnError")
     private boolean mAfterSuccessHaltOnError;
     @SerializedName("before")
     private boolean mBefore;
-    @SerializedName("before_command")
+    @SerializedName("beforeCommand")
     private String mBeforeCommand = "";
-    @SerializedName("before_halt_on_error")
+    @SerializedName("beforeHaltOnError")
     private boolean mBeforeHaltOnError;
-    @SerializedName("job_halt_on_error")
+    @SerializedName("jobHaltOnError")
     private boolean mJobHaltOnError;
 
     public String getAfterCommand() {
