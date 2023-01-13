@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.openide.util.Exceptions;
 import se.trixon.rsyncfx.core.job.Job;
 
 /**
@@ -69,7 +68,7 @@ public class JobManager {
                 loadHistory(job);
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+//            Exceptions.printStackTrace(ex);
         }
     }
 
