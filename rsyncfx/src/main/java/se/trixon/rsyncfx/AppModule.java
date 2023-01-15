@@ -18,8 +18,11 @@ package se.trixon.rsyncfx;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.model.WorkbenchModule;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 
 /**
@@ -30,6 +33,7 @@ public class AppModule extends WorkbenchModule {
 
     private static final int MODULE_ICON_SIZE = 32;
     private BorderPane mRoot = new BorderPane();
+    private BorderPane mMainPane = new BorderPane();
     private Workbench mWorkbench;
 
     public AppModule() {
@@ -50,7 +54,12 @@ public class AppModule extends WorkbenchModule {
     }
 
     private void createUI() {
-        mRoot = new BorderPane(new Label("?"));
+        mMainPane = new BorderPane(new Label("?"));
+        mRoot = new BorderPane(mMainPane);
+        mMainPane.setTop(new Button("Hello"));
+
+        mMainPane.setBackground(FxHelper.createBackground(Color.CORAL));
+        mRoot.setPadding(FxHelper.getUIScaledInsets(16, 16, 0, 16));
     }
 
 }

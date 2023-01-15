@@ -20,6 +20,7 @@ import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
@@ -40,7 +41,10 @@ import se.trixon.almond.util.SystemHelperFx;
 import se.trixon.almond.util.fx.AboutModel;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.dialogs.about.AboutPane;
+import se.trixon.almond.util.icons.material.MaterialIcon;
+import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.ui.JobEditorPane;
+import se.trixon.rsyncfx.ui.OptionsPane;
 
 /**
  *
@@ -75,6 +79,9 @@ public class App extends Application {
         createUI();
 
         initAccelerators();
+        updateNightMode();
+        FxHelper.removeSceneInitFlicker(mStage);
+        initListeners();
 
         mStage.show();
     }
@@ -94,9 +101,13 @@ public class App extends Application {
         StageManager.install(mStage, mOptions.getPreferences().node("stage"), minWidth, minHeight);
         initActions();
 
+        var editorToolbarItem = new ToolbarItem(mEditorAction.getText(), MaterialIcon._Content.CREATE.getImageView(getIconSizeToolBarInt(), Color.ALICEBLUE), mouseEvent -> {
+            mEditorAction.handle(null);
+        });
+
         mAppModule = new AppModule();
         mWorkbench = Workbench.builder(mAppModule)
-                .toolbarLeft(new ToolbarItem())
+                .toolbarLeft(editorToolbarItem)
                 .navigationDrawerItems(
                         ActionUtils.createMenuItem(mEditorAction),
                         ActionUtils.createMenuItem(mHistoryAction),
@@ -106,12 +117,10 @@ public class App extends Application {
                         ActionUtils.createMenuItem(mAboutAction)
                 )
                 .build();
-        mWorkbench.getStylesheets().add(AppModule.class.getResource("customTheme.css").toExternalForm());
-
+        mWorkbench.getStylesheets().add(App.class.getResource("baseTheme.css").toExternalForm());
         mRsyncFx.setWorkbench(mWorkbench);
 
         var scene = new Scene(mWorkbench);
-        scene.setFill(Color.web("#bb6624"));
         FxHelper.applyFontScale(scene);
         mStage.setScene(scene);
     }
@@ -126,10 +135,6 @@ public class App extends Application {
 
     private void displayHistory() {
         System.out.println("HISTORY");
-    }
-
-    private void displayOptions() {
-        System.out.println("OPTIONS");
     }
 
     private void initAccelerators() {
@@ -184,7 +189,7 @@ public class App extends Application {
         //options
         mOptionsAction = new Action(Dict.OPTIONS.toString(), actionEvent -> {
             mWorkbench.hideNavigationDrawer();
-            displayOptions();
+            OptionsPane.displayOptions();
         });
 
         //help
@@ -194,7 +199,7 @@ public class App extends Application {
         });
 
         //about rsync
-        mAboutRsyncAction = new Action(String.format(Dict.ABOUT_S.toString(), "rsync"), actionEvent -> {
+        mAboutRsyncAction = new Action(Dict.ABOUT_S.toString().formatted("rsync"), actionEvent -> {
             mWorkbench.hideNavigationDrawer();
             displayAboutRsync();
         });
@@ -206,9 +211,45 @@ public class App extends Application {
         aboutModel.setAppDate(ModuleHelper.getBuildTime(App.class));
 
         var aboutAction = AboutPane.getAction(mStage, aboutModel);
-        mAboutAction = new Action(aboutAction.getText(), actionEvent -> {
+        mAboutAction = new Action(Dict.ABOUT_S.toString().formatted(APP_TITLE), actionEvent -> {
             mWorkbench.hideNavigationDrawer();
             aboutAction.handle(actionEvent);
         });
+    }
+
+    private void initListeners() {
+        mOptions.nightModeProperty().addListener((p, o, n) -> {
+            updateNightMode();
+        });
+    }
+
+    private void updateNightMode() {
+        MaterialIcon.setDefaultColor(mOptions.isNightMode() ? Color.LIGHTGRAY : Color.BLACK);
+
+        mEditorAction.setGraphic(MaterialIcon._Content.CREATE.getImageView(getIconSizeToolBarInt()));
+        mHistoryAction.setGraphic(MaterialIcon._Action.HISTORY.getImageView(getIconSizeToolBarInt()));
+        mOptionsAction.setGraphic(MaterialIcon._Action.SETTINGS.getImageView(getIconSizeToolBarInt()));
+        mHelpAction.setGraphic(MaterialIcon._Action.HELP_OUTLINE.getImageView(getIconSizeToolBarInt()));
+        mAboutRsyncAction.setGraphic(MaterialIcon._Notification.SYNC.getImageView(getIconSizeToolBarInt()));
+        mAboutAction.setGraphic(MaterialIcon._Action.INFO_OUTLINE.getImageView(getIconSizeToolBarInt()));
+
+        String lightTheme = getClass().getResource("lightTheme.css").toExternalForm();
+        String darkTheme = getClass().getResource("darkTheme.css").toExternalForm();
+        String darculaTheme = FxHelper.class.getResource("darcula.css").toExternalForm();
+
+        ObservableList<String> stylesheets = mWorkbench.getStylesheets();
+        FxHelper.setDarkThemeEnabled(mOptions.isNightMode());
+
+        if (mOptions.isNightMode()) {
+            FxHelper.loadDarkTheme(mStage.getScene());
+            stylesheets.remove(lightTheme);
+            stylesheets.add(darkTheme);
+            stylesheets.add(darculaTheme);
+        } else {
+            FxHelper.unloadDarkTheme(mStage.getScene());
+            stylesheets.remove(darkTheme);
+            stylesheets.remove(darculaTheme);
+            stylesheets.add(lightTheme);
+        }
     }
 }
