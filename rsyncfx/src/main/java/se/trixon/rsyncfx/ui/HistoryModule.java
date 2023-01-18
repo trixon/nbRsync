@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx;
+package se.trixon.rsyncfx.ui;
 
 import com.dlsc.workbenchfx.Workbench;
-import com.dlsc.workbenchfx.model.WorkbenchModule;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -29,15 +28,19 @@ import se.trixon.almond.util.icons.material.MaterialIcon;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class AppModule extends WorkbenchModule {
+public class HistoryModule extends BaseModule {
 
-    private static final int MODULE_ICON_SIZE = 32;
-    private BorderPane mRoot = new BorderPane();
     private BorderPane mMainPane = new BorderPane();
+    private BorderPane mRoot = new BorderPane();
     private Workbench mWorkbench;
 
-    public AppModule() {
-        super("", MaterialIcon._Places.CASINO.getImageView(MODULE_ICON_SIZE).getImage());
+    public HistoryModule() {
+        super("", MaterialIcon._Action.HISTORY.getImageView(ICON_SIZE_MODULE, Color.WHITE).getImage());
+    }
+
+    @Override
+    public Node activate() {
+        return mRoot;
     }
 
     @Override
@@ -46,11 +49,6 @@ public class AppModule extends WorkbenchModule {
         mWorkbench = workbench;
 
         createUI();
-    }
-
-    @Override
-    public Node activate() {
-        return mRoot;
     }
 
     private void createUI() {

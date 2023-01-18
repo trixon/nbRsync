@@ -3,7 +3,7 @@
     -on-primary-color: -fx-light-text-color;
     -primary-variant-color: #006600;
 
-    /*-background-color: #330033;*/
+    -background-color: #330033;
     -background-variant-color: #33FF33;
     -on-background-color: -fx-light-text-color;
 
@@ -28,4 +28,16 @@
 }
 .progress-bar > .bar {
     -fx-background-color: linear-gradient(to bottom, derive(#cccccc, -7%), derive(#cccccc, 0%), derive(#cccccc, -3%), derive(#cccccc, -9%) );
+}
+
+#toolbar #bottom-box #add-button {
+  visibility: hidden;
+}
+
+.toolbar-button:pressed{
+    -fx-background-color: #660066 !important;
+}
+
+.split-pane > .split-pane-divider {  
+    -fx-padding: 0 0.2em 0 0.2em;  
 }

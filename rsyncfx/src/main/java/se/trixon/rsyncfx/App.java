@@ -17,7 +17,6 @@ package se.trixon.rsyncfx;
 
 import com.dlsc.gemsfx.util.StageManager;
 import com.dlsc.workbenchfx.Workbench;
-import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.ObservableList;
@@ -43,7 +42,11 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.ui.BaseModule;
+import se.trixon.rsyncfx.ui.CustomTab;
+import se.trixon.rsyncfx.ui.HistoryModule;
 import se.trixon.rsyncfx.ui.JobEditorPane;
+import se.trixon.rsyncfx.ui.MainModule;
 import se.trixon.rsyncfx.ui.OptionsPane;
 
 /**
@@ -54,11 +57,9 @@ public class App extends Application {
 
     public static final String APP_TITLE = "rsyncFX";
     private Action mAboutAction;
-    private Action mAboutRsyncAction;
-    private AppModule mAppModule;
-    private Action mEditorAction;
     private Action mHelpAction;
-    private Action mHistoryAction;
+    private HistoryModule mHistoryModule;
+    private MainModule mMainModule;
     private final Options mOptions = Options.getInstance();
     private Action mOptionsAction;
     private final RsyncFx mRsyncFx = RsyncFx.getInstance();
@@ -84,6 +85,18 @@ public class App extends Application {
         initListeners();
 
         mStage.show();
+
+        FxHelper.runLaterDelayed(1, () -> {
+            mWorkbench.openModule(mMainModule);
+            mWorkbench.openModule(mHistoryModule);
+            mWorkbench.openModule(mMainModule);
+        });
+
+        for (var module : mWorkbench.getModules()) {
+            if (module instanceof BaseModule baseModule) {
+                baseModule.postInit();
+            }
+        }
     }
 
     @Override
@@ -101,44 +114,47 @@ public class App extends Application {
         StageManager.install(mStage, mOptions.getPreferences().node("stage"), minWidth, minHeight);
         initActions();
 
-        var editorToolbarItem = new ToolbarItem(mEditorAction.getText(), MaterialIcon._Content.CREATE.getImageView(getIconSizeToolBarInt(), Color.ALICEBLUE), mouseEvent -> {
-            mEditorAction.handle(null);
-        });
-
-        mAppModule = new AppModule();
-        mWorkbench = Workbench.builder(mAppModule)
-                .toolbarLeft(editorToolbarItem)
+        mMainModule = new MainModule();
+        mHistoryModule = new HistoryModule();
+        mWorkbench = Workbench.builder(mMainModule, mHistoryModule)
+                .tabFactory(CustomTab::new)
                 .navigationDrawerItems(
-                        ActionUtils.createMenuItem(mEditorAction),
-                        ActionUtils.createMenuItem(mHistoryAction),
                         ActionUtils.createMenuItem(mOptionsAction),
                         ActionUtils.createMenuItem(mHelpAction),
-                        ActionUtils.createMenuItem(mAboutRsyncAction),
                         ActionUtils.createMenuItem(mAboutAction)
                 )
                 .build();
         mWorkbench.getStylesheets().add(App.class.getResource("baseTheme.css").toExternalForm());
         mRsyncFx.setWorkbench(mWorkbench);
-
         var scene = new Scene(mWorkbench);
         FxHelper.applyFontScale(scene);
         mStage.setScene(scene);
-    }
-
-    private void displayAboutRsync() {
-        System.out.println("ABOUT RSYNC");
     }
 
     private void displayHelp() {
         System.out.println("HELP");
     }
 
-    private void displayHistory() {
-        System.out.println("HISTORY");
-    }
-
     private void initAccelerators() {
         var accelerators = mStage.getScene().getAccelerators();
+
+        for (int i = 0; i < 10; i++) {
+            final int index = i;
+            var r = (Runnable) () -> {
+                if (index == 0) {
+                    if (mWorkbench.getNavigationDrawer().isVisible()) {
+                        mWorkbench.hideNavigationDrawer();
+                    } else {
+                        mWorkbench.showNavigationDrawer();
+                    }
+                } else {
+                    mWorkbench.openModule(mWorkbench.getOpenModules().get(index - 1));
+                }
+            };
+
+            accelerators.put(new KeyCodeCombination(KeyCode.valueOf("DIGIT" + i), KeyCombination.SHORTCUT_DOWN), r);
+            accelerators.put(new KeyCodeCombination(KeyCode.valueOf("NUMPAD" + i), KeyCombination.SHORTCUT_DOWN), r);
+        }
 
         accelerators.put(new KeyCodeCombination(KeyCode.Q, KeyCombination.SHORTCUT_DOWN), () -> {
             mStage.fireEvent(new WindowEvent(mStage, WindowEvent.WINDOW_CLOSE_REQUEST));
@@ -155,14 +171,7 @@ public class App extends Application {
         });
 
         accelerators.put(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN), () -> {
-            mEditorAction.handle(null);
-        });
-
-        accelerators.put(new KeyCodeCombination(KeyCode.H, KeyCombination.SHORTCUT_DOWN), () -> {
-            mHistoryAction.handle(null);
-        });
-
-        accelerators.put(new KeyCodeCombination(KeyCode.Q, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN), () -> {
+            JobEditorPane.getAction().handle(null);
         });
 
         if (!SystemUtils.IS_OS_MAC) {
@@ -174,18 +183,6 @@ public class App extends Application {
     }
 
     private void initActions() {
-        //editor
-        mEditorAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
-            mWorkbench.hideNavigationDrawer();
-            JobEditorPane.displayJobEditor(null);
-        });
-
-        //history
-        mHistoryAction = new Action(Dict.HISTORY.toString(), actionEvent -> {
-            mWorkbench.hideNavigationDrawer();
-            displayHistory();
-        });
-
         //options
         mOptionsAction = new Action(Dict.OPTIONS.toString(), actionEvent -> {
             mWorkbench.hideNavigationDrawer();
@@ -196,12 +193,6 @@ public class App extends Application {
         mHelpAction = new Action(Dict.HELP.toString(), actionEvent -> {
             mWorkbench.hideNavigationDrawer();
             displayHelp();
-        });
-
-        //about rsync
-        mAboutRsyncAction = new Action(Dict.ABOUT_S.toString().formatted("rsync"), actionEvent -> {
-            mWorkbench.hideNavigationDrawer();
-            displayAboutRsync();
         });
 
         //about
@@ -226,11 +217,8 @@ public class App extends Application {
     private void updateNightMode() {
         MaterialIcon.setDefaultColor(mOptions.isNightMode() ? Color.LIGHTGRAY : Color.BLACK);
 
-        mEditorAction.setGraphic(MaterialIcon._Content.CREATE.getImageView(getIconSizeToolBarInt()));
-        mHistoryAction.setGraphic(MaterialIcon._Action.HISTORY.getImageView(getIconSizeToolBarInt()));
         mOptionsAction.setGraphic(MaterialIcon._Action.SETTINGS.getImageView(getIconSizeToolBarInt()));
         mHelpAction.setGraphic(MaterialIcon._Action.HELP_OUTLINE.getImageView(getIconSizeToolBarInt()));
-        mAboutRsyncAction.setGraphic(MaterialIcon._Notification.SYNC.getImageView(getIconSizeToolBarInt()));
         mAboutAction.setGraphic(MaterialIcon._Action.INFO_OUTLINE.getImageView(getIconSizeToolBarInt()));
 
         String lightTheme = getClass().getResource("lightTheme.css").toExternalForm();

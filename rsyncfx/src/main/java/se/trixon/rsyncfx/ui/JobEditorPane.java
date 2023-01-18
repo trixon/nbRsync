@@ -44,8 +44,9 @@ import se.trixon.rsyncfx.core.task.Task;
  */
 public class JobEditorPane extends HBox {
 
-    private final Job mJob;
+    private static Action sAction;
     private final ResourceBundle mBundle = NbBundle.getBundle(JobEditorPane.class);
+    private final Job mJob;
 
     public static void displayJobEditor(Job job) {
         var alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -69,6 +70,17 @@ public class JobEditorPane extends HBox {
         if (result.get() == ButtonType.OK) {
             System.out.println("SAVE");
         }
+    }
+
+    public static Action getAction() {
+        if (sAction == null) {
+            sAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
+                RsyncFx.getInstance().getWorkbench().hideNavigationDrawer();
+                JobEditorPane.displayJobEditor(null);
+            });
+        }
+
+        return sAction;
     }
 
     public JobEditorPane(Job job) {
