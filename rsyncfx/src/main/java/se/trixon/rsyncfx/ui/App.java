@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx;
+package se.trixon.rsyncfx.ui;
 
 import com.dlsc.gemsfx.util.StageManager;
 import com.dlsc.workbenchfx.Workbench;
@@ -45,6 +45,8 @@ import se.trixon.almond.util.fx.AboutModel;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.rsyncfx.Options;
+import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.ui.BaseModule;
 import se.trixon.rsyncfx.ui.CustomTab;

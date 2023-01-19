@@ -25,7 +25,7 @@ import org.openide.LifecycleManager;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.util.PomInfo;
-import se.trixon.rsyncfx.App;
+import se.trixon.rsyncfx.ui.App;
 
 /**
  *

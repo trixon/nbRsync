@@ -20,7 +20,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import se.trixon.almond.util.SystemHelper;
-import se.trixon.rsyncfx.App;
+import se.trixon.rsyncfx.ui.App;
 import se.trixon.rsyncfx.core.StorageManager;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.core.task.Task;
