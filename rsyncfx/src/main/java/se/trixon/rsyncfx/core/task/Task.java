@@ -109,6 +109,7 @@ public class Task extends BaseItem {
         return mSource;
     }
 
+    @Override
     public String getSummaryAsHtml() {
         mSummaryBuilder = new StringBuilder("<h2>").append(getName()).append("</h2>");
 

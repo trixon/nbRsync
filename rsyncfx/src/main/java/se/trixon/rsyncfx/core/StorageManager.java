@@ -82,8 +82,8 @@ public class StorageManager {
     public void load() throws IOException {
         if (mProfilesFile.exists()) {
             mStorage = mStorage.open(mProfilesFile);
-            mTaskManager.setTasks(mStorage.getTasks());
-            mJobManager.setJobs(mStorage.getJobs());
+            mTaskManager.setItems(mStorage.getTasks());
+            mJobManager.setItems(mStorage.getJobs());
             mJobManager.loadHistory();
         } else {
             mStorage = new Storage();
@@ -91,8 +91,8 @@ public class StorageManager {
     }
 
     public void save() throws IOException {
-        mStorage.setJobs(mJobManager.getJobs());
-        mStorage.setTasks(mTaskManager.getTasks());
+        mStorage.setJobs(mJobManager.getItems());
+        mStorage.setTasks(mTaskManager.getItems());
         String json = mStorage.save(mProfilesFile);
         String tag = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         FileUtils.writeStringToFile(mProfilesBackupFile, String.format("%s=%s\n", tag, json), Charset.defaultCharset(), true);

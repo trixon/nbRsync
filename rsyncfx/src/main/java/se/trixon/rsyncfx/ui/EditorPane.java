@@ -15,7 +15,9 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -23,10 +25,13 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.openide.util.NbBundle;
@@ -47,86 +52,65 @@ import se.trixon.rsyncfx.core.task.Task;
  */
 public class EditorPane extends HBox {
 
-    private static Action sAction;
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
-    private final Job mJob;
+    private JobPane mJobPane;
     private final StorageManager mStorageManager = StorageManager.getInstance();
     private final JobManager mJobManager = JobManager.getInstance();
     private final TaskManager mTaskManager = TaskManager.getInstance();
+    private TaskPane mTaskPane;
 
-    public static void displayEditor(Job job) {
-        var alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initOwner(RsyncFx.getInstance().getStage());
-        alert.setResizable(true);
-
-        alert.setTitle(Dict.EDITOR.toString());
-        alert.setGraphic(null);
-        alert.setHeaderText(null);
-
-        var jobEditorPane = new EditorPane(job);
-        var dialogPane = alert.getDialogPane();
-        var button = (Button) dialogPane.lookupButton(ButtonType.OK);
-        button.setText(Dict.SAVE.toString());
-
-        dialogPane.setContent(jobEditorPane);
-        dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
-        FxHelper.removeSceneInitFlicker(dialogPane);
-
-        var result = FxHelper.showAndWait(alert, RsyncFx.getInstance().getStage());
-        if (result.get() == ButtonType.OK) {
-            System.out.println("SAVE");
-        }
-    }
-
-    public static Action getAction() {
-        if (sAction == null) {
-            sAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
-                RsyncFx.getInstance().getWorkbench().hideNavigationDrawer();
-                EditorPane.displayEditor(null);
-            });
-        }
-
-        return sAction;
-    }
-
-    public EditorPane(Job job) {
-        mJob = job;
+    public EditorPane() {
         createUI();
     }
 
     private void createUI() {
-        setSpacing(FxHelper.getUIScaled(16));
+        setSpacing(FxHelper.getUIScaled(12));
 
-        var jobPane = new JobPane(Dict.JOBS.toString());
-        var taskPane = new TaskPane(Dict.TASKS.toString());
-        getChildren().setAll(jobPane, taskPane);
-        HBox.setHgrow(jobPane, Priority.ALWAYS);
-        HBox.setHgrow(taskPane, Priority.ALWAYS);
+        mJobPane = new JobPane(Dict.JOBS.toString());
+        mTaskPane = new TaskPane(Dict.TASKS.toString());
+        getChildren().setAll(mJobPane, mTaskPane);
+        HBox.setHgrow(mJobPane, Priority.ALWAYS);
+        HBox.setHgrow(mTaskPane, Priority.ALWAYS);
 
-        var jobListView = jobPane.getListView();
-        jobListView.getItems().setAll(mJobManager.getJobs());
+        var jobListView = mJobPane.getListView();
+        jobListView.getItems().setAll(mJobManager.getItems());
         jobListView.setCellFactory(listView -> new ItemListCellRenderer<>() {
         });
 
-        var taskListView = taskPane.getListView();
-        taskListView.getItems().setAll(mTaskManager.getTasks());
+        var taskListView = mTaskPane.getListView();
+        taskListView.getItems().setAll(mTaskManager.getItems());
         taskListView.setCellFactory(listView -> new ItemListCellRenderer<>() {
         });
     }
 
-    private abstract class BaseItemPane<T> extends BorderPane {
+    public JobPane getJobPane() {
+        return mJobPane;
+    }
 
-        private final Label mLabel = new Label();
+    public TaskPane getTaskPane() {
+        return mTaskPane;
+    }
+
+    public abstract class BaseItemPane<T> extends BorderPane {
+
+        private final ToolbarItem mLabelToolbarItem;
         private final ListView<T> mListView = new ListView<>();
-        private ToolBar mToolBar = new ToolBar();
+        private final String mTitle;
+        private List<ToolbarItem> mToolBarItems;
 
         public BaseItemPane(String title) {
-            mLabel.setText(title);
+            mTitle = title;
+            mLabelToolbarItem = new ToolbarItem("%s".formatted(title));
+
             createUI();
         }
 
         public ListView<T> getListView() {
             return mListView;
+        }
+
+        public List<ToolbarItem> getToolBarItems() {
+            return mToolBarItems;
         }
 
         abstract void onAdd();
@@ -139,49 +123,63 @@ public class EditorPane extends HBox {
 
         abstract void onRemoveAll();
 
+        private Tooltip createTooltip(String string) {
+            return new Tooltip("%s %s".formatted(string, mTitle));
+        }
+
         private void createUI() {
-            var addAction = new Action(Dict.ADD.toString(), actionEvent -> {
-                onAdd();
-            });
-            addAction.setGraphic(MaterialIcon._Content.ADD.getImageView(getIconSizeToolBarInt()));
+            final int size = getIconSizeToolBarInt();
+            final Color color = Color.WHITE;
 
-            var editAction = new Action(Dict.EDIT.toString(), actionEvent -> {
+            var addToolbarItem = new ToolbarItem(MaterialIcon._Content.ADD.getImageView(size, color), mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                    onAdd();
+                }
             });
-            editAction.setGraphic(MaterialIcon._Editor.MODE_EDIT.getImageView(getIconSizeToolBarInt()));
+            addToolbarItem.setTooltip(createTooltip(Dict.ADD.toString()));
 
-            var remAction = new Action(Dict.REMOVE.toString(), actionEvent -> {
+            var remToolbarItem = new ToolbarItem(MaterialIcon._Content.REMOVE.getImageView(size, color), mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                    onRemove();
+                }
             });
-            remAction.setGraphic(MaterialIcon._Content.REMOVE.getImageView(getIconSizeToolBarInt()));
+            remToolbarItem.setTooltip(createTooltip(Dict.REMOVE.toString()));
 
-            var remAllAction = new Action(Dict.REMOVE_ALL.toString(), actionEvent -> {
+            var remAllToolbarItem = new ToolbarItem(MaterialIcon._Content.CLEAR.getImageView(size, color), mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                    onRemoveAll();
+                }
             });
-            remAllAction.setGraphic(MaterialIcon._Content.CLEAR.getImageView(getIconSizeToolBarInt()));
+            remAllToolbarItem.setTooltip(createTooltip(Dict.REMOVE_ALL.toString()));
 
-            var cloneAction = new Action(Dict.CLONE.toString(), actionEvent -> {
+            var editToolbarItem = new ToolbarItem(MaterialIcon._Editor.MODE_EDIT.getImageView(size, color), mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                    onEdit();
+                }
             });
-            cloneAction.setGraphic(MaterialIcon._Content.CONTENT_COPY.getImageView(getIconSizeToolBarInt()));
+            editToolbarItem.setTooltip(createTooltip(Dict.EDIT.toString()));
 
-            var mActions = Arrays.asList(
-                    addAction,
-                    remAction,
-                    editAction,
-                    cloneAction,
-                    ActionUtils.ACTION_SPAN,
-                    remAllAction
+            var cloneToolbarItem = new ToolbarItem(MaterialIcon._Content.CONTENT_COPY.getImageView(size, color), mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                    onClone();
+                }
+            });
+            cloneToolbarItem.setTooltip(createTooltip(Dict.CLONE.toString()));
+
+            mToolBarItems = List.of(
+                    mLabelToolbarItem,
+                    addToolbarItem,
+                    remToolbarItem,
+                    editToolbarItem,
+                    cloneToolbarItem,
+                    remAllToolbarItem
             );
 
-            mToolBar = ActionUtils.createToolBar(mActions, ActionUtils.ActionTextBehavior.HIDE);
-
-            FxHelper.adjustButtonWidth(mToolBar.getItems().stream(), getIconSizeToolBarInt());
-            FxHelper.undecorateButtons(mToolBar.getItems().stream());
-            FxHelper.slimToolBar(mToolBar);
-
-            setTop(new VBox(mLabel, mToolBar));
             setCenter(mListView);
         }
     }
 
-    private class JobPane extends BaseItemPane<Job> {
+    public class JobPane extends BaseItemPane<Job> {
 
         public JobPane(String title) {
             super(title);
@@ -189,27 +187,32 @@ public class EditorPane extends HBox {
 
         @Override
         void onAdd() {
+            System.out.println("ADD");
         }
 
         @Override
         void onClone() {
+            System.out.println("CLONE");
         }
 
         @Override
         void onEdit() {
+            System.out.println("EDIT");
         }
 
         @Override
         void onRemove() {
+            System.out.println("REMOVE");
         }
 
         @Override
         void onRemoveAll() {
+            System.out.println("REMOVE ALL");
         }
 
     }
 
-    private class TaskPane extends BaseItemPane<Task> {
+    public class TaskPane extends BaseItemPane<Task> {
 
         public TaskPane(String title) {
             super(title);

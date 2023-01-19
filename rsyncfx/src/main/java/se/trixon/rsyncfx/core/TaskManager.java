@@ -32,7 +32,7 @@ import se.trixon.rsyncfx.core.task.Task;
 public class TaskManager {
 
     private List<String> mHistoryLines = new ArrayList<>();
-    private final ArrayList<Task> mTasks = new ArrayList<>();
+    private final ArrayList<Task> mItems = new ArrayList<>();
 
     public static TaskManager getInstance() {
         return Holder.INSTANCE;
@@ -44,7 +44,7 @@ public class TaskManager {
     public boolean exists(Task task) {
         boolean exists = false;
 
-        for (var existingTask : mTasks) {
+        for (var existingTask : mItems) {
             if (task.getId() == existingTask.getId()) {
                 exists = true;
                 break;
@@ -55,13 +55,17 @@ public class TaskManager {
     }
 
     public Object[] getArray() {
-        return mTasks.toArray();
+        return mItems.toArray();
+    }
+
+    public ArrayList<Task> getItems() {
+        return mItems;
     }
 
     public Task getTaskById(long id) {
         Task foundTask = null;
 
-        for (var task : mTasks) {
+        for (var task : mItems) {
             if (task.getId() == id) {
                 foundTask = task;
                 break;
@@ -69,10 +73,6 @@ public class TaskManager {
         }
 
         return foundTask;
-    }
-
-    public ArrayList<Task> getTasks() {
-        return mTasks;
     }
 
     public List<Task> getTasks(ArrayList<Long> taskIds) {
@@ -88,15 +88,15 @@ public class TaskManager {
         return tasks;
     }
 
-    public void setTasks(ArrayList<Task> tasks) {
-        mTasks.clear();
-        mTasks.addAll(tasks);
+    public void setItems(ArrayList<Task> items) {
+        mItems.clear();
+        mItems.addAll(items);
     }
 
     void loadHistory() {
         try {
             mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
-            for (Task task : mTasks) {
+            for (Task task : mItems) {
                 loadHistory(task);
             }
         } catch (IOException ex) {

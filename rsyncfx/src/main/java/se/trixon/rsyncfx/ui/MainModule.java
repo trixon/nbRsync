@@ -27,7 +27,6 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -54,11 +53,9 @@ import se.trixon.rsyncfx.core.job.Job;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class MainModule extends BaseModule {
+public class MainModule extends BaseModule implements AlwaysOpenTab {
 
     private ListView<Job> mListView = new ListView<>();
-    private BorderPane mMainPane = new BorderPane();
-    private BorderPane mRoot = new BorderPane();
     private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class));
     private final SplitPane mSplitPane = new SplitPane();
     private final WebView mWebView = new WebView();
@@ -95,39 +92,20 @@ public class MainModule extends BaseModule {
     }
 
     private void createUI() {
-        mMainPane = new BorderPane(new Label("?"));
-        mRoot = new BorderPane();
-        mMainPane.setTop(new Button("Hello"));
-
-        mMainPane.setBackground(FxHelper.createBackground(Color.CORAL));
-        mRoot.setBackground(FxHelper.createBackground(Color.GRAY));
-//        mRoot.setBackground(new ListView<>().getBackground());
-//        mRoot.setPadding(FxHelper.getUIScaledInsets(16, 16, 0, 16));
         var aboutRsyncToolbarItem = new ToolbarItem(Dict.ABOUT_S.toString().formatted("rsync"), MaterialIcon._Notification.SYNC.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
             System.out.println("ABOUT RSYNC");
         });
-
-        var editorToolbarItem = new ToolbarItem(EditorPane.getAction().getText(), MaterialIcon._Content.CREATE.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
-            EditorPane.getAction().handle(null);
-        });
-
-        getToolbarControlsLeft().setAll(
-                editorToolbarItem
-        );
 
         getToolbarControlsRight().setAll(
                 aboutRsyncToolbarItem
         );
 
-//        mRoot.setLeft(mListView);
         mSplitPane.getItems().setAll(mListView, mWebView);
-        mListView.getItems().setAll(mStorageManager.getJobManager().getJobs());
+        mListView.getItems().setAll(mStorageManager.getJobManager().getItems());
 
         mListView.setMinWidth(FxHelper.getUIScaled(250));
         SplitPane.setResizableWithParent(mListView, Boolean.FALSE);
-//        mSplitPane.getDividers().get(0).
         mListView.setCellFactory(listView -> new JobListCell());
-
     }
 
     private void initBindings() {

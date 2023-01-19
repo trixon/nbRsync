@@ -88,7 +88,7 @@ public class CustomTabSkin extends SkinBase<Tab> {
         var children = controlBox.getChildren();
         var module = getModule();
 
-        if (module instanceof MainModule || module instanceof HistoryModule) {
+        if (module instanceof AlwaysOpenTab) {
             children.addAll(iconPlaceholder);
 //        } else if (module instanceof JobModule) {
 //            children.addAll(nameLbl, closeBtn);

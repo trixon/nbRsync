@@ -102,6 +102,8 @@ public abstract class BaseItem implements Comparable<BaseItem> {
         return mNote;
     }
 
+    public abstract String getSummaryAsHtml();
+
     public boolean isValid() {
         return !getName().isEmpty();
     }

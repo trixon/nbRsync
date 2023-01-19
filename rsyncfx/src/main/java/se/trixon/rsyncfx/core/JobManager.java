@@ -30,7 +30,7 @@ import se.trixon.rsyncfx.core.job.Job;
 public class JobManager {
 
     private List<String> mHistoryLines = new ArrayList<>();
-    private final ArrayList<Job> mJobs = new ArrayList<>();
+    private final ArrayList<Job> mItems = new ArrayList<>();
 
     public static JobManager getInstance() {
         return Holder.INSTANCE;
@@ -40,11 +40,15 @@ public class JobManager {
     }
 
     public Object[] getArray() {
-        return mJobs.toArray();
+        return mItems.toArray();
+    }
+
+    public ArrayList<Job> getItems() {
+        return mItems;
     }
 
     public Job getJobById(long id) {
-        for (var job : mJobs) {
+        for (var job : mItems) {
             if (job.getId() == id) {
                 return job;
             }
@@ -53,18 +57,14 @@ public class JobManager {
         return null;
     }
 
-    public ArrayList<Job> getJobs() {
-        return mJobs;
-    }
-
     public boolean hasJobs() {
-        return !getJobs().isEmpty();
+        return !getItems().isEmpty();
     }
 
     void loadHistory() {
         try {
             mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
-            for (var job : mJobs) {
+            for (var job : mItems) {
                 loadHistory(job);
             }
         } catch (IOException ex) {
@@ -72,10 +72,10 @@ public class JobManager {
         }
     }
 
-    void setJobs(ArrayList<Job> jobs) {
-        mJobs.clear();
-        mJobs.addAll(jobs);
-        mJobs.forEach(job -> {
+    void setItems(ArrayList<Job> items) {
+        mItems.clear();
+        mItems.addAll(items);
+        mItems.forEach(job -> {
             job.setTasks(TaskManager.getInstance().getTasks(job.getTaskIds()));
         });
     }

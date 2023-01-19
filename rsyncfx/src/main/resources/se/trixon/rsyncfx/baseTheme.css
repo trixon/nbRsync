@@ -34,6 +34,10 @@
   visibility: hidden;
 }
 
+#add-module-view {
+  visibility: hidden;
+}
+
 .toolbar-button:pressed{
     -fx-background-color: #660066 !important;
 }

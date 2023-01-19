@@ -17,6 +17,7 @@ package se.trixon.rsyncfx;
 
 import com.dlsc.gemsfx.util.StageManager;
 import com.dlsc.workbenchfx.Workbench;
+import com.dlsc.workbenchfx.model.WorkbenchModule;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.ObservableList;
@@ -33,6 +34,7 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.openide.LifecycleManager;
 import se.trixon.almond.nbp.core.ModuleHelper;
+import se.trixon.almond.util.CircularInt;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.PomInfo;
 import se.trixon.almond.util.SystemHelper;
@@ -44,8 +46,8 @@ import se.trixon.almond.util.icons.material.MaterialIcon;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.ui.BaseModule;
 import se.trixon.rsyncfx.ui.CustomTab;
+import se.trixon.rsyncfx.ui.EditorModule;
 import se.trixon.rsyncfx.ui.HistoryModule;
-import se.trixon.rsyncfx.ui.EditorPane;
 import se.trixon.rsyncfx.ui.MainModule;
 import se.trixon.rsyncfx.ui.OptionsPane;
 
@@ -57,9 +59,10 @@ public class App extends Application {
 
     public static final String APP_TITLE = "rsyncFX";
     private Action mAboutAction;
+    private WorkbenchModule mEditorModule;
     private Action mHelpAction;
-    private HistoryModule mHistoryModule;
-    private MainModule mMainModule;
+    private WorkbenchModule mHistoryModule;
+    private WorkbenchModule mMainModule;
     private final Options mOptions = Options.getInstance();
     private Action mOptionsAction;
     private final RsyncFx mRsyncFx = RsyncFx.getInstance();
@@ -85,18 +88,19 @@ public class App extends Application {
         initListeners();
 
         mStage.show();
-
-        FxHelper.runLaterDelayed(1, () -> {
+        FxHelper.runLaterDelayed(0, () -> {
             mWorkbench.openModule(mMainModule);
+            mWorkbench.openModule(mEditorModule);
             mWorkbench.openModule(mHistoryModule);
             mWorkbench.openModule(mMainModule);
-        });
+            mWorkbench.openModule(mEditorModule);
 
-        for (var module : mWorkbench.getModules()) {
-            if (module instanceof BaseModule baseModule) {
-                baseModule.postInit();
+            for (var module : mWorkbench.getModules()) {
+                if (module instanceof BaseModule baseModule) {
+                    baseModule.postInit();
+                }
             }
-        }
+        });
     }
 
     @Override
@@ -115,8 +119,13 @@ public class App extends Application {
         initActions();
 
         mMainModule = new MainModule();
+        mEditorModule = new EditorModule();
         mHistoryModule = new HistoryModule();
-        mWorkbench = Workbench.builder(mMainModule, mHistoryModule)
+
+        mWorkbench = Workbench.builder(
+                mMainModule,
+                mEditorModule,
+                mHistoryModule)
                 .tabFactory(CustomTab::new)
                 .navigationDrawerItems(
                         ActionUtils.createMenuItem(mOptionsAction),
@@ -126,6 +135,7 @@ public class App extends Application {
                 .build();
         mWorkbench.getStylesheets().add(App.class.getResource("baseTheme.css").toExternalForm());
         mRsyncFx.setWorkbench(mWorkbench);
+
         var scene = new Scene(mWorkbench);
         FxHelper.applyFontScale(scene);
         mStage.setScene(scene);
@@ -147,7 +157,7 @@ public class App extends Application {
                     } else {
                         mWorkbench.showNavigationDrawer();
                     }
-                } else {
+                } else if (mWorkbench.getOpenModules().size() >= index) {
                     mWorkbench.openModule(mWorkbench.getOpenModules().get(index - 1));
                 }
             };
@@ -155,6 +165,30 @@ public class App extends Application {
             accelerators.put(new KeyCodeCombination(KeyCode.valueOf("DIGIT" + i), KeyCombination.SHORTCUT_DOWN), r);
             accelerators.put(new KeyCodeCombination(KeyCode.valueOf("NUMPAD" + i), KeyCombination.SHORTCUT_DOWN), r);
         }
+
+        accelerators.put(new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHORTCUT_DOWN), () -> {
+            var openModules = mWorkbench.getOpenModules();
+            for (int i = 0; i < openModules.size(); i++) {
+                var module = openModules.get(i);
+                if (module == mWorkbench.getActiveModule()) {
+                    var circularInt = new CircularInt(0, openModules.size() - 1, i);
+                    mWorkbench.openModule(openModules.get(circularInt.inc()));
+                    break;
+                }
+            }
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHORTCUT_DOWN, KeyCodeCombination.SHIFT_DOWN), () -> {
+            var openModules = mWorkbench.getOpenModules();
+            for (int i = 0; i < openModules.size(); i++) {
+                var module = openModules.get(i);
+                if (module == mWorkbench.getActiveModule()) {
+                    var circularInt = new CircularInt(0, openModules.size() - 1, i);
+                    mWorkbench.openModule(openModules.get(circularInt.dec()));
+                    break;
+                }
+            }
+        });
 
         accelerators.put(new KeyCodeCombination(KeyCode.Q, KeyCombination.SHORTCUT_DOWN), () -> {
             mStage.fireEvent(new WindowEvent(mStage, WindowEvent.WINDOW_CLOSE_REQUEST));
@@ -168,10 +202,6 @@ public class App extends Application {
 
         accelerators.put(new KeyCodeCombination(KeyCode.F1), () -> {
             mHelpAction.handle(null);
-        });
-
-        accelerators.put(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN), () -> {
-            EditorPane.getAction().handle(null);
         });
 
         if (!SystemUtils.IS_OS_MAC) {

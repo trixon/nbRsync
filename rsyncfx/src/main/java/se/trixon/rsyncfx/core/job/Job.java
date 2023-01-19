@@ -87,6 +87,7 @@ public class Job extends BaseItem {
         return mLogMode;
     }
 
+    @Override
     public String getSummaryAsHtml() {
         mSummaryBuilder = new StringBuilder("<html><body>");
         mSummaryBuilder.append("<h1>").append(getName()).append("</h1>");
