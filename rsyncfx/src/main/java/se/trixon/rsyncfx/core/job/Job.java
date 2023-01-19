@@ -16,36 +16,25 @@
 package se.trixon.rsyncfx.core.job;
 
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import org.apache.commons.lang3.StringUtils;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
+import se.trixon.rsyncfx.core.BaseItem;
 import se.trixon.rsyncfx.core.task.Task;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class Job implements Comparable<Job>, Serializable {
+public class Job extends BaseItem {
 
     public static OUTPUT TO_STRING = OUTPUT.VERBOSE;
 
-    @SerializedName("description")
-    private String mDescription = "";
     @SerializedName("executeSection")
     private final JobExecuteSection mExecuteSection;
-    private transient String mHistory = "";
-    @SerializedName("id")
-    private long mId = System.currentTimeMillis();
-    @SerializedName("lastRun")
-    private long mLastRun = -1;
-    @SerializedName("lastRunExitCode")
-    private int mLastRunExitCode = -1;
     @SerializedName("logErrors")
     private boolean mLogErrors = true;
     @SerializedName("logMode")
@@ -54,10 +43,6 @@ public class Job implements Comparable<Job>, Serializable {
     private boolean mLogOutput = true;
     @SerializedName("logSeparateErrors")
     private boolean mLogSeparateErrors = true;
-    @SerializedName("name")
-    private String mName = "";
-    @SerializedName("note")
-    private transient String mNote = "";
     private transient StringBuilder mSummaryBuilder;
     @SerializedName("tasks")
     private ArrayList<Long> mTaskIds = new ArrayList<>();
@@ -73,11 +58,6 @@ public class Job implements Comparable<Job>, Serializable {
         mDescription = description;
         mNote = comment;
         mExecuteSection = new JobExecuteSection();
-    }
-
-    @Override
-    public int compareTo(Job o) {
-        return mName.compareTo(o.getName());
     }
 
     public String getCaption(boolean verbose) {
@@ -99,67 +79,12 @@ public class Job implements Comparable<Job>, Serializable {
         return caption;
     }
 
-    public String getDescription() {
-        return mDescription;
-    }
-
     public JobExecuteSection getExecuteSection() {
         return mExecuteSection;
     }
 
-    public String getHistory() {
-        return mHistory;
-    }
-
-    public long getId() {
-        return mId;
-    }
-
-    public long getLastRun() {
-        return mLastRun;
-    }
-
-    public String getLastRunDateTime(String replacement, long lastRun) {
-        String lastRunDateTime = replacement;
-
-        if (lastRun > 0) {
-            Date date = new Date(lastRun);
-            lastRunDateTime = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(date);
-        }
-
-        return lastRunDateTime;
-    }
-
-    public String getLastRunDateTime(String replacement) {
-        return getLastRunDateTime(replacement, mLastRun);
-    }
-
-    public int getLastRunExitCode() {
-        return mLastRunExitCode;
-    }
-
-    public String getLastRunStatus() {
-        String status = "";
-        if (mLastRun > 0) {
-            status = getLastRunExitCode() == 0 ? "" : "⚠";
-            //if (isRunnning()) {
-            //    status = "∞";
-            //}
-        }
-
-        return status;
-    }
-
     public int getLogMode() {
         return mLogMode;
-    }
-
-    public String getName() {
-        return mName;
-    }
-
-    public String getNote() {
-        return mNote;
     }
 
     public String getSummaryAsHtml() {
@@ -210,30 +135,6 @@ public class Job implements Comparable<Job>, Serializable {
         return mLogSeparateErrors;
     }
 
-    public boolean isValid() {
-        return !getName().isEmpty();
-    }
-
-    public void setDescription(String string) {
-        mDescription = string;
-    }
-
-    public void setHistory(String history) {
-        mHistory = history == null ? "" : history;
-    }
-
-    public void setId(long id) {
-        mId = id;
-    }
-
-    public void setLastRun(long lastRun) {
-        mLastRun = lastRun;
-    }
-
-    public void setLastRunExitCode(int lastRunExitCode) {
-        mLastRunExitCode = lastRunExitCode;
-    }
-
     public void setLogErrors(boolean logErrors) {
         mLogErrors = logErrors;
     }
@@ -248,14 +149,6 @@ public class Job implements Comparable<Job>, Serializable {
 
     public void setLogSeparateErrors(boolean logSeparateErrors) {
         mLogSeparateErrors = logSeparateErrors;
-    }
-
-    public void setName(String name) {
-        mName = name;
-    }
-
-    public void setNote(String string) {
-        mNote = string;
     }
 
     public void setTasks(List<Task> tasksSkip) {

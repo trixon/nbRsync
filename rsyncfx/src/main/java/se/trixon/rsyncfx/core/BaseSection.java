@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx.core.job;
-
-import se.trixon.rsyncfx.core.BaseSection;
+package se.trixon.rsyncfx.core;
 
 /**
  *
- * @author Patrik Karlström
+ * @author Patrik Karlström <patrik@trixon.se>
  */
-public abstract class JobSection extends BaseSection {
+public abstract class BaseSection {
 
 }

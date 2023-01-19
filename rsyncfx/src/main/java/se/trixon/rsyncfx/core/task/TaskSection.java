@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,13 @@ package se.trixon.rsyncfx.core.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import se.trixon.rsyncfx.core.BaseSection;
 
 /**
  *
  * @author Patrik Karlström
  */
-public abstract class TaskSection {
+public abstract class TaskSection extends BaseSection {
 
     public static final String OPT_SEPARATOR = ":::";
     protected transient final List<String> mCommand = new ArrayList<>();

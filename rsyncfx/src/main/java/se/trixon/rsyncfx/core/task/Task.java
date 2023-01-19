@@ -22,16 +22,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
+import se.trixon.rsyncfx.core.BaseItem;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class Task implements Comparable<Task> {
+public class Task extends BaseItem {
 
     private final List<String> mCommand = new ArrayList<>();
-    @SerializedName("description")
-    private String mDescription = "";
     @SerializedName("destination")
     private String mDestination;
     @SerializedName("environment")
@@ -40,15 +39,8 @@ public class Task implements Comparable<Task> {
     private final ExcludeSection mExcludeSection;
     @SerializedName("executeSection")
     private final TaskExecuteSection mExecuteSection;
-    private transient String mHistory = "";
-    @SerializedName("id")
-    private long mId = System.currentTimeMillis();
-    @SerializedName("name")
-    private String mName = "";
     @SerializedName("noAdditionalDir")
     private boolean mNoAdditionalDir;
-    @SerializedName("note")
-    private String mNote = "";
     @SerializedName("optionSection")
     private final OptionSection mOptionSection;
     @SerializedName("source")
@@ -59,11 +51,6 @@ public class Task implements Comparable<Task> {
         mExecuteSection = new TaskExecuteSection();
         mExcludeSection = new ExcludeSection();
         mOptionSection = new OptionSection();
-    }
-
-    @Override
-    public int compareTo(Task o) {
-        return mName.compareTo(o.getName());
     }
 
     public List<String> getCommand() {
@@ -98,10 +85,6 @@ public class Task implements Comparable<Task> {
         return StringUtils.join(getCommand(), " ");
     }
 
-    public String getDescription() {
-        return mDescription;
-    }
-
     public String getDestination() {
         return mDestination;
     }
@@ -116,22 +99,6 @@ public class Task implements Comparable<Task> {
 
     public TaskExecuteSection getExecuteSection() {
         return mExecuteSection;
-    }
-
-    public String getHistory() {
-        return mHistory;
-    }
-
-    public long getId() {
-        return mId;
-    }
-
-    public String getName() {
-        return mName;
-    }
-
-    public String getNote() {
-        return mNote;
     }
 
     public OptionSection getOptionSection() {
@@ -187,14 +154,6 @@ public class Task implements Comparable<Task> {
         return mNoAdditionalDir;
     }
 
-    public boolean isValid() {
-        return !getName().isEmpty();
-    }
-
-    public void setDescription(String comment) {
-        mDescription = comment;
-    }
-
     public void setDestination(String destination) {
         mDestination = destination;
     }
@@ -203,24 +162,8 @@ public class Task implements Comparable<Task> {
         mEnvironment = environment;
     }
 
-    public void setHistory(String history) {
-        mHistory = history == null ? "" : history;
-    }
-
-    public void setId(long id) {
-        mId = id;
-    }
-
-    public void setName(String name) {
-        mName = name;
-    }
-
     public void setNoAdditionalDir(boolean value) {
         mNoAdditionalDir = value;
-    }
-
-    public void setNote(String string) {
-        mNote = string;
     }
 
     public void setSource(String source) {

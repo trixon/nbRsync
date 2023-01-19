@@ -45,7 +45,7 @@ import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.ui.BaseModule;
 import se.trixon.rsyncfx.ui.CustomTab;
 import se.trixon.rsyncfx.ui.HistoryModule;
-import se.trixon.rsyncfx.ui.JobEditorPane;
+import se.trixon.rsyncfx.ui.EditorPane;
 import se.trixon.rsyncfx.ui.MainModule;
 import se.trixon.rsyncfx.ui.OptionsPane;
 
@@ -171,7 +171,7 @@ public class App extends Application {
         });
 
         accelerators.put(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN), () -> {
-            JobEditorPane.getAction().handle(null);
+            EditorPane.getAction().handle(null);
         });
 
         if (!SystemUtils.IS_OS_MAC) {

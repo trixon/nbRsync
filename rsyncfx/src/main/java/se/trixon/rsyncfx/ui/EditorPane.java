@@ -35,6 +35,9 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.core.JobManager;
+import se.trixon.rsyncfx.core.StorageManager;
+import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.core.task.Task;
 
@@ -42,22 +45,25 @@ import se.trixon.rsyncfx.core.task.Task;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class JobEditorPane extends HBox {
+public class EditorPane extends HBox {
 
     private static Action sAction;
-    private final ResourceBundle mBundle = NbBundle.getBundle(JobEditorPane.class);
+    private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
     private final Job mJob;
+    private final StorageManager mStorageManager = StorageManager.getInstance();
+    private final JobManager mJobManager = JobManager.getInstance();
+    private final TaskManager mTaskManager = TaskManager.getInstance();
 
-    public static void displayJobEditor(Job job) {
+    public static void displayEditor(Job job) {
         var alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.initOwner(RsyncFx.getInstance().getStage());
         alert.setResizable(true);
 
-        alert.setTitle(NbBundle.getMessage(JobEditorPane.class, "jobEditor.Title"));
+        alert.setTitle(Dict.EDITOR.toString());
         alert.setGraphic(null);
         alert.setHeaderText(null);
 
-        var jobEditorPane = new JobEditorPane(job);
+        var jobEditorPane = new EditorPane(job);
         var dialogPane = alert.getDialogPane();
         var button = (Button) dialogPane.lookupButton(ButtonType.OK);
         button.setText(Dict.SAVE.toString());
@@ -76,14 +82,14 @@ public class JobEditorPane extends HBox {
         if (sAction == null) {
             sAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
                 RsyncFx.getInstance().getWorkbench().hideNavigationDrawer();
-                JobEditorPane.displayJobEditor(null);
+                EditorPane.displayEditor(null);
             });
         }
 
         return sAction;
     }
 
-    public JobEditorPane(Job job) {
+    public EditorPane(Job job) {
         mJob = job;
         createUI();
     }
@@ -91,20 +97,30 @@ public class JobEditorPane extends HBox {
     private void createUI() {
         setSpacing(FxHelper.getUIScaled(16));
 
-        var jobListView = new JobListView(Dict.JOBS.toString());
-        var taskListView = new TaskListView(Dict.TASKS.toString());
-        getChildren().setAll(jobListView, taskListView);
-        HBox.setHgrow(jobListView, Priority.ALWAYS);
-        HBox.setHgrow(taskListView, Priority.ALWAYS);
+        var jobPane = new JobPane(Dict.JOBS.toString());
+        var taskPane = new TaskPane(Dict.TASKS.toString());
+        getChildren().setAll(jobPane, taskPane);
+        HBox.setHgrow(jobPane, Priority.ALWAYS);
+        HBox.setHgrow(taskPane, Priority.ALWAYS);
+
+        var jobListView = jobPane.getListView();
+        jobListView.getItems().setAll(mJobManager.getJobs());
+        jobListView.setCellFactory(listView -> new ItemListCellRenderer<>() {
+        });
+
+        var taskListView = taskPane.getListView();
+        taskListView.getItems().setAll(mTaskManager.getTasks());
+        taskListView.setCellFactory(listView -> new ItemListCellRenderer<>() {
+        });
     }
 
-    private abstract class BaseListView<T> extends BorderPane {
+    private abstract class BaseItemPane<T> extends BorderPane {
 
         private final Label mLabel = new Label();
         private final ListView<T> mListView = new ListView<>();
         private ToolBar mToolBar = new ToolBar();
 
-        public BaseListView(String title) {
+        public BaseItemPane(String title) {
             mLabel.setText(title);
             createUI();
         }
@@ -165,9 +181,9 @@ public class JobEditorPane extends HBox {
         }
     }
 
-    private class JobListView extends BaseListView<Job> {
+    private class JobPane extends BaseItemPane<Job> {
 
-        public JobListView(String title) {
+        public JobPane(String title) {
             super(title);
         }
 
@@ -193,9 +209,9 @@ public class JobEditorPane extends HBox {
 
     }
 
-    private class TaskListView extends BaseListView<Task> {
+    private class TaskPane extends BaseItemPane<Task> {
 
-        public TaskListView(String title) {
+        public TaskPane(String title) {
             super(title);
         }
 

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,15 @@
  */
 package se.trixon.rsyncfx.boot;
 
+import java.io.IOException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.rsyncfx.App;
+import se.trixon.rsyncfx.core.StorageManager;
+import se.trixon.rsyncfx.core.job.Job;
+import se.trixon.rsyncfx.core.task.Task;
 
 /**
  *
@@ -29,12 +35,39 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
+        initStorage();
         //Give ArgsProcessor a chance to disable GUI
         SystemHelper.runLaterDelayed(100, () -> {
             if (GUI) {
                 App.main(null);
             }
         });
+    }
+
+    private void initStorage() {
+        try {
+            var manager = StorageManager.getInstance();
+            manager.load();
+
+            var jobManager = manager.getJobManager();
+            var taskManager = manager.getTaskManager();
+
+            var task1 = new Task();
+            task1.setName("Task 1");
+            task1.setName("Task %d %s".formatted(taskManager.getTasks().size(), RandomStringUtils.random(5, true, false)));
+            task1.setDescription(RandomStringUtils.random(15, true, true));
+            taskManager.getTasks().add(task1);
+
+            var job1 = new Job();
+            job1.setName("Job %d %s".formatted(jobManager.getJobs().size(), RandomStringUtils.random(5, true, false)));
+            job1.setDescription(RandomStringUtils.random(15, true, true));
+            job1.getTaskIds().add(task1.getId());
+            jobManager.getJobs().add(job1);
+
+            manager.save();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
 }

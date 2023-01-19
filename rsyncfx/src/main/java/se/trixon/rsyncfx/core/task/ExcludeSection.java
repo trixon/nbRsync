@@ -16,7 +16,6 @@
 package se.trixon.rsyncfx.core.task;
 
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author Patrik Karlström
  */
-public class ExcludeSection extends TaskSection implements Serializable {
+public class ExcludeSection extends TaskSection {
 
     @SerializedName("manualFilePath")
     private String mManualFilePath;

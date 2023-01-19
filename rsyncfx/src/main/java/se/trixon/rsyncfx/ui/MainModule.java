@@ -20,7 +20,6 @@ import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import javafx.animation.FadeTransition;
 import javafx.collections.ListChangeListener;
@@ -29,13 +28,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.ToolBar;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
@@ -111,8 +107,8 @@ public class MainModule extends BaseModule {
             System.out.println("ABOUT RSYNC");
         });
 
-        var editorToolbarItem = new ToolbarItem(JobEditorPane.getAction().getText(), MaterialIcon._Content.CREATE.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
-            JobEditorPane.getAction().handle(null);
+        var editorToolbarItem = new ToolbarItem(EditorPane.getAction().getText(), MaterialIcon._Content.CREATE.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
+            EditorPane.getAction().handle(null);
         });
 
         getToolbarControlsLeft().setAll(
@@ -130,7 +126,7 @@ public class MainModule extends BaseModule {
         mListView.setMinWidth(FxHelper.getUIScaled(250));
         SplitPane.setResizableWithParent(mListView, Boolean.FALSE);
 //        mSplitPane.getDividers().get(0).
-        mListView.setCellFactory(lListView -> new JobListCell());
+        mListView.setCellFactory(listView -> new JobListCell());
 
     }
 
@@ -152,7 +148,6 @@ public class MainModule extends BaseModule {
 
     class JobListCell extends ListCell<Job> {
 
-        private final BorderPane mBorderPane = new BorderPane();
         private final Label mDescLabel = new Label();
         private final Duration mDuration = Duration.millis(200);
         private Action mEditAction;
@@ -227,10 +222,10 @@ public class MainModule extends BaseModule {
                 mListView.requestFocus();
             });
 
-            VBox mainBox = new VBox(mNameLabel, mDescLabel, mLastLabel);
+            var mainBox = new VBox(mNameLabel, mDescLabel, mLastLabel);
             mainBox.setAlignment(Pos.CENTER_LEFT);
 
-            Collection<? extends Action> actions = Arrays.asList(
+            var actions = Arrays.asList(
                     mEditAction,
                     mRunAction
             );
@@ -238,7 +233,7 @@ public class MainModule extends BaseModule {
             mOptions.nightModeProperty().addListener((observable, oldValue, newValue) -> {
                 setNightMode(newValue);
             });
-            ToolBar toolBar = ActionUtils.createToolBar(actions, ActionUtils.ActionTextBehavior.HIDE);
+            var toolBar = ActionUtils.createToolBar(actions, ActionUtils.ActionTextBehavior.HIDE);
             toolBar.setBackground(Background.EMPTY);
             toolBar.setVisible(false);
             toolBar.setMaxWidth(4 * ICON_SIZE_PROFILE * 1.84);
@@ -246,33 +241,13 @@ public class MainModule extends BaseModule {
             FxHelper.undecorateButtons(toolBar.getItems().stream());
             FxHelper.adjustButtonWidth(toolBar.getItems().stream(), ICON_SIZE_PROFILE * 1.8);
 
-            toolBar.getItems().stream().filter((item) -> (item instanceof ButtonBase))
-                    .map((item) -> (ButtonBase) item).forEachOrdered((buttonBase) -> {
-                FxHelper.undecorateButton(buttonBase);
-            });
-
             BorderPane.setAlignment(toolBar, Pos.CENTER);
-
-            mBorderPane.setCenter(mainBox);
             BorderPane.setMargin(mainBox, new Insets(8));
-            mBorderPane.setRight(toolBar);
+            StackPane.setAlignment(toolBar, Pos.CENTER_RIGHT);
+
             mFadeInTransition.setNode(toolBar);
             mFadeOutTransition.setNode(toolBar);
-
-            mBorderPane.setOnMouseEntered((MouseEvent event) -> {
-                if (!toolBar.isVisible()) {
-                    toolBar.setVisible(true);
-                }
-
-                selectListItem();
-                mFadeInTransition.playFromStart();
-            });
-
-            mBorderPane.setOnMouseExited((MouseEvent event) -> {
-                mFadeOutTransition.playFromStart();
-            });
             mStackPane.getChildren().setAll(mainBox, toolBar);
-            StackPane.setAlignment(toolBar, Pos.CENTER_RIGHT);
 
             mStackPane.setOnMouseEntered(mouseEvent -> {
                 if (!toolBar.isVisible()) {
