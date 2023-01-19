@@ -16,29 +16,20 @@
 package se.trixon.rsyncfx.ui;
 
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.beans.binding.Bindings;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.control.action.ActionUtils;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
-import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.StorageManager;
@@ -103,6 +94,7 @@ public class EditorPane extends HBox {
             mLabelToolbarItem = new ToolbarItem("%s".formatted(title));
 
             createUI();
+            initListerners();
         }
 
         public ListView<T> getListView() {
@@ -175,7 +167,27 @@ public class EditorPane extends HBox {
                     remAllToolbarItem
             );
 
+            var nullSelectionBooleanBinding = mListView.getSelectionModel().selectedItemProperty().isNull();
+            editToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
+            cloneToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
+            remToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
+            remAllToolbarItem.disableProperty().bind(Bindings.isEmpty(mListView.getItems()));
+
             setCenter(mListView);
+        }
+
+        private T getSelected() {
+            return mListView.getSelectionModel().getSelectedItem();
+        }
+
+        private void initListerners() {
+            mListView.setOnMouseClicked(mouseEvent -> {
+                if (getSelected() != null
+                        && mouseEvent.getButton() == MouseButton.PRIMARY
+                        && mouseEvent.getClickCount() == 2) {
+                    onEdit();
+                }
+            });
         }
     }
 

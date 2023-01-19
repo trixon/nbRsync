@@ -26,10 +26,12 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.lang3.SystemUtils;
+import org.controlsfx.control.StatusBar;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.openide.LifecycleManager;
@@ -68,6 +70,7 @@ public class App extends Application {
     private final RsyncFx mRsyncFx = RsyncFx.getInstance();
     private Stage mStage;
     private Workbench mWorkbench;
+    private StatusBar mStatusBar = new StatusBar();
 
     /**
      * @param args the command line arguments
@@ -136,7 +139,10 @@ public class App extends Application {
         mWorkbench.getStylesheets().add(App.class.getResource("baseTheme.css").toExternalForm());
         mRsyncFx.setWorkbench(mWorkbench);
 
-        var scene = new Scene(mWorkbench);
+        var root = new BorderPane(mWorkbench);
+        root.setBottom(mStatusBar);
+
+        var scene = new Scene(root);
         FxHelper.applyFontScale(scene);
         mStage.setScene(scene);
     }
