@@ -48,12 +48,6 @@ import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.Options;
 import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
-import se.trixon.rsyncfx.ui.BaseModule;
-import se.trixon.rsyncfx.ui.CustomTab;
-import se.trixon.rsyncfx.ui.EditorModule;
-import se.trixon.rsyncfx.ui.HistoryModule;
-import se.trixon.rsyncfx.ui.MainModule;
-import se.trixon.rsyncfx.ui.OptionsPane;
 
 /**
  *
@@ -93,12 +87,13 @@ public class App extends Application {
         initListeners();
 
         mStage.show();
+
         FxHelper.runLaterDelayed(0, () -> {
             mWorkbench.openModule(mMainModule);
             mWorkbench.openModule(mEditorModule);
             mWorkbench.openModule(mHistoryModule);
             mWorkbench.openModule(mMainModule);
-            mWorkbench.openModule(mEditorModule);
+//            mWorkbench.openModule(mEditorModule);
 
             for (var module : mWorkbench.getModules()) {
                 if (module instanceof BaseModule baseModule) {
@@ -120,7 +115,7 @@ public class App extends Application {
         mStage.setMinWidth(minWidth);
         int minHeight = FxHelper.getUIScaled(200);
         mStage.setMinHeight(minHeight);
-        StageManager.install(mStage, mOptions.getPreferences().node("stage"), minWidth, minHeight);
+        StageManager.install(mStage, mOptions.getPreferences().node("stage"), minWidth * 4, minHeight * 3);
         initActions();
 
         mMainModule = new MainModule();

@@ -19,31 +19,22 @@ import com.dlsc.gemsfx.util.SessionManager;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import javafx.animation.FadeTransition;
-import javafx.collections.ListChangeListener;
-import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.web.WebView;
-import javafx.util.Duration;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.control.action.ActionUtils;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.Dict;
+import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
@@ -56,7 +47,7 @@ import se.trixon.rsyncfx.core.job.Job;
 public class MainModule extends BaseModule implements AlwaysOpenTab {
 
     private ListView<Job> mListView = new ListView<>();
-    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class));
+    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class).node("sessionManager"));
     private final SplitPane mSplitPane = new SplitPane();
     private final WebView mWebView = new WebView();
     private Workbench mWorkbench;
@@ -74,27 +65,32 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     public void init(Workbench workbench) {
         super.init(workbench);
         mWorkbench = workbench;
-//        mSplitPane.setSkin(new DumbSplitPaneSkin(mSplitPane));
 
         createUI();
         initBindings();
         initListeners();
+
+        displaySystemInformation();
     }
 
     @Override
     public void updateNightMode(boolean state) {
-        if (state) {
-            mWebView.getEngine().setUserStyleSheetLocation(getClass().getResource("darkWeb.css").toExternalForm());
-        } else {
-            mWebView.getEngine().setUserStyleSheetLocation(getClass().getResource("lightWeb.css").toExternalForm());
-        }
-
+        var name = state ? "darkWeb.css" : "lightWeb.css";
+        mWebView.getEngine().setUserStyleSheetLocation(getClass().getResource(name).toExternalForm());
     }
 
     private void createUI() {
+        var startToolbarItem = new ToolbarItem(Dict.START.toString(), MaterialIcon._Av.PLAY_ARROW.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
+            doStart();
+        });
+
         var aboutRsyncToolbarItem = new ToolbarItem(Dict.ABOUT_S.toString().formatted("rsync"), MaterialIcon._Notification.SYNC.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
             System.out.println("ABOUT RSYNC");
         });
+
+        getToolbarControlsLeft().setAll(
+                startToolbarItem
+        );
 
         getToolbarControlsRight().setAll(
                 aboutRsyncToolbarItem
@@ -106,20 +102,29 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         mListView.setMinWidth(FxHelper.getUIScaled(250));
         SplitPane.setResizableWithParent(mListView, Boolean.FALSE);
         mListView.setCellFactory(listView -> new JobListCell());
+
+        var nullSelectionBooleanBinding = mListView.getSelectionModel().selectedItemProperty().isNull();
+        startToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
+    }
+
+    private void displaySystemInformation() {
+        mWebView.getEngine().loadContent("<pre>%s</pre>".formatted(SystemHelper.getSystemInfo()));
+    }
+
+    private void doStart() {
+        System.out.println("START " + mListView.getSelectionModel().getSelectedItem());
     }
 
     private void initBindings() {
-        mSessionManager.register("a/b/c", mSplitPane.getDividers().get(0).positionProperty());
-
+        mSessionManager.register("mainModule.splitter1", mSplitPane.getDividers().get(0).positionProperty());
     }
 
     private void initListeners() {
-        mListView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends Job> c) -> {
-            Job job = mListView.getSelectionModel().getSelectedItem();
+        mListView.getSelectionModel().selectedItemProperty().addListener((p, o, job) -> {
             if (job != null) {
                 mWebView.getEngine().loadContent(job.getSummaryAsHtml());
             } else {
-                mWebView.getEngine().loadContent("");
+                displaySystemInformation();
             }
         });
     }
@@ -127,27 +132,13 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     class JobListCell extends ListCell<Job> {
 
         private final Label mDescLabel = new Label();
-        private final Duration mDuration = Duration.millis(200);
-        private Action mEditAction;
-        private final FadeTransition mFadeInTransition = new FadeTransition();
-        private final FadeTransition mFadeOutTransition = new FadeTransition();
         private final Label mLastLabel = new Label();
         private final Label mNameLabel = new Label();
-        private Action mRunAction;
+        private VBox mRoot;
         private final SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat();
-        private final StackPane mStackPane = new StackPane();
 
         public JobListCell() {
-            mFadeInTransition.setDuration(mDuration);
-            mFadeInTransition.setFromValue(0);
-            mFadeInTransition.setToValue(1);
-
-            mFadeOutTransition.setDuration(mDuration);
-            mFadeOutTransition.setFromValue(1);
-            mFadeOutTransition.setToValue(0);
-
             createUI();
-            setNightMode(mOptions.isNightMode());
         }
 
         @Override
@@ -172,7 +163,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
             }
             mLastLabel.setText(lastRun);
 
-            setGraphic(mStackPane);
+            setGraphic(mRoot);
         }
 
         private void clearContent() {
@@ -188,73 +179,14 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
             mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
             mLastLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
 
-            mRunAction = new Action(Dict.RUN.toString(), (ActionEvent event) -> {
-                mFadeOutTransition.playFromStart();
-//                mJobController.run(getSelectedJob());
-                mListView.requestFocus();
-            });
-
-            mEditAction = new Action(Dict.EDIT.toString(), (ActionEvent event) -> {
-                mFadeOutTransition.playFromStart();
-//                displayEditor(getSelectedJob().getId());
-                mListView.requestFocus();
-            });
-
-            var mainBox = new VBox(mNameLabel, mDescLabel, mLastLabel);
-            mainBox.setAlignment(Pos.CENTER_LEFT);
-
-            var actions = Arrays.asList(
-                    mEditAction,
-                    mRunAction
-            );
-
-            mOptions.nightModeProperty().addListener((observable, oldValue, newValue) -> {
-                setNightMode(newValue);
-            });
-            var toolBar = ActionUtils.createToolBar(actions, ActionUtils.ActionTextBehavior.HIDE);
-            toolBar.setBackground(Background.EMPTY);
-            toolBar.setVisible(false);
-            toolBar.setMaxWidth(4 * ICON_SIZE_PROFILE * 1.84);
-            FxHelper.slimToolBar(toolBar);
-            FxHelper.undecorateButtons(toolBar.getItems().stream());
-            FxHelper.adjustButtonWidth(toolBar.getItems().stream(), ICON_SIZE_PROFILE * 1.8);
-
-            BorderPane.setAlignment(toolBar, Pos.CENTER);
-            BorderPane.setMargin(mainBox, new Insets(8));
-            StackPane.setAlignment(toolBar, Pos.CENTER_RIGHT);
-
-            mFadeInTransition.setNode(toolBar);
-            mFadeOutTransition.setNode(toolBar);
-            mStackPane.getChildren().setAll(mainBox, toolBar);
-
-            mStackPane.setOnMouseEntered(mouseEvent -> {
-                if (!toolBar.isVisible()) {
-                    toolBar.setVisible(true);
+            mRoot = new VBox(mNameLabel, mDescLabel, mLastLabel);
+            mRoot.setAlignment(Pos.CENTER_LEFT);
+            mRoot.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY
+                        && mouseEvent.getClickCount() == 2) {
+                    doStart();
                 }
-
-                selectListItem();
-//                mRunStateManager.setProfile(getSelectedProfile());
-                mFadeInTransition.playFromStart();
             });
-
-            mStackPane.setOnMouseExited(mouseEvent -> {
-                mFadeOutTransition.playFromStart();
-            });
-
-        }
-
-        private Job getSelectedJob() {
-            return mListView.getSelectionModel().getSelectedItem();
-        }
-
-        private void selectListItem() {
-            mListView.getSelectionModel().select(this.getIndex());
-            mListView.requestFocus();
-        }
-
-        private void setNightMode(boolean state) {
-            mRunAction.setGraphic(MaterialIcon._Av.PLAY_ARROW.getImageView(ICON_SIZE_PROFILE));
-            mEditAction.setGraphic(MaterialIcon._Image.EDIT.getImageView(ICON_SIZE_PROFILE));
         }
     }
 }

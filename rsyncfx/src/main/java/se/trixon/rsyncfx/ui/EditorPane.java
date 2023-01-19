@@ -19,18 +19,24 @@ import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.core.BaseItem;
 import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.StorageManager;
 import se.trixon.rsyncfx.core.TaskManager;
@@ -94,7 +100,6 @@ public class EditorPane extends HBox {
             mLabelToolbarItem = new ToolbarItem("%s".formatted(title));
 
             createUI();
-            initListerners();
         }
 
         public ListView<T> getListView() {
@@ -179,16 +184,6 @@ public class EditorPane extends HBox {
         private T getSelected() {
             return mListView.getSelectionModel().getSelectedItem();
         }
-
-        private void initListerners() {
-            mListView.setOnMouseClicked(mouseEvent -> {
-                if (getSelected() != null
-                        && mouseEvent.getButton() == MouseButton.PRIMARY
-                        && mouseEvent.getClickCount() == 2) {
-                    onEdit();
-                }
-            });
-        }
     }
 
     public class JobPane extends BaseItemPane<Job> {
@@ -250,5 +245,56 @@ public class EditorPane extends HBox {
         void onRemoveAll() {
         }
 
+    }
+
+    public abstract class ItemListCellRenderer<T extends BaseItem> extends ListCell<T> {
+
+        private final Font mDefaultFont = Font.getDefault();
+        private final Label mDescLabel = new Label();
+        private final Label mNameLabel = new Label();
+        private final VBox mRoot = new VBox();
+
+        public ItemListCellRenderer() {
+            createUI();
+        }
+
+        @Override
+        protected void updateItem(T item, boolean empty) {
+            super.updateItem(item, empty);
+
+            if (item == null || empty) {
+                clearContent();
+            } else {
+                addContent(item);
+            }
+        }
+
+        private void addContent(T item) {
+            setText(null);
+
+            mNameLabel.setText(item.getName());
+            mDescLabel.setText(item.getDescription());
+            mRoot.getChildren().setAll(mNameLabel, mDescLabel);
+            mRoot.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
+                    var itemPane = (BaseItemPane<T>) getListView().getParent();
+                    itemPane.onEdit();
+                }
+            });
+            setGraphic(mRoot);
+        }
+
+        private void clearContent() {
+            setText(null);
+            setGraphic(null);
+        }
+
+        private void createUI() {
+            String fontFamily = mDefaultFont.getFamily();
+            double fontSize = mDefaultFont.getSize();
+
+            mNameLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.4));
+            mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
+        }
     }
 }
