@@ -20,10 +20,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import se.trixon.almond.util.SystemHelper;
-import se.trixon.rsyncfx.ui.App;
 import se.trixon.rsyncfx.core.StorageManager;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.core.task.Task;
+import se.trixon.rsyncfx.ui.App;
 
 /**
  *
@@ -52,17 +52,16 @@ public class Installer extends ModuleInstall {
             var jobManager = manager.getJobManager();
             var taskManager = manager.getTaskManager();
 
-            var task1 = new Task();
-            task1.setName("Task 1");
-            task1.setName("Task %d %s".formatted(taskManager.getItems().size(), RandomStringUtils.random(5, true, false)));
-            task1.setDescription(RandomStringUtils.random(15, true, true));
-            taskManager.getItems().add(task1);
+            var task = new Task();
+            task.setName("Task %d %s".formatted(taskManager.getItems().size(), RandomStringUtils.random(5, true, false)));
+            task.setDescription(RandomStringUtils.random(15, true, true));
+            taskManager.getItems().add(task);
 
-            var job1 = new Job();
-            job1.setName("Job %d %s".formatted(jobManager.getItems().size(), RandomStringUtils.random(5, true, false)));
-            job1.setDescription(RandomStringUtils.random(15, true, true));
-            job1.getTaskIds().add(task1.getId());
-            jobManager.getItems().add(job1);
+            var job = new Job();
+            job.setName("Job %d %s".formatted(jobManager.getItems().size(), RandomStringUtils.random(5, true, false)));
+            job.setDescription(RandomStringUtils.random(15, true, true));
+            job.getTaskIds().add(task.getId());
+            jobManager.getItems().add(job);
 
             manager.save();
         } catch (IOException ex) {

@@ -111,9 +111,9 @@ public class App extends Application {
     private void createUI() {
         mStage.getIcons().add(new Image(App.class.getResourceAsStream("logo.png")));
         mStage.setTitle(APP_TITLE);
-        int minWidth = FxHelper.getUIScaled(200);
+        int minWidth = FxHelper.getUIScaled(300);
         mStage.setMinWidth(minWidth);
-        int minHeight = FxHelper.getUIScaled(200);
+        int minHeight = FxHelper.getUIScaled(250);
         mStage.setMinHeight(minHeight);
         StageManager.install(mStage, mOptions.getPreferences().node("stage"), minWidth * 4, minHeight * 3);
         initActions();

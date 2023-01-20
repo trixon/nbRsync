@@ -116,6 +116,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     }
 
     private void initBindings() {
+        mSplitPane.setDividerPositions(0);
         mSessionManager.register("mainModule.splitter1", mSplitPane.getDividers().get(0).positionProperty());
     }
 
