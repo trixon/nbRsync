@@ -37,8 +37,8 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.core.BaseItem;
+import se.trixon.rsyncfx.core.BaseManager;
 import se.trixon.rsyncfx.core.JobManager;
-import se.trixon.rsyncfx.core.StorageManager;
 import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.core.task.Task;
@@ -50,34 +50,13 @@ import se.trixon.rsyncfx.core.task.Task;
 public class EditorPane extends HBox {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
-    private JobPane mJobPane;
-    private final StorageManager mStorageManager = StorageManager.getInstance();
     private final JobManager mJobManager = JobManager.getInstance();
+    private JobPane mJobPane;
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private TaskPane mTaskPane;
 
     public EditorPane() {
         createUI();
-    }
-
-    private void createUI() {
-        setSpacing(FxHelper.getUIScaled(12));
-
-        mJobPane = new JobPane(Dict.JOBS.toString());
-        mTaskPane = new TaskPane(Dict.TASKS.toString());
-        getChildren().setAll(mJobPane, mTaskPane);
-        HBox.setHgrow(mJobPane, Priority.ALWAYS);
-        HBox.setHgrow(mTaskPane, Priority.ALWAYS);
-
-        var jobListView = mJobPane.getListView();
-        jobListView.getItems().setAll(mJobManager.getItems());
-        jobListView.setCellFactory(listView -> new ItemListCellRenderer<>() {
-        });
-
-        var taskListView = mTaskPane.getListView();
-        taskListView.getItems().setAll(mTaskManager.getItems());
-        taskListView.setCellFactory(listView -> new ItemListCellRenderer<>() {
-        });
     }
 
     public JobPane getJobPane() {
@@ -88,15 +67,33 @@ public class EditorPane extends HBox {
         return mTaskPane;
     }
 
+    private void createUI() {
+        setSpacing(FxHelper.getUIScaled(12));
+
+        mJobPane = new JobPane(Dict.JOBS.toString(), mJobManager);
+        mTaskPane = new TaskPane(Dict.TASKS.toString(), mTaskManager);
+        getChildren().setAll(mJobPane, mTaskPane);
+        HBox.setHgrow(mJobPane, Priority.ALWAYS);
+        HBox.setHgrow(mTaskPane, Priority.ALWAYS);
+
+        mJobPane.getListView().setCellFactory(listView -> new ItemListCellRenderer<>() {
+        });
+
+        mTaskPane.getListView().setCellFactory(listView -> new ItemListCellRenderer<>() {
+        });
+    }
+
     public abstract class BaseItemPane<T> extends BorderPane {
 
         private final ToolbarItem mLabelToolbarItem;
         private final ListView<T> mListView = new ListView<>();
+        private final BaseManager mManager;
         private final String mTitle;
         private List<ToolbarItem> mToolBarItems;
 
-        public BaseItemPane(String title) {
+        public BaseItemPane(String title, BaseManager manager) {
             mTitle = title;
+            mManager = manager;
             mLabelToolbarItem = new ToolbarItem("%s".formatted(title));
 
             createUI();
@@ -178,73 +175,14 @@ public class EditorPane extends HBox {
             remToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
             remAllToolbarItem.disableProperty().bind(Bindings.isEmpty(mListView.getItems()));
 
+            mListView.itemsProperty().bind(mManager.itemsProperty());
+
             setCenter(mListView);
         }
 
         private T getSelected() {
             return mListView.getSelectionModel().getSelectedItem();
         }
-    }
-
-    public class JobPane extends BaseItemPane<Job> {
-
-        public JobPane(String title) {
-            super(title);
-        }
-
-        @Override
-        void onAdd() {
-            System.out.println("ADD");
-        }
-
-        @Override
-        void onClone() {
-            System.out.println("CLONE");
-        }
-
-        @Override
-        void onEdit() {
-            System.out.println("EDIT");
-        }
-
-        @Override
-        void onRemove() {
-            System.out.println("REMOVE");
-        }
-
-        @Override
-        void onRemoveAll() {
-            System.out.println("REMOVE ALL");
-        }
-
-    }
-
-    public class TaskPane extends BaseItemPane<Task> {
-
-        public TaskPane(String title) {
-            super(title);
-        }
-
-        @Override
-        void onAdd() {
-        }
-
-        @Override
-        void onClone() {
-        }
-
-        @Override
-        void onEdit() {
-        }
-
-        @Override
-        void onRemove() {
-        }
-
-        @Override
-        void onRemoveAll() {
-        }
-
     }
 
     public abstract class ItemListCellRenderer<T extends BaseItem> extends ListCell<T> {
@@ -297,4 +235,66 @@ public class EditorPane extends HBox {
             mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
         }
     }
+
+    public class JobPane extends BaseItemPane<Job> {
+
+        public JobPane(String title, BaseManager manager) {
+            super(title, manager);
+        }
+
+        @Override
+        void onAdd() {
+            System.out.println("ADD");
+        }
+
+        @Override
+        void onClone() {
+            System.out.println("CLONE");
+        }
+
+        @Override
+        void onEdit() {
+            System.out.println("EDIT");
+        }
+
+        @Override
+        void onRemove() {
+            System.out.println("REMOVE");
+        }
+
+        @Override
+        void onRemoveAll() {
+            System.out.println("REMOVE ALL");
+        }
+
+    }
+
+    public class TaskPane extends BaseItemPane<Task> {
+
+        public TaskPane(String title, BaseManager manager) {
+            super(title, manager);
+        }
+
+        @Override
+        void onAdd() {
+        }
+
+        @Override
+        void onClone() {
+        }
+
+        @Override
+        void onEdit() {
+        }
+
+        @Override
+        void onRemove() {
+        }
+
+        @Override
+        void onRemoveAll() {
+        }
+
+    }
+
 }

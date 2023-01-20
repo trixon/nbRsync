@@ -22,10 +22,11 @@ import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import se.trixon.rsyncfx.core.job.Job;
 
 /**
  *
@@ -34,43 +35,42 @@ import se.trixon.rsyncfx.core.job.Job;
 public class BaseManager<T extends BaseItem> {
 
     private List<String> mHistoryLines = new ArrayList<>();
+    private final ObjectProperty<ObservableMap<String, T>> mIdToItemProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<ObservableList<T>> mItemsProperty = new SimpleObjectProperty<>();
 
     public BaseManager() {
         mItemsProperty.setValue(FXCollections.observableArrayList());
+        mIdToItemProperty.setValue(FXCollections.observableHashMap());
+
+        mIdToItemProperty.get().addListener((MapChangeListener.Change<? extends String, ? extends T> change) -> {
+            var values = new ArrayList<T>(getIdToItem().values());
+            values.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+            getItems().setAll(values);
+        });
     }
 
-    public T[] getArray() {
-        return (T[]) getItems().toArray();
+    public boolean exists(T item) {
+        return getIdToItem().containsValue(item);
+    }
+
+    public T getById(String id) {
+        return getIdToItem().get(id);
+    }
+
+    public final ObservableMap<String, T> getIdToItem() {
+        return mIdToItemProperty.get();
     }
 
     public final ObservableList<T> getItems() {
         return mItemsProperty.get();
     }
 
-    public T getById(String id) {
-        for (var item : getItems()) {
-            if (StringUtils.equals(id, item.getId())) {
-                return item;
-            }
-        }
-
-        return null;
-    }
-
     public boolean hasItems() {
-        return !getItems().isEmpty();
+        return !getIdToItem().isEmpty();
     }
 
-    public boolean exists(T item) {
-
-        for (var existingTask : getItems()) {
-            if (item.getId() == existingTask.getId()) {
-                return true;
-            }
-        }
-
-        return false;
+    public ObjectProperty<ObservableMap<String, T>> idToItemProperty() {
+        return mIdToItemProperty;
     }
 
     public ObjectProperty<ObservableList<T>> itemsProperty() {
@@ -80,7 +80,7 @@ public class BaseManager<T extends BaseItem> {
     void loadHistory() {
         try {
             mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
-            for (var item : getItems()) {
+            for (var item : getIdToItem().values()) {
                 loadHistory(item);
             }
         } catch (IOException ex) {
@@ -88,15 +88,14 @@ public class BaseManager<T extends BaseItem> {
         }
     }
 
-    void setItems(ObservableList<T> items) {
-        mItemsProperty.get().setAll(items);
-        if (!items.isEmpty() && items.get(0) instanceof Job job) {
-            getItems().forEach(item -> {
-//                job.setTasks(TaskManager.getInstance().getItems(job.getTaskIds()));
-            });
-        }
-    }
-
+//    void setItems(ObservableList<T> items) {
+//        mItemsProperty.get().setAll(items);
+//        if (!items.isEmpty() && items.get(0) instanceof Job job) {
+//            getIdToItem().forEach(item -> {
+////                job.setTasks(TaskManager.getInstance().getIdToItem(job.getTaskIds()));
+//            });
+//        }
+//    }
     private void loadHistory(T item) {
         var builder = new StringBuilder();
 
@@ -109,5 +108,4 @@ public class BaseManager<T extends BaseItem> {
 
         item.setHistory(builder.toString());
     }
-
 }

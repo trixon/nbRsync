@@ -22,8 +22,8 @@ import com.google.gson.annotations.SerializedName;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import javafx.collections.ObservableList;
+import java.util.HashMap;
+import javafx.collections.ObservableMap;
 import org.apache.commons.io.FileUtils;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.core.task.Task;
@@ -43,9 +43,9 @@ public class Storage {
     @SerializedName("fileFormatVersion")
     private int mFileFormatVersion;
     @SerializedName("jobs")
-    private final ArrayList<Job> mJobs = new ArrayList<>();
+    private final HashMap<String, Job> mJobs = new HashMap<>();
     @SerializedName("tasks")
-    private final ArrayList<Task> mTasks = new ArrayList<>();
+    private final HashMap<String, Task> mTasks = new HashMap<>();
 
     public static Storage open(File file) throws IOException, JsonSyntaxException {
         String json = FileUtils.readFileToString(file, Charset.defaultCharset());
@@ -63,11 +63,11 @@ public class Storage {
         return mFileFormatVersion;
     }
 
-    public ArrayList<Job> getJobs() {
+    public HashMap<String, Job> getJobs() {
         return mJobs;
     }
 
-    public ArrayList<Task> getTasks() {
+    public HashMap<String, Task> getTasks() {
         return mTasks;
     }
 
@@ -79,13 +79,13 @@ public class Storage {
         return json;
     }
 
-    void setJobs(ObservableList<Job> jobs) {
+    void setJobs(ObservableMap<String, Job> jobs) {
         mJobs.clear();
-        mJobs.addAll(jobs);
+        mJobs.putAll(jobs);
     }
 
-    void setTasks(ObservableList<Task> tasks) {
+    void setTasks(ObservableMap<String, Task> tasks) {
         mTasks.clear();
-        mTasks.addAll(tasks);
+        mTasks.putAll(tasks);
     }
 }

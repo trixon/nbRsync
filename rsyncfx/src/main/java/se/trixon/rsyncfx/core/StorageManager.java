@@ -31,10 +31,10 @@ public class StorageManager {
 
     private final File mHistoryFile;
     private final JobManager mJobManager = JobManager.getInstance();
-    private Storage mStorage = new Storage();
     private final File mLogFile;
     private final File mProfilesBackupFile;
     private final File mProfilesFile;
+    private Storage mStorage = new Storage();
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private final File mUserDirectory;
 
@@ -82,8 +82,14 @@ public class StorageManager {
     public void load() throws IOException {
         if (mProfilesFile.exists()) {
             mStorage = mStorage.open(mProfilesFile);
-            mTaskManager.getItems().setAll(mStorage.getTasks());
-            mJobManager.getItems().setAll(mStorage.getJobs());
+
+            var taskItems = mTaskManager.getIdToItem();
+            taskItems.clear();
+            taskItems.putAll(mStorage.getTasks());
+
+            var jobItems = mJobManager.getIdToItem();
+            jobItems.clear();
+            jobItems.putAll(mStorage.getJobs());
             mJobManager.loadHistory();
         } else {
             mStorage = new Storage();
@@ -91,8 +97,8 @@ public class StorageManager {
     }
 
     public void save() throws IOException {
-        mStorage.setJobs(mJobManager.getItems());
-        mStorage.setTasks(mTaskManager.getItems());
+        mStorage.setJobs(mJobManager.getIdToItem());
+        mStorage.setTasks(mTaskManager.getIdToItem());
         String json = mStorage.save(mProfilesFile);
         String tag = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         FileUtils.writeStringToFile(mProfilesBackupFile, String.format("%s=%s\n", tag, json), Charset.defaultCharset(), true);

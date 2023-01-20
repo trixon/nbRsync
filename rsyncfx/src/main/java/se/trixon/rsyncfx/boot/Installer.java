@@ -53,15 +53,15 @@ public class Installer extends ModuleInstall {
             var taskManager = manager.getTaskManager();
 
             var task = new Task();
-            task.setName("Task %d %s".formatted(taskManager.getItems().size(), RandomStringUtils.random(5, true, false)));
+            task.setName("Task %d %s".formatted(taskManager.getIdToItem().size(), RandomStringUtils.random(5, true, false)));
             task.setDescription(RandomStringUtils.random(15, true, true));
-            taskManager.getItems().add(task);
+            taskManager.getIdToItem().put(task.getId(), task);
 
             var job = new Job();
-            job.setName("Job %d %s".formatted(jobManager.getItems().size(), RandomStringUtils.random(5, true, false)));
+            job.setName("Job %d %s".formatted(jobManager.getIdToItem().size(), RandomStringUtils.random(5, true, false)));
             job.setDescription(RandomStringUtils.random(15, true, true));
             job.getTaskIds().add(task.getId());
-            jobManager.getItems().add(job);
+            jobManager.getIdToItem().put(job.getId(), job);
 
             manager.save();
         } catch (IOException ex) {

@@ -97,7 +97,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         );
 
         mSplitPane.getItems().setAll(mListView, mWebView);
-        mListView.getItems().setAll(mStorageManager.getJobManager().getItems());
+        mListView.itemsProperty().bind(mJobManager.itemsProperty());
 
         mListView.setMinWidth(FxHelper.getUIScaled(250));
         SplitPane.setResizableWithParent(mListView, Boolean.FALSE);
