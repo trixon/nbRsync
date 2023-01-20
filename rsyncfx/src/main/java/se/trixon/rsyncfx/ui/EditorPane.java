@@ -16,7 +16,6 @@
 package se.trixon.rsyncfx.ui;
 
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -40,7 +39,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
@@ -64,27 +62,29 @@ public class EditorPane extends HBox {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
     private final JobManager mJobManager = JobManager.getInstance();
-    private JobPane mJobPane;
+    private BaseItemPane mJobPane;
     private final TaskManager mTaskManager = TaskManager.getInstance();
-    private TaskPane mTaskPane;
+    private BaseItemPane mTaskPane;
 
     public EditorPane() {
         createUI();
     }
 
-    public JobPane getJobPane() {
+    public BaseItemPane getJobPane() {
         return mJobPane;
     }
 
-    public TaskPane getTaskPane() {
+    public BaseItemPane getTaskPane() {
         return mTaskPane;
     }
 
     private void createUI() {
         setSpacing(FxHelper.getUIScaled(12));
 
-        mJobPane = new JobPane(mJobManager);
-        mTaskPane = new TaskPane(mTaskManager);
+        mJobPane = new BaseItemPane<Job>(mJobManager) {
+        };
+        mTaskPane = new BaseItemPane<Task>(mTaskManager) {
+        };
         getChildren().setAll(mJobPane, mTaskPane);
         HBox.setHgrow(mJobPane, Priority.ALWAYS);
         HBox.setHgrow(mTaskPane, Priority.ALWAYS);
@@ -122,10 +122,6 @@ public class EditorPane extends HBox {
             return mToolBarItems;
         }
 
-        abstract void onAdd();
-
-        abstract void onEdit();
-
         private boolean confirm(MouseEvent mouseEvent, String title, String header, String content, String buttonText) {
             if (mouseEvent != null && mouseEvent.getButton() != MouseButton.PRIMARY) {
                 return false;
@@ -145,8 +141,8 @@ public class EditorPane extends HBox {
             return result.get() == confirmButtonType;
         }
 
-        private Tooltip createTooltip(String string) {
-            return new Tooltip("%s %s".formatted(string, mTitleS));
+        private Tooltip createTooltip(String string, boolean singular) {
+            return new Tooltip("%s %s".formatted(string, (singular ? mTitleS : mTitleP).toLowerCase(Locale.ENGLISH)));
         }
 
         private void createUI() {
@@ -155,10 +151,10 @@ public class EditorPane extends HBox {
 
             var addToolbarItem = new ToolbarItem(MaterialIcon._Content.ADD.getImageView(size, color), mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY) {
-                    onAdd();
+                    edit(null);
                 }
             });
-            addToolbarItem.setTooltip(createTooltip(Dict.ADD.toString()));
+            addToolbarItem.setTooltip(createTooltip(Dict.ADD.toString(), true));
 
             var remToolbarItem = new ToolbarItem(MaterialIcon._Content.REMOVE.getImageView(size, color), mouseEvent -> {
                 var baseTitle = Dict.Dialog.TITLE_REMOVE_S.toString().formatted(mTitleS.toLowerCase(Locale.ENGLISH));
@@ -173,7 +169,7 @@ public class EditorPane extends HBox {
                     onRemove();
                 }
             });
-            remToolbarItem.setTooltip(createTooltip(Dict.REMOVE.toString()));
+            remToolbarItem.setTooltip(createTooltip(Dict.REMOVE.toString(), true));
 
             var remAllToolbarItem = new ToolbarItem(MaterialIcon._Content.CLEAR.getImageView(size, color), mouseEvent -> {
                 var baseTitle = Dict.Dialog.TITLE_REMOVE_ALL_S.toString().formatted(mTitleP.toLowerCase(Locale.ENGLISH));
@@ -188,21 +184,21 @@ public class EditorPane extends HBox {
                     onRemoveAll();
                 }
             });
-            remAllToolbarItem.setTooltip(createTooltip(Dict.REMOVE_ALL.toString()));
+            remAllToolbarItem.setTooltip(createTooltip(Dict.REMOVE_ALL.toString(), false));
 
             var editToolbarItem = new ToolbarItem(MaterialIcon._Editor.MODE_EDIT.getImageView(size, color), mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY) {
-                    onEdit();
+                    edit(getSelected());
                 }
             });
-            editToolbarItem.setTooltip(createTooltip(Dict.EDIT.toString()));
+            editToolbarItem.setTooltip(createTooltip(Dict.EDIT.toString(), true));
 
             var cloneToolbarItem = new ToolbarItem(MaterialIcon._Content.CONTENT_COPY.getImageView(size, color), mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                     onClone();
                 }
             });
-            cloneToolbarItem.setTooltip(createTooltip(Dict.CLONE.toString()));
+            cloneToolbarItem.setTooltip(createTooltip(Dict.CLONE.toString(), true));
 
             mToolBarItems = List.of(
                     mLabelToolbarItem,
@@ -224,6 +220,34 @@ public class EditorPane extends HBox {
             setCenter(mListView);
         }
 
+        private void edit(T item) {
+            var stage = RsyncFx.getInstance().getStage();
+            var alert = new Alert(Alert.AlertType.NONE);
+            alert.initOwner(stage);
+            alert.setTitle(item == null ? Dict.ADD.toString() : Dict.EDIT.toString());
+
+            var saveButtonType = new ButtonType(Dict.SAVE.toString(), ButtonData.OK_DONE);
+            alert.getButtonTypes().setAll(saveButtonType, ButtonType.CANCEL);
+            alert.setGraphic(null);
+            alert.setHeaderText(null);
+            alert.setResizable(true);
+
+            var dialogPane = alert.getDialogPane();
+            var editor = mManager.getEditor();
+            editor.load(item);
+            dialogPane.setContent(editor);
+            dialogPane.setPrefSize(FxHelper.getUIScaled(520), FxHelper.getUIScaled(400));
+            dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
+
+            var result = alert.showAndWait();
+
+            if (result.get() == saveButtonType) {
+                var editedItem = editor.save();
+                mListView.getSelectionModel().select((T) mManager.getById(editedItem.getId()));
+                mListView.requestFocus();
+            }
+        }
+
         private T getSelected() {
             return mListView.getSelectionModel().getSelectedItem();
         }
@@ -232,33 +256,27 @@ public class EditorPane extends HBox {
             T original = getSelected();
             var json = Storage.GSON.toJson(original);
             var clone = Storage.GSON.fromJson(json, original.getClass());
-            clone.setId(UUID.randomUUID().toString());
+            var uuid = UUID.randomUUID().toString();
+            clone.setId(uuid);
             clone.setName("%s %s".formatted(clone.getName(), LocalDate.now().toString()));
             mManager.getIdToItem().put(clone.getId(), clone);
 
-            save();
+            StorageManager.save();
 
-            mListView.getSelectionModel().select((T) clone);
+            mListView.getSelectionModel().select((T) mManager.getById(uuid));
             mListView.requestFocus();
+            edit(getSelected());
         }
 
         private void onRemove() {
             mManager.getIdToItem().remove(getSelected().getId());
-            save();
+            StorageManager.save();
         }
 
         private void onRemoveAll() {
             mManager.getIdToItem().clear();
 
-            save();
-        }
-
-        private void save() {
-            try {
-                StorageManager.getInstance().save();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            StorageManager.save();
         }
     }
 
@@ -293,7 +311,7 @@ public class EditorPane extends HBox {
             mRoot.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
                     var itemPane = (BaseItemPane<T>) getListView().getParent();
-                    itemPane.onEdit();
+                    itemPane.edit(getItem());
                 }
             });
             setGraphic(mRoot);
@@ -310,38 +328,6 @@ public class EditorPane extends HBox {
 
             mNameLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.4));
             mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
-        }
-    }
-
-    public class JobPane extends BaseItemPane<Job> {
-
-        public JobPane(BaseManager manager) {
-            super(manager);
-        }
-
-        @Override
-        void onAdd() {
-            System.out.println("ADD");
-        }
-
-        @Override
-        void onEdit() {
-            System.out.println("EDIT");
-        }
-    }
-
-    public class TaskPane extends BaseItemPane<Task> {
-
-        public TaskPane(BaseManager manager) {
-            super(manager);
-        }
-
-        @Override
-        void onAdd() {
-        }
-
-        @Override
-        void onEdit() {
         }
     }
 }

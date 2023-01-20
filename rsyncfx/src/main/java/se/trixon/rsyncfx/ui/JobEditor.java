@@ -13,43 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx.core;
+package se.trixon.rsyncfx.ui;
 
-import se.trixon.almond.util.Dict;
+import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.job.Job;
-import se.trixon.rsyncfx.ui.BaseEditor;
-import se.trixon.rsyncfx.ui.JobEditor;
 
 /**
  *
- * @author Patrik Karlström
+ * @author Patrik Karlström <patrik@trixon.se>
  */
-public class JobManager extends BaseManager<Job> {
+public class JobEditor extends BaseEditor<Job> {
 
-    public static JobManager getInstance() {
-        return Holder.INSTANCE;
-    }
+    private Job mItem;
+    private final JobManager mManager = JobManager.getInstance();
 
-    private JobManager() {
-    }
-
-    @Override
-    public BaseEditor getEditor() {
-        return new JobEditor();
+    public JobEditor() {
     }
 
     @Override
-    public String getLabelPlural() {
-        return Dict.JOBS.toString();
+    public void load(Job item) {
+        if (item == null) {
+            item = new Job();
+        }
+        super.load(item);
+        mItem = item;
     }
 
     @Override
-    public String getLabelSingular() {
-        return Dict.JOB.toString();
+    public Job save() {
+        var map = mManager.getIdToItem();
+        map.putIfAbsent(mItem.getId(), mItem);
+
+        return super.save();
     }
 
-    private static class Holder {
-
-        private static final JobManager INSTANCE = new JobManager();
-    }
 }

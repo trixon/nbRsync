@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.task.Task;
+import se.trixon.rsyncfx.ui.BaseEditor;
+import se.trixon.rsyncfx.ui.TaskEditor;
 
 /**
  *
@@ -34,6 +36,11 @@ public class TaskManager extends BaseManager<Task> {
     }
 
     @Override
+    public BaseEditor getEditor() {
+        return new TaskEditor();
+    }
+
+    @Override
     public String getLabelPlural() {
         return Dict.TASKS.toString();
     }
@@ -43,18 +50,6 @@ public class TaskManager extends BaseManager<Task> {
         return Dict.TASK.toString();
     }
 
-//    public Task getTaskById(long id) {
-//        Task foundTask = null;
-//
-//        for (var task : mItems) {
-//            if (task.getId() == id) {
-//                foundTask = task;
-//                break;
-//            }
-//        }
-//
-//        return foundTask;
-//    }
     public List<Task> getTasks(ArrayList<String> taskIds) {
         var tasks = new ArrayList<Task>();
 

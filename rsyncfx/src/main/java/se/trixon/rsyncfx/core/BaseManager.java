@@ -27,6 +27,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import se.trixon.rsyncfx.ui.BaseEditor;
 
 /**
  *
@@ -56,6 +57,8 @@ public abstract class BaseManager<T extends BaseItem> {
     public T getById(String id) {
         return getIdToItem().get(id);
     }
+
+    public abstract BaseEditor getEditor();
 
     public final ObservableMap<String, T> getIdToItem() {
         return mIdToItemProperty.get();

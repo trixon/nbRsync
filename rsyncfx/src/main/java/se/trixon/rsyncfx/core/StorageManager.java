@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.commons.io.FileUtils;
 import org.openide.modules.Places;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -40,6 +41,14 @@ public class StorageManager {
 
     public static StorageManager getInstance() {
         return Holder.INSTANCE;
+    }
+
+    public static void save() {
+        try {
+            StorageManager.getInstance().saveToFile();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private StorageManager() {
@@ -96,12 +105,14 @@ public class StorageManager {
         }
     }
 
-    public void save() throws IOException {
+    private void saveToFile() throws IOException {
         mStorage.setJobs(mJobManager.getIdToItem());
         mStorage.setTasks(mTaskManager.getIdToItem());
         String json = mStorage.save(mProfilesFile);
         String tag = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         FileUtils.writeStringToFile(mProfilesBackupFile, String.format("%s=%s\n", tag, json), Charset.defaultCharset(), true);
+
+        load(); //This will refresh and sort ListViews
     }
 
     private static class Holder {
