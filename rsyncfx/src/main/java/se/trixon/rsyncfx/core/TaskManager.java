@@ -17,6 +17,7 @@ package se.trixon.rsyncfx.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.task.Task;
 
 /**
@@ -30,6 +31,16 @@ public class TaskManager extends BaseManager<Task> {
     }
 
     private TaskManager() {
+    }
+
+    @Override
+    public String getLabelPlural() {
+        return Dict.TASKS.toString();
+    }
+
+    @Override
+    public String getLabelSingular() {
+        return Dict.TASK.toString();
     }
 
 //    public Task getTaskById(long id) {

@@ -32,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class BaseManager<T extends BaseItem> {
+public abstract class BaseManager<T extends BaseItem> {
 
     private List<String> mHistoryLines = new ArrayList<>();
     private final ObjectProperty<ObservableMap<String, T>> mIdToItemProperty = new SimpleObjectProperty<>();
@@ -64,6 +64,10 @@ public class BaseManager<T extends BaseItem> {
     public final ObservableList<T> getItems() {
         return mItemsProperty.get();
     }
+
+    public abstract String getLabelPlural();
+
+    public abstract String getLabelSingular();
 
     public boolean hasItems() {
         return !getIdToItem().isEmpty();

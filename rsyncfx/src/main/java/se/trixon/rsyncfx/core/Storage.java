@@ -34,12 +34,12 @@ import se.trixon.rsyncfx.core.task.Task;
  */
 public class Storage {
 
-    private static final int FILE_FORMAT_VERSION = 1;
-    private static final Gson GSON = new GsonBuilder()
+    public static final Gson GSON = new GsonBuilder()
             .setVersion(1.0)
             .serializeNulls()
             .setPrettyPrinting()
             .create();
+    private static final int FILE_FORMAT_VERSION = 1;
     @SerializedName("fileFormatVersion")
     private int mFileFormatVersion;
     @SerializedName("jobs")

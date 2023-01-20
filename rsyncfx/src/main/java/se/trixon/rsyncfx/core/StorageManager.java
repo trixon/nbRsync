@@ -102,7 +102,6 @@ public class StorageManager {
         String json = mStorage.save(mProfilesFile);
         String tag = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         FileUtils.writeStringToFile(mProfilesBackupFile, String.format("%s=%s\n", tag, json), Charset.defaultCharset(), true);
-        load();
     }
 
     private static class Holder {

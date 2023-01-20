@@ -15,6 +15,7 @@
  */
 package se.trixon.rsyncfx.core;
 
+import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.job.Job;
 
 /**
@@ -28,6 +29,16 @@ public class JobManager extends BaseManager<Job> {
     }
 
     private JobManager() {
+    }
+
+    @Override
+    public String getLabelPlural() {
+        return Dict.JOBS.toString();
+    }
+
+    @Override
+    public String getLabelSingular() {
+        return Dict.JOB.toString();
     }
 
     private static class Holder {
