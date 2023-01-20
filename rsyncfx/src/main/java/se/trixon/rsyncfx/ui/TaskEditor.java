@@ -15,6 +15,9 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import javafx.scene.control.Tab;
+import javafx.scene.layout.VBox;
+import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.task.Task;
 
@@ -28,6 +31,7 @@ public class TaskEditor extends BaseEditor<Task> {
     private final TaskManager mManager = TaskManager.getInstance();
 
     public TaskEditor() {
+        createUI();
     }
 
     @Override
@@ -45,6 +49,27 @@ public class TaskEditor extends BaseEditor<Task> {
         map.putIfAbsent(mItem.getId(), mItem);
 
         return super.save();
+    }
+
+    private void createUI() {
+        var dirPane = new VBox();
+        var dirTab = new Tab(Dict.DIRECTORY.toString(), dirPane);
+
+        var runPane = new VBox();
+        var runTab = new Tab(Dict.RUN.toString(), runPane);
+
+        var optionsPane = new VBox();
+        var optionsTab = new Tab(Dict.OPTIONS.toString(), optionsPane);
+
+        var excludePane = new VBox();
+        var excludeTab = new Tab(Dict.EXCLUDE.toString(), excludePane);
+
+        getTabPane().getTabs().addAll(
+                dirTab,
+                runTab,
+                optionsTab,
+                excludeTab
+        );
     }
 
 }

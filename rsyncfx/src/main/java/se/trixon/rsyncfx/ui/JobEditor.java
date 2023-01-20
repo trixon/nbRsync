@@ -15,6 +15,10 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import javafx.scene.control.Tab;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.job.Job;
 
@@ -28,6 +32,7 @@ public class JobEditor extends BaseEditor<Job> {
     private final JobManager mManager = JobManager.getInstance();
 
     public JobEditor() {
+        createUI();
     }
 
     @Override
@@ -45,6 +50,16 @@ public class JobEditor extends BaseEditor<Job> {
         map.putIfAbsent(mItem.getId(), mItem);
 
         return super.save();
+    }
+
+    private void createUI() {
+        var runPane = new VBox();
+        var runTab = new Tab(Dict.RUN.toString(), runPane);
+
+        var logPane = new GridPane();
+        var logTab = new Tab(Dict.LOGGING.toString(), logPane);
+
+        getTabPane().getTabs().addAll(runTab, logTab);
     }
 
 }

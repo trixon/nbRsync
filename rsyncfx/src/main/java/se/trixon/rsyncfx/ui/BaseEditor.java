@@ -16,10 +16,15 @@
 package se.trixon.rsyncfx.ui;
 
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import se.trixon.almond.util.Dict;
+import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.rsyncfx.core.BaseItem;
 import se.trixon.rsyncfx.core.StorageManager;
 
@@ -32,20 +37,29 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     private final TextField mDescTextField = new TextField();
     private T mItem;
     private final TextField mNameTextField = new TextField();
+    private final TextArea mNoteTextArea = new TextArea();
+    private final Tab mNotesTab = new Tab(Dict.NOTES.toString(), mNoteTextArea);
+    private final TabPane mTabPane = new TabPane();
 
     public BaseEditor() {
         createUI();
+    }
+
+    public TabPane getTabPane() {
+        return mTabPane;
     }
 
     public void load(T item) {
         mItem = item;
         mNameTextField.setText(item.getName());
         mDescTextField.setText(item.getDescription());
+        mNoteTextArea.setText(item.getNote());
     }
 
     public T save() {
         mItem.setName(mNameTextField.getText());
         mItem.setDescription(mDescTextField.getText());
+        mItem.setNote(mNoteTextArea.getText());
 
         StorageManager.save();
 
@@ -61,6 +75,12 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
                 mDescTextField
         );
 
+        setCenter(mTabPane);
         setTop(vbox);
+
+        mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+        mTabPane.getTabs().add(mNotesTab);
+
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(12, 0, 0, 0), descLabel, mTabPane);
     }
 }
