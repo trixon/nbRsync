@@ -18,6 +18,7 @@ package se.trixon.rsyncfx.core;
 import com.google.gson.annotations.SerializedName;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  *
@@ -28,7 +29,7 @@ public abstract class BaseItem implements Comparable<BaseItem> {
     @SerializedName("description")
     protected String mDescription = "";
     @SerializedName("id")
-    protected long mId = System.currentTimeMillis();
+    protected String mId = UUID.randomUUID().toString();
     @SerializedName("lastRun")
     protected long mLastRun = -1;
     @SerializedName("lastRunExitCode")
@@ -40,6 +41,7 @@ public abstract class BaseItem implements Comparable<BaseItem> {
     private transient String mHistory = "";
 
     public BaseItem() {
+
     }
 
     @Override
@@ -55,7 +57,7 @@ public abstract class BaseItem implements Comparable<BaseItem> {
         return mHistory;
     }
 
-    public long getId() {
+    public String getId() {
         return mId;
     }
 
@@ -116,7 +118,7 @@ public abstract class BaseItem implements Comparable<BaseItem> {
         mHistory = history == null ? "" : history;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         mId = id;
     }
 

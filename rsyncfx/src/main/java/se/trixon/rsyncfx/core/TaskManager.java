@@ -44,7 +44,7 @@ public class TaskManager extends BaseManager<Task> {
 //
 //        return foundTask;
 //    }
-    public List<Task> getTasks(ArrayList<Long> taskIds) {
+    public List<Task> getTasks(ArrayList<String> taskIds) {
         var tasks = new ArrayList<Task>();
 
         taskIds.forEach(id -> {

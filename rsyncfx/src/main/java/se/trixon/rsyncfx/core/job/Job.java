@@ -45,14 +45,14 @@ public class Job extends BaseItem {
     private boolean mLogSeparateErrors = true;
     private transient StringBuilder mSummaryBuilder;
     @SerializedName("tasks")
-    private ArrayList<Long> mTaskIds = new ArrayList<>();
+    private ArrayList<String> mTaskIds = new ArrayList<>();
     private transient List<Task> mTasks = new ArrayList<>();
 
     public Job() {
         mExecuteSection = new JobExecuteSection();
     }
 
-    public Job(long id, String name, String description, String comment) {
+    public Job(String id, String name, String description, String comment) {
         mId = id;
         mName = name;
         mDescription = description;
@@ -112,7 +112,7 @@ public class Job extends BaseItem {
         return mSummaryBuilder.toString();
     }
 
-    public ArrayList<Long> getTaskIds() {
+    public ArrayList<String> getTaskIds() {
         return mTaskIds;
     }
 

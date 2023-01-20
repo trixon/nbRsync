@@ -48,9 +48,9 @@ public class BaseManager<T extends BaseItem> {
         return mItemsProperty.get();
     }
 
-    public T getById(long id) {
+    public T getById(String id) {
         for (var item : getItems()) {
-            if (item.getId() == id) {
+            if (StringUtils.equals(id, item.getId())) {
                 return item;
             }
         }
