@@ -15,8 +15,6 @@
  */
 package se.trixon.rsyncfx.core;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -25,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import javafx.collections.ObservableList;
 import org.apache.commons.io.FileUtils;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.core.task.Task;
@@ -37,21 +36,6 @@ public class Storage {
 
     private static final int FILE_FORMAT_VERSION = 1;
     private static final Gson GSON = new GsonBuilder()
-            .addSerializationExclusionStrategy(new ExclusionStrategy() {
-
-                @Override
-                public boolean shouldSkipClass(Class<?> arg0) {
-                    return false;
-                }
-
-                @Override
-                public boolean shouldSkipField(FieldAttributes arg0) {
-                    return arg0.getDeclaringClass() == Task.class && arg0.getName().equalsIgnoreCase("mCommand")
-                            || arg0.getDeclaringClass() == Task.class && arg0.getName().equalsIgnoreCase("mHistory")
-                            || arg0.getDeclaringClass() == Job.class && arg0.getName().equalsIgnoreCase("mTasks")
-                            || arg0.getDeclaringClass() == Job.class && arg0.getName().equalsIgnoreCase("mHistory");
-                }
-            })
             .setVersion(1.0)
             .serializeNulls()
             .setPrettyPrinting()
@@ -95,12 +79,12 @@ public class Storage {
         return json;
     }
 
-    void setJobs(ArrayList<Job> jobs) {
+    void setJobs(ObservableList<Job> jobs) {
         mJobs.clear();
         mJobs.addAll(jobs);
     }
 
-    void setTasks(ArrayList<Task> tasks) {
+    void setTasks(ObservableList<Task> tasks) {
         mTasks.clear();
         mTasks.addAll(tasks);
     }

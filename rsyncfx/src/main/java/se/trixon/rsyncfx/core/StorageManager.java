@@ -45,7 +45,7 @@ public class StorageManager {
     private StorageManager() {
         mUserDirectory = Places.getUserDirectory();
 
-        mProfilesFile = new File(mUserDirectory, "profiles");
+        mProfilesFile = new File(mUserDirectory, "profiles.json");
         mProfilesBackupFile = new File(mUserDirectory, "profiles.bak");
         mHistoryFile = new File(mUserDirectory, "var/history");
         mLogFile = new File(mUserDirectory, "var/rsync.log");
@@ -82,8 +82,8 @@ public class StorageManager {
     public void load() throws IOException {
         if (mProfilesFile.exists()) {
             mStorage = mStorage.open(mProfilesFile);
-            mTaskManager.setItems(mStorage.getTasks());
-            mJobManager.setItems(mStorage.getJobs());
+            mTaskManager.getItems().setAll(mStorage.getTasks());
+            mJobManager.getItems().setAll(mStorage.getJobs());
             mJobManager.loadHistory();
         } else {
             mStorage = new Storage();

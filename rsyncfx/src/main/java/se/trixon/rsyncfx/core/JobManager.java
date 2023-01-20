@@ -15,82 +15,19 @@
  */
 package se.trixon.rsyncfx.core;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import se.trixon.rsyncfx.core.job.Job;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class JobManager {
-
-    private List<String> mHistoryLines = new ArrayList<>();
-    private final ArrayList<Job> mItems = new ArrayList<>();
+public class JobManager extends BaseManager<Job> {
 
     public static JobManager getInstance() {
         return Holder.INSTANCE;
     }
 
     private JobManager() {
-    }
-
-    public Object[] getArray() {
-        return mItems.toArray();
-    }
-
-    public ArrayList<Job> getItems() {
-        return mItems;
-    }
-
-    public Job getJobById(long id) {
-        for (var job : mItems) {
-            if (job.getId() == id) {
-                return job;
-            }
-        }
-
-        return null;
-    }
-
-    public boolean hasJobs() {
-        return !getItems().isEmpty();
-    }
-
-    void loadHistory() {
-        try {
-            mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
-            for (var job : mItems) {
-                loadHistory(job);
-            }
-        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    void setItems(ArrayList<Job> items) {
-        mItems.clear();
-        mItems.addAll(items);
-        mItems.forEach(job -> {
-            job.setTasks(TaskManager.getInstance().getTasks(job.getTaskIds()));
-        });
-    }
-
-    private void loadHistory(Job job) {
-        var builder = new StringBuilder();
-
-        for (var line : mHistoryLines) {
-            var id = String.valueOf(job.getId());
-            if (StringUtils.contains(line, id)) {
-                builder.append(StringUtils.remove(line, id + " ")).append("\n");
-            }
-        }
-
-        job.setHistory(builder.toString());
     }
 
     private static class Holder {

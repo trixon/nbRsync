@@ -30,7 +30,7 @@ import se.trixon.rsyncfx.core.BaseItem;
  */
 public class Task extends BaseItem {
 
-    private final List<String> mCommand = new ArrayList<>();
+    private final transient List<String> mCommand = new ArrayList<>();
     @SerializedName("destination")
     private String mDestination;
     @SerializedName("environment")
