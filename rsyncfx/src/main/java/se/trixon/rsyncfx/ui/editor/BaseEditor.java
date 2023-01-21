@@ -15,6 +15,7 @@
  */
 package se.trixon.rsyncfx.ui.editor;
 
+import java.util.ResourceBundle;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -23,6 +24,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.rsyncfx.core.BaseItem;
@@ -34,6 +36,7 @@ import se.trixon.rsyncfx.core.StorageManager;
  */
 public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
 
+    protected ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
     private final TextField mDescTextField = new TextField();
     private T mItem;
     private final TextField mNameTextField = new TextField();

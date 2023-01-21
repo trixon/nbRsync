@@ -15,10 +15,14 @@
  */
 package se.trixon.rsyncfx.ui.editor;
 
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import se.trixon.almond.util.Dict;
+import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.fx.control.FileChooserPane;
+import se.trixon.almond.util.fx.control.FileChooserPane.ObjectMode;
 import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.job.Job;
 
@@ -30,6 +34,11 @@ public class JobEditor extends BaseEditor<Job> {
 
     private Job mItem;
     private final JobManager mManager = JobManager.getInstance();
+    private FileChooserPane mRunAfterFailFileChooser;
+    private FileChooserPane mRunAfterFileChooser;
+    private FileChooserPane mRunAfterOkFileChooser;
+    private CheckBox mRunBeforeCheckBox;
+    private FileChooserPane mRunBeforeFileChooser;
 
     public JobEditor() {
         createUI();
@@ -40,6 +49,15 @@ public class JobEditor extends BaseEditor<Job> {
         if (item == null) {
             item = new Job();
         }
+
+        var executeSection = item.getExecuteSection();
+
+        loadRun(mRunBeforeFileChooser, executeSection.isBefore(), executeSection.getBeforeCommand());
+        loadRun(mRunAfterFailFileChooser, executeSection.isAfterFailure(), executeSection.getAfterFailureCommand());
+        loadRun(mRunAfterOkFileChooser, executeSection.isAfterSuccess(), executeSection.getAfterSuccessCommand());
+        loadRun(mRunAfterFileChooser, executeSection.isAfter(), executeSection.getAfterCommand());
+        mRunBeforeCheckBox.setSelected(executeSection.isBeforeHaltOnError());
+
         super.load(item);
         mItem = item;
     }
@@ -49,17 +67,66 @@ public class JobEditor extends BaseEditor<Job> {
         var map = mManager.getIdToItem();
         map.putIfAbsent(mItem.getId(), mItem);
 
+        var executeSection = mItem.getExecuteSection();
+        executeSection.setBefore(mRunBeforeFileChooser.getCheckBox().isSelected());
+        executeSection.setBeforeCommand(mRunBeforeFileChooser.getPathAsString());
+
+        executeSection.setAfterFailure(mRunAfterFailFileChooser.getCheckBox().isSelected());
+        executeSection.setAfterFailureCommand(mRunAfterFailFileChooser.getPathAsString());
+
+        executeSection.setAfterSuccess(mRunAfterOkFileChooser.getCheckBox().isSelected());
+        executeSection.setAfterSuccessCommand(mRunAfterOkFileChooser.getPathAsString());
+
+        executeSection.setAfter(mRunAfterFileChooser.getCheckBox().isSelected());
+        executeSection.setAfterCommand(mRunAfterFileChooser.getPathAsString());
+
+        executeSection.setBeforeHaltOnError(mRunBeforeCheckBox.isSelected());
+
         return super.save();
     }
 
-    private void createUI() {
-        var runPane = new VBox();
-        var runTab = new Tab(Dict.RUN.toString(), runPane);
+    private Tab createLogTab() {
+        var root = new VBox();
+        var tab = new Tab(Dict.LOGGING.toString(), root);
 
-        var logPane = new GridPane();
-        var logTab = new Tab(Dict.LOGGING.toString(), logPane);
-
-        getTabPane().getTabs().addAll(runTab, logTab);
+        return tab;
     }
 
+    private Tab createRunTab() {
+
+        var dialogTitle = mBundle.getString("JobEditor.selectFileToRun");
+        var selectionMode = SelectionMode.SINGLE;
+        var objectMode = ObjectMode.FILE;
+
+        mRunBeforeFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runBefore"));
+        mRunBeforeCheckBox = new CheckBox(Dict.STOP_ON_ERROR.toString());
+        mRunBeforeCheckBox.disableProperty().bind(mRunBeforeFileChooser.getCheckBox().selectedProperty().not());
+        mRunAfterFailFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runAfterFail"));
+        mRunAfterOkFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runAfterOk"));
+        mRunAfterFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runAfter"));
+
+        var root = new VBox(FxHelper.getUIScaled(12),
+                mRunBeforeFileChooser,
+                mRunBeforeCheckBox,
+                mRunAfterFailFileChooser,
+                mRunAfterOkFileChooser,
+                mRunAfterFileChooser
+        );
+
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeFileChooser, mRunAfterFailFileChooser);
+
+        var tab = new Tab(Dict.RUN.toString(), root);
+
+        return tab;
+    }
+
+    private void createUI() {
+        getTabPane().getTabs().addAll(createRunTab(), createLogTab());
+        getTabPane().getSelectionModel().select(1);
+    }
+
+    private void loadRun(FileChooserPane fcp, boolean selected, String command) {
+        fcp.getCheckBox().setSelected(selected);
+        fcp.setPath(command);
+    }
 }
