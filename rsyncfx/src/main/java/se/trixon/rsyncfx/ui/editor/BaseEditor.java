@@ -17,7 +17,6 @@ package se.trixon.rsyncfx.ui.editor;
 
 import java.util.ResourceBundle;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TextArea;
@@ -41,7 +40,6 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     private T mItem;
     private final TextField mNameTextField = new TextField();
     private final TextArea mNoteTextArea = new TextArea();
-    private final Tab mNotesTab = new Tab(Dict.NOTES.toString(), mNoteTextArea);
     private final TabPane mTabPane = new TabPane();
 
     public BaseEditor() {
@@ -72,18 +70,21 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     private void createUI() {
         var nameLabel = new Label(Dict.NAME.toString());
         var descLabel = new Label(Dict.DESCRIPTION.toString());
-        var vbox = new VBox(nameLabel,
+        var noteLabel = new Label(Dict.NOTE.toString());
+        var vbox = new VBox(
+                nameLabel,
                 mNameTextField,
                 descLabel,
-                mDescTextField
+                mDescTextField,
+                noteLabel,
+                mNoteTextArea
         );
 
-        setCenter(mTabPane);
         setTop(vbox);
+        setCenter(mTabPane);
 
         mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        mTabPane.getTabs().add(mNotesTab);
-
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(12, 0, 0, 0), descLabel, mTabPane);
+        mNoteTextArea.setPrefHeight(80);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), descLabel, noteLabel);
     }
 }

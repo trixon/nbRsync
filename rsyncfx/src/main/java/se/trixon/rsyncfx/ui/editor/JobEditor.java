@@ -15,19 +15,27 @@
  */
 package se.trixon.rsyncfx.ui.editor;
 
+import java.util.ArrayList;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import org.controlsfx.control.ListActionView;
+import org.controlsfx.control.ListSelectionView;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPane;
 import se.trixon.almond.util.fx.control.FileChooserPane.ObjectMode;
+import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.core.JobManager;
+import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.job.Job;
+import se.trixon.rsyncfx.core.task.Task;
 
 /**
  *
@@ -36,6 +44,7 @@ import se.trixon.rsyncfx.core.job.Job;
 public class JobEditor extends BaseEditor<Job> {
 
     private Job mItem;
+    private ListSelectionView<Task> mListSelectionView;
     private RadioButton mLogAppendRadioButton;
     private CheckBox mLogErrorsCheckBox;
     private CheckBox mLogOutputCheckBox;
@@ -73,6 +82,10 @@ public class JobEditor extends BaseEditor<Job> {
 
         mLogToggleGroup.selectToggle(mLogToggleGroup.getToggles().get(item.getLogMode()));
 
+        var tasks = item.getTasks();
+        mListSelectionView.getSourceItems().removeAll(tasks);
+        mListSelectionView.getTargetItems().setAll(tasks);
+
         super.load(item);
         mItem = item;
     }
@@ -102,6 +115,11 @@ public class JobEditor extends BaseEditor<Job> {
         mItem.setLogSeparateErrors(mLogSeparateCheckBox.isSelected());
 
         mItem.setLogMode(mLogToggleGroup.getToggles().indexOf(mLogToggleGroup.getSelectedToggle()));
+
+        var taskIds = mListSelectionView.getTargetItems().stream()
+                .map(task -> task.getId())
+                .toList();
+        mItem.setTaskIds(new ArrayList<>(taskIds));
 
         return super.save();
     }
@@ -158,13 +176,89 @@ public class JobEditor extends BaseEditor<Job> {
         return tab;
     }
 
+    private Tab createTaskTab() {
+        mListSelectionView = new ListSelectionView();
+        mListSelectionView.setSourceHeader(new Label(Dict.AVAILABLE.toString()));
+        mListSelectionView.setTargetHeader(new Label(Dict.SELECTED.toString()));
+        mListSelectionView.getSourceItems().addAll(TaskManager.getInstance().getItems());
+        mListSelectionView.getTargetActions().addAll(createTaskTargetActions());
+
+        var tab = new Tab(Dict.TASKS.toString(), mListSelectionView);
+
+        return tab;
+    }
+
+    private ListActionView.ListAction[] createTaskTargetActions() {
+        int imageSize = FxHelper.getUIScaled(16);
+
+        return new ListActionView.ListAction[]{
+            new ListActionView.ListAction<Task>(MaterialIcon._Navigation.EXPAND_LESS.getImageView(imageSize)) {
+                @Override
+                public void initialize(ListView<Task> listView) {
+                    setEventHandler(event -> moveSelectedTasksUp(listView));
+                }
+            },
+            new ListActionView.ListAction<Task>(MaterialIcon._Navigation.EXPAND_MORE.getImageView(imageSize)) {
+                @Override
+                public void initialize(ListView<Task> listView) {
+                    setEventHandler(event -> moveSelectedTasksDown(listView));
+                }
+            }
+        };
+    }
+
     private void createUI() {
-        getTabPane().getTabs().addAll(createRunTab(), createLogTab());
-        //getTabPane().getSelectionModel().select(2);
+        getTabPane().getTabs().addAll(
+                createTaskTab(),
+                createRunTab(),
+                createLogTab()
+        );
     }
 
     private void loadRun(FileChooserPane fcp, boolean selected, String command) {
         fcp.getCheckBox().setSelected(selected);
         fcp.setPath(command);
+    }
+
+    private void moveSelectedTasksDown(ListView<Task> listView) {
+        var items = listView.getItems();
+        var selectionModel = listView.getSelectionModel();
+        var selectedIndices = selectionModel.getSelectedIndices();
+        int lastIndex = items.size() - 1;
+
+        for (int index = selectedIndices.size() - 1; index >= 0; index--) {
+            var selectedIndex = selectedIndices.get(index);
+            if (selectedIndex < lastIndex) {
+                if (selectedIndices.contains(selectedIndex + 1)) {
+                    continue;
+                }
+                var item = items.get(selectedIndex);
+                var itemToBeReplaced = items.get(selectedIndex + 1);
+                items.set(selectedIndex + 1, item);
+                items.set(selectedIndex, itemToBeReplaced);
+                selectionModel.clearSelection(selectedIndex);
+                selectionModel.select(selectedIndex + 1);
+            }
+        }
+    }
+
+    private void moveSelectedTasksUp(ListView<Task> listView) {
+        var items = listView.getItems();
+        var selectionModel = listView.getSelectionModel();
+        var selectedIndices = selectionModel.getSelectedIndices();
+
+        for (var selectedIndex : selectedIndices) {
+            if (selectedIndex > 0) {
+                if (selectedIndices.contains(selectedIndex - 1)) {
+                    continue;
+                }
+                var item = items.get(selectedIndex);
+                var itemToBeReplaced = items.get(selectedIndex - 1);
+                items.set(selectedIndex - 1, item);
+                items.set(selectedIndex, itemToBeReplaced);
+                selectionModel.clearSelection(selectedIndex);
+                selectionModel.select(selectedIndex - 1);
+            }
+        }
     }
 }
