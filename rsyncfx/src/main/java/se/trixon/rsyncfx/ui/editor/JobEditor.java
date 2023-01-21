@@ -16,8 +16,11 @@
 package se.trixon.rsyncfx.ui.editor;
 
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
@@ -33,6 +36,13 @@ import se.trixon.rsyncfx.core.job.Job;
 public class JobEditor extends BaseEditor<Job> {
 
     private Job mItem;
+    private RadioButton mLogAppendRadioButton;
+    private CheckBox mLogErrorsCheckBox;
+    private CheckBox mLogOutputCheckBox;
+    private RadioButton mLogReplaceRadioButton;
+    private CheckBox mLogSeparateCheckBox;
+    private final ToggleGroup mLogToggleGroup = new ToggleGroup();
+    private RadioButton mLogUniqueRadioButton;
     private final JobManager mManager = JobManager.getInstance();
     private FileChooserPane mRunAfterFailFileChooser;
     private FileChooserPane mRunAfterFileChooser;
@@ -51,12 +61,17 @@ public class JobEditor extends BaseEditor<Job> {
         }
 
         var executeSection = item.getExecuteSection();
-
         loadRun(mRunBeforeFileChooser, executeSection.isBefore(), executeSection.getBeforeCommand());
         loadRun(mRunAfterFailFileChooser, executeSection.isAfterFailure(), executeSection.getAfterFailureCommand());
         loadRun(mRunAfterOkFileChooser, executeSection.isAfterSuccess(), executeSection.getAfterSuccessCommand());
         loadRun(mRunAfterFileChooser, executeSection.isAfter(), executeSection.getAfterCommand());
         mRunBeforeCheckBox.setSelected(executeSection.isBeforeHaltOnError());
+
+        mLogOutputCheckBox.setSelected(item.isLogOutput());
+        mLogErrorsCheckBox.setSelected(item.isLogErrors());
+        mLogSeparateCheckBox.setSelected(item.isLogSeparateErrors());
+
+        mLogToggleGroup.selectToggle(mLogToggleGroup.getToggles().get(item.getLogMode()));
 
         super.load(item);
         mItem = item;
@@ -82,18 +97,41 @@ public class JobEditor extends BaseEditor<Job> {
 
         executeSection.setBeforeHaltOnError(mRunBeforeCheckBox.isSelected());
 
+        mItem.setLogOutput(mLogOutputCheckBox.isSelected());
+        mItem.setLogErrors(mLogErrorsCheckBox.isSelected());
+        mItem.setLogSeparateErrors(mLogSeparateCheckBox.isSelected());
+
+        mItem.setLogMode(mLogToggleGroup.getToggles().indexOf(mLogToggleGroup.getSelectedToggle()));
+
         return super.save();
     }
 
     private Tab createLogTab() {
-        var root = new VBox();
+        mLogOutputCheckBox = new CheckBox(Dict.LOG_OUTPUT.toString());
+        mLogErrorsCheckBox = new CheckBox(Dict.LOG_ERRORS.toString());
+        mLogSeparateCheckBox = new CheckBox(Dict.LOG_SEPARATE_ERRORS.toString());
+
+        mLogAppendRadioButton = new RadioButton(Dict.APPEND.toString());
+        mLogReplaceRadioButton = new RadioButton(Dict.REPLACE.toString());
+        mLogUniqueRadioButton = new RadioButton(Dict.UNIQUE.toString());
+
+        mLogAppendRadioButton.setToggleGroup(mLogToggleGroup);
+        mLogReplaceRadioButton.setToggleGroup(mLogToggleGroup);
+        mLogUniqueRadioButton.setToggleGroup(mLogToggleGroup);
+
+        var root = new GridPane();
+        root.addColumn(0, mLogOutputCheckBox, mLogErrorsCheckBox, mLogSeparateCheckBox);
+        root.addColumn(1, mLogAppendRadioButton, mLogReplaceRadioButton, mLogUniqueRadioButton);
+        root.setPadding(FxHelper.getUIScaledInsets(16));
+        root.setHgap(FxHelper.getUIScaled(32));
+        root.setVgap(FxHelper.getUIScaled(12));
+
         var tab = new Tab(Dict.LOGGING.toString(), root);
 
         return tab;
     }
 
     private Tab createRunTab() {
-
         var dialogTitle = mBundle.getString("JobEditor.selectFileToRun");
         var selectionMode = SelectionMode.SINGLE;
         var objectMode = ObjectMode.FILE;
@@ -122,7 +160,7 @@ public class JobEditor extends BaseEditor<Job> {
 
     private void createUI() {
         getTabPane().getTabs().addAll(createRunTab(), createLogTab());
-        getTabPane().getSelectionModel().select(1);
+        //getTabPane().getSelectionModel().select(2);
     }
 
     private void loadRun(FileChooserPane fcp, boolean selected, String command) {
