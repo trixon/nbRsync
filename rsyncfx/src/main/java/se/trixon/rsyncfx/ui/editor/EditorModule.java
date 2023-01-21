@@ -13,29 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx.ui;
+package se.trixon.rsyncfx.ui.editor;
 
 import com.dlsc.workbenchfx.Workbench;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
+import se.trixon.rsyncfx.ui.common.BaseModule;
 
 /**
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class HistoryModule extends BaseModule implements AlwaysOpenTab {
+public class EditorModule extends BaseModule implements AlwaysOpenTab {
 
-    private BorderPane mMainPane = new BorderPane();
     private BorderPane mRoot = new BorderPane();
     private Workbench mWorkbench;
 
-    public HistoryModule() {
-        super("", MaterialIcon._Action.HISTORY.getImageView(ICON_SIZE_MODULE, Color.WHITE).getImage());
+    public EditorModule() {
+        super("", MaterialIcon._Content.CREATE.getImageView(ICON_SIZE_MODULE, Color.WHITE).getImage());
     }
 
     @Override
@@ -52,12 +50,11 @@ public class HistoryModule extends BaseModule implements AlwaysOpenTab {
     }
 
     private void createUI() {
-        mMainPane = new BorderPane(new Label("?"));
-        mRoot = new BorderPane(mMainPane);
-        mMainPane.setTop(new Button("Hello"));
+        var editorPane = new EditorPane();
 
-        mMainPane.setBackground(FxHelper.createBackground(Color.CORAL));
-        mRoot.setPadding(FxHelper.getUIScaledInsets(16, 16, 0, 16));
+        getToolbarControlsLeft().setAll(editorPane.getJobPane().getToolBarItems());
+        getToolbarControlsRight().setAll(editorPane.getTaskPane().getToolBarItems());
+        mRoot = new BorderPane(editorPane);
     }
 
 }

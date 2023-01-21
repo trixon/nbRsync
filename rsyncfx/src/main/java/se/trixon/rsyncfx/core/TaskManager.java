@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.task.Task;
-import se.trixon.rsyncfx.ui.BaseEditor;
-import se.trixon.rsyncfx.ui.TaskEditor;
+import se.trixon.rsyncfx.ui.editor.BaseEditor;
+import se.trixon.rsyncfx.ui.editor.TaskEditor;
 
 /**
  *

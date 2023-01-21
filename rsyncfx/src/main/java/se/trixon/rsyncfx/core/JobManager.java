@@ -17,8 +17,8 @@ package se.trixon.rsyncfx.core;
 
 import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.job.Job;
-import se.trixon.rsyncfx.ui.BaseEditor;
-import se.trixon.rsyncfx.ui.JobEditor;
+import se.trixon.rsyncfx.ui.editor.BaseEditor;
+import se.trixon.rsyncfx.ui.editor.JobEditor;
 
 /**
  *

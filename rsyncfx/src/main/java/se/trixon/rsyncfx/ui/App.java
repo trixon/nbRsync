@@ -15,6 +15,10 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import se.trixon.rsyncfx.ui.common.BaseModule;
+import se.trixon.rsyncfx.ui.common.CustomTab;
+import se.trixon.rsyncfx.ui.history.HistoryModule;
+import se.trixon.rsyncfx.ui.editor.EditorModule;
 import com.dlsc.gemsfx.util.StageManager;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.model.WorkbenchModule;

@@ -27,7 +27,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import se.trixon.rsyncfx.ui.BaseEditor;
+import se.trixon.rsyncfx.ui.editor.BaseEditor;
 
 /**
  *

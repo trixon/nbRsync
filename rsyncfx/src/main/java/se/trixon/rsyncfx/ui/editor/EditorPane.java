@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.rsyncfx.ui;
+package se.trixon.rsyncfx.ui.editor;
 
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import java.time.LocalDate;

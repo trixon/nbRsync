@@ -15,6 +15,8 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
+import se.trixon.rsyncfx.ui.common.BaseModule;
 import com.dlsc.gemsfx.util.SessionManager;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
