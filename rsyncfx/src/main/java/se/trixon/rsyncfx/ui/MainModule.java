@@ -15,8 +15,6 @@
  */
 package se.trixon.rsyncfx.ui;
 
-import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
-import se.trixon.rsyncfx.ui.common.BaseModule;
 import com.dlsc.gemsfx.util.SessionManager;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
@@ -41,6 +39,8 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.core.job.Job;
+import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
+import se.trixon.rsyncfx.ui.common.BaseModule;
 
 /**
  *
@@ -48,11 +48,10 @@ import se.trixon.rsyncfx.core.job.Job;
  */
 public class MainModule extends BaseModule implements AlwaysOpenTab {
 
-    private ListView<Job> mListView = new ListView<>();
+    private final ListView<Job> mListView = new ListView<>();
     private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class).node("sessionManager"));
     private final SplitPane mSplitPane = new SplitPane();
     private final WebView mWebView = new WebView();
-    private Workbench mWorkbench;
 
     public MainModule() {
         super(Dict.HOME.toString(), MaterialIcon._Action.HOME.getImageView(ICON_SIZE_MODULE, Color.WHITE).getImage());
@@ -66,7 +65,6 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     @Override
     public void init(Workbench workbench) {
         super.init(workbench);
-        mWorkbench = workbench;
 
         createUI();
         initBindings();

@@ -15,13 +15,10 @@
  */
 package se.trixon.rsyncfx.ui;
 
-import se.trixon.rsyncfx.ui.common.BaseModule;
-import se.trixon.rsyncfx.ui.common.CustomTab;
-import se.trixon.rsyncfx.ui.history.HistoryModule;
-import se.trixon.rsyncfx.ui.editor.EditorModule;
 import com.dlsc.gemsfx.util.StageManager;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.model.WorkbenchModule;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.collections.ObservableList;
@@ -47,11 +44,16 @@ import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.SystemHelperFx;
 import se.trixon.almond.util.fx.AboutModel;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.fx.dialogs.ExceptionDialogDisplayerHandler;
 import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.Options;
 import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.ui.common.BaseModule;
+import se.trixon.rsyncfx.ui.common.CustomTab;
+import se.trixon.rsyncfx.ui.editor.EditorModule;
+import se.trixon.rsyncfx.ui.history.HistoryModule;
 
 /**
  *
@@ -81,6 +83,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        Logger.getLogger("").addHandler(new ExceptionDialogDisplayerHandler(stage));
         mStage = stage;
         mRsyncFx.setStage(stage);
         createUI();

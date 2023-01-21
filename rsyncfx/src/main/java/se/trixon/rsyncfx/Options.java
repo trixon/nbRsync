@@ -30,7 +30,7 @@ public class Options extends OptionsBase {
     public static final String DEFAULT_PATH_RSYNC = "path";
     public static final String KEY_PATH_RSYNC = "rsync.rsync";
 
-    private static final boolean DEFAULT_UI_NIGHTMODE = true;
+    private static final boolean DEFAULT_UI_NIGHTMODE = false;
     private static final String KEY_UI_NIGHTMODE = "ui.nightmode";
     private final BooleanProperty mNightModeProperty = new SimpleBooleanProperty();
 

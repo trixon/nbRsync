@@ -17,12 +17,11 @@ package se.trixon.rsyncfx.core.job;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
-import java.util.List;
-import javax.swing.DefaultListModel;
 import org.apache.commons.lang3.StringUtils;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.BaseItem;
+import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.task.Task;
 
 /**
@@ -30,8 +29,6 @@ import se.trixon.rsyncfx.core.task.Task;
  * @author Patrik Karlström
  */
 public class Job extends BaseItem {
-
-    public static OUTPUT TO_STRING = OUTPUT.VERBOSE;
 
     @SerializedName("executeSection")
     private final JobExecuteSection mExecuteSection;
@@ -46,7 +43,7 @@ public class Job extends BaseItem {
     private transient StringBuilder mSummaryBuilder;
     @SerializedName("tasks")
     private ArrayList<String> mTaskIds = new ArrayList<>();
-    private transient List<Task> mTasks = new ArrayList<>();
+//    private transient List<Task> mTasks = new ArrayList<>();
 
     public Job() {
         mExecuteSection = new JobExecuteSection();
@@ -116,12 +113,16 @@ public class Job extends BaseItem {
         return mTaskIds;
     }
 
-    public List<Task> getTasks() {
-        if (mTasks == null) {
-            mTasks = new ArrayList<>();
-        }
+    public ArrayList<Task> getTasks() {
+        var tasks = new ArrayList<Task>();
+        getTaskIds().stream()
+                .map(id -> TaskManager.getInstance().getIdToItem().get(id))
+                .filter(task -> (task != null))
+                .forEachOrdered(task -> {
+                    tasks.add(task);
+                });
 
-        return mTasks;
+        return tasks;
     }
 
     public boolean isLogErrors() {
@@ -152,40 +153,32 @@ public class Job extends BaseItem {
         mLogSeparateErrors = logSeparateErrors;
     }
 
-    public void setTasks(List<Task> tasksSkip) {
-        mTasks = tasksSkip;
+    public void setTaskIds(ArrayList<String> taskIds) {
+        mTaskIds = taskIds;
     }
 
-    public void setTasks(DefaultListModel model) {
-        mTasks.clear();
-        mTaskIds.clear();
-
-        for (Object object : model.toArray()) {
-            Task task = (Task) object;
-            mTasks.add(task);
-            mTaskIds.add(task.getId());
-        }
-    }
-
+//    public void setTasks(List<Task> tasksSkip) {
+//        mTasks = tasksSkip;
+//    }
+//
+//    public void setTasks(DefaultListModel model) {
+//        mTasks.clear();
+//        mTaskIds.clear();
+//
+//        for (Object object : model.toArray()) {
+//            Task task = (Task) object;
+//            mTasks.add(task);
+//            mTaskIds.add(task.getId());
+//        }
+//    }
     @Override
     public String toString() {
-        if (TO_STRING == OUTPUT.NORMAL) {
-            return mName;
-        } else {
-            String description = StringUtils.isBlank(mDescription) ? "&nbsp;" : mDescription;
-
-            return String.format("<html><b>%s</b><br /><i>%s</i></html>", mName, description);
-        }
+        return getName();
     }
 
     private void addOptionalToSummary(boolean active, String command, String header) {
         if (active) {
             mSummaryBuilder.append(String.format("<p><b>%s</b><br /><i>%s</i></p>", header, command));
         }
-    }
-
-    public enum OUTPUT {
-
-        NORMAL, VERBOSE;
     }
 }

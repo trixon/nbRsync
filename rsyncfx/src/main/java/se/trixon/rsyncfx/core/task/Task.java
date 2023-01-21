@@ -173,9 +173,7 @@ public class Task extends BaseItem {
 
     @Override
     public String toString() {
-        String description = StringUtils.isBlank(mDescription) ? "&nbsp;" : mDescription;
-
-        return String.format("<html><b>%s</b><br /><i>%s</i></html>", mName, description);
+        return getName();
     }
 
     private void add(String command) {
