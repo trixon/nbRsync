@@ -205,7 +205,8 @@ public class JobEditor extends BaseEditor<Job> {
         getTabPane().getTabs().addAll(
                 createTaskTab(),
                 createRunTab(),
-                createLogTab()
+                createLogTab(),
+                createNoteTab()
         );
     }
 

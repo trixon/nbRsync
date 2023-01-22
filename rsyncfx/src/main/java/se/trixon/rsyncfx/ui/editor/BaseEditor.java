@@ -17,6 +17,7 @@ package se.trixon.rsyncfx.ui.editor;
 
 import java.util.ResourceBundle;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TextArea;
@@ -67,16 +68,18 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         return mItem;
     }
 
+    public Tab createNoteTab() {
+        return new Tab(Dict.NOTE.toString(), mNoteTextArea);
+    }
+
     private void createUI() {
         var nameLabel = new Label(Dict.NAME.toString());
         var descLabel = new Label(Dict.DESCRIPTION.toString());
-        var noteLabel = new Label(Dict.NOTE.toString());
         var vbox = new VBox(
                 nameLabel,
                 mNameTextField,
                 descLabel,
                 mDescTextField,
-                noteLabel,
                 mNoteTextArea
         );
 
@@ -85,6 +88,6 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
 
         mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
         mNoteTextArea.setPrefHeight(68);
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), descLabel, noteLabel);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), descLabel, mTabPane);
     }
 }

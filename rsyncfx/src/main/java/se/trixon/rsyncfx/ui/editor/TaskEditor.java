@@ -167,7 +167,8 @@ public class TaskEditor extends BaseEditor<Task> {
                 createDirsTab(),
                 createRunTab(),
                 optionsTab,
-                excludeTab
+                excludeTab,
+                createNoteTab()
         );
     }
 
