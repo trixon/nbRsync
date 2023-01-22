@@ -56,8 +56,7 @@ public class JobEditor extends BaseEditor<Job> {
     private FileChooserPane mRunAfterFailFileChooser;
     private FileChooserPane mRunAfterFileChooser;
     private FileChooserPane mRunAfterOkFileChooser;
-    private CheckBox mRunBeforeCheckBox;
-    private FileChooserPane mRunBeforeFileChooser;
+    private RunSectionPane mRunBeforeSection;
 
     public JobEditor() {
         createUI();
@@ -69,12 +68,11 @@ public class JobEditor extends BaseEditor<Job> {
             item = new Job();
         }
 
-        var executeSection = item.getExecuteSection();
-        loadRun(mRunBeforeFileChooser, executeSection.isBefore(), executeSection.getBeforeCommand());
-        loadRun(mRunAfterFailFileChooser, executeSection.isAfterFailure(), executeSection.getAfterFailureCommand());
-        loadRun(mRunAfterOkFileChooser, executeSection.isAfterSuccess(), executeSection.getAfterSuccessCommand());
-        loadRun(mRunAfterFileChooser, executeSection.isAfter(), executeSection.getAfterCommand());
-        mRunBeforeCheckBox.setSelected(executeSection.isBeforeHaltOnError());
+        var execute = item.getExecuteSection();
+        mRunBeforeSection.load(execute.isBefore(), execute.getBeforeCommand(), execute.isBeforeHaltOnError());
+        loadRun(mRunAfterFailFileChooser, execute.isAfterFailure(), execute.getAfterFailureCommand());
+        loadRun(mRunAfterOkFileChooser, execute.isAfterSuccess(), execute.getAfterSuccessCommand());
+        loadRun(mRunAfterFileChooser, execute.isAfter(), execute.getAfterCommand());
 
         mLogOutputCheckBox.setSelected(item.isLogOutput());
         mLogErrorsCheckBox.setSelected(item.isLogErrors());
@@ -95,20 +93,19 @@ public class JobEditor extends BaseEditor<Job> {
         var map = mManager.getIdToItem();
         map.putIfAbsent(mItem.getId(), mItem);
 
-        var executeSection = mItem.getExecuteSection();
-        executeSection.setBefore(mRunBeforeFileChooser.getCheckBox().isSelected());
-        executeSection.setBeforeCommand(mRunBeforeFileChooser.getPathAsString());
+        var execute = mItem.getExecuteSection();
+        execute.setBefore(mRunBeforeSection.isActivated());
+        execute.setBeforeHaltOnError(mRunBeforeSection.isHaltOnError());
+        execute.setBeforeCommand(mRunBeforeSection.getCommand());
 
-        executeSection.setAfterFailure(mRunAfterFailFileChooser.getCheckBox().isSelected());
-        executeSection.setAfterFailureCommand(mRunAfterFailFileChooser.getPathAsString());
+        execute.setAfterFailure(mRunAfterFailFileChooser.getCheckBox().isSelected());
+        execute.setAfterFailureCommand(mRunAfterFailFileChooser.getPathAsString());
 
-        executeSection.setAfterSuccess(mRunAfterOkFileChooser.getCheckBox().isSelected());
-        executeSection.setAfterSuccessCommand(mRunAfterOkFileChooser.getPathAsString());
+        execute.setAfterSuccess(mRunAfterOkFileChooser.getCheckBox().isSelected());
+        execute.setAfterSuccessCommand(mRunAfterOkFileChooser.getPathAsString());
 
-        executeSection.setAfter(mRunAfterFileChooser.getCheckBox().isSelected());
-        executeSection.setAfterCommand(mRunAfterFileChooser.getPathAsString());
-
-        executeSection.setBeforeHaltOnError(mRunBeforeCheckBox.isSelected());
+        execute.setAfter(mRunAfterFileChooser.getCheckBox().isSelected());
+        execute.setAfterCommand(mRunAfterFileChooser.getPathAsString());
 
         mItem.setLogOutput(mLogOutputCheckBox.isSelected());
         mItem.setLogErrors(mLogErrorsCheckBox.isSelected());
@@ -154,22 +151,19 @@ public class JobEditor extends BaseEditor<Job> {
         var selectionMode = SelectionMode.SINGLE;
         var objectMode = ObjectMode.FILE;
 
-        mRunBeforeFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runBefore"));
-        mRunBeforeCheckBox = new CheckBox(Dict.STOP_ON_ERROR.toString());
-        mRunBeforeCheckBox.disableProperty().bind(mRunBeforeFileChooser.getCheckBox().selectedProperty().not());
+        mRunBeforeSection = new RunSectionPane(mBundle.getString("JobEditor.runBefore"), true);
         mRunAfterFailFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runAfterFail"));
         mRunAfterOkFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runAfterOk"));
         mRunAfterFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, mBundle.getString("JobEditor.runAfter"));
 
         var root = new VBox(FxHelper.getUIScaled(12),
-                mRunBeforeFileChooser,
-                mRunBeforeCheckBox,
+                mRunBeforeSection,
                 mRunAfterFailFileChooser,
                 mRunAfterOkFileChooser,
                 mRunAfterFileChooser
         );
 
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeFileChooser, mRunAfterFailFileChooser);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeSection, mRunAfterFailFileChooser);
 
         var tab = new Tab(Dict.RUN.toString(), root);
 
