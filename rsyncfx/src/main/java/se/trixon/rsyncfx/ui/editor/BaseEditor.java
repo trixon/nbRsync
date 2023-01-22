@@ -84,7 +84,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         setCenter(mTabPane);
 
         mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        mNoteTextArea.setPrefHeight(80);
+        mNoteTextArea.setPrefHeight(68);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), descLabel, noteLabel);
     }
 }

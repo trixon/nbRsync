@@ -39,6 +39,11 @@ public class TaskEditor extends BaseEditor<Task> {
     private FileChooserPane mDirSourceFileChooser;
     private Task mItem;
     private final TaskManager mManager = TaskManager.getInstance();
+    private RunSectionPane mRunAfterFailureSection;
+    private RunSectionPane mRunAfterOkSection;
+    private RunSectionPane mRunAfterSection;
+    private RunSectionPane mRunBeforeSection;
+    private CheckBox mRunStopJobOnErrorCheckBox;
 
     public TaskEditor() {
         createUI();
@@ -54,6 +59,13 @@ public class TaskEditor extends BaseEditor<Task> {
         mDirDestFileChooser.setPath(item.getDestination());
         mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
 
+        var execute = item.getExecuteSection();
+        mRunBeforeSection.load(execute.isBefore(), execute.getBeforeCommand(), execute.isBeforeHaltOnError());
+        mRunAfterFailureSection.load(execute.isAfterFailure(), execute.getAfterFailureCommand(), execute.isAfterFailureHaltOnError());
+        mRunAfterOkSection.load(execute.isAfterSuccess(), execute.getAfterSuccessCommand(), execute.isAfterSuccessHaltOnError());
+        mRunAfterSection.load(execute.isAfter(), execute.getAfterCommand(), execute.isAfterHaltOnError());
+        mRunStopJobOnErrorCheckBox.setSelected(execute.isJobHaltOnError());
+
         super.load(item);
         mItem = item;
     }
@@ -67,6 +79,24 @@ public class TaskEditor extends BaseEditor<Task> {
         mItem.setDestination(mDirDestFileChooser.getPathAsString());
         mItem.setNoAdditionalDir(mDirForceSourceSlashCheckBox.isSelected());
 
+        var execute = mItem.getExecuteSection();
+        execute.setBefore(mRunBeforeSection.isActivated());
+        execute.setBeforeHaltOnError(mRunBeforeSection.isHaltOnError());
+        execute.setBeforeCommand(mRunBeforeSection.getCommand());
+
+        execute.setAfterFailure(mRunAfterFailureSection.isActivated());
+        execute.setAfterFailureHaltOnError(mRunAfterFailureSection.isHaltOnError());
+        execute.setAfterFailureCommand(mRunAfterFailureSection.getCommand());
+
+        execute.setAfterSuccess(mRunAfterOkSection.isActivated());
+        execute.setAfterSuccessHaltOnError(mRunAfterOkSection.isHaltOnError());
+        execute.setAfterSuccessCommand(mRunAfterOkSection.getCommand());
+
+        execute.setAfter(mRunAfterSection.isActivated());
+        execute.setAfterHaltOnError(mRunAfterSection.isHaltOnError());
+        execute.setAfterCommand(mRunAfterSection.getCommand());
+
+        execute.setJobHaltOnError(mRunStopJobOnErrorCheckBox.isSelected());
         return super.save();
     }
 
@@ -104,11 +134,29 @@ public class TaskEditor extends BaseEditor<Task> {
         return tab;
     }
 
+    private Tab createRunTab() {
+        mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true);
+        mRunAfterFailureSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFailure"), true);
+        mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true);
+        mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true);
+
+        mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
+
+        var root = new VBox(FxHelper.getUIScaled(12),
+                mRunBeforeSection,
+                mRunAfterFailureSection,
+                mRunAfterOkSection,
+                mRunAfterSection,
+                mRunStopJobOnErrorCheckBox
+        );
+
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeSection);
+
+        var tab = new Tab(Dict.RUN.toString(), root);
+        return tab;
+    }
+
     private void createUI() {
-
-        var runPane = new VBox();
-        var runTab = new Tab(Dict.RUN.toString(), runPane);
-
         var optionsPane = new VBox();
         var optionsTab = new Tab(Dict.OPTIONS.toString(), optionsPane);
 
@@ -117,7 +165,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
         getTabPane().getTabs().addAll(
                 createDirsTab(),
-                runTab,
+                createRunTab(),
                 optionsTab,
                 excludeTab
         );
