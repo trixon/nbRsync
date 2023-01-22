@@ -23,6 +23,7 @@ import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPane;
+import se.trixon.rsyncfx.core.ExecuteItem;
 
 /**
  *
@@ -33,7 +34,7 @@ public class RunSectionPane extends VBox {
     private final CheckBox mCheckBox;
     private final FileChooserPane mFileChooser;
 
-    public RunSectionPane(String header, boolean addSeparator) {
+    public RunSectionPane(String header, boolean useCheckBox, boolean addSeparator) {
         super(FxHelper.getUIScaled(8));
         java.lang.String dialogTitle = NbBundle.getMessage(BaseEditor.class, "JobEditor.selectFileToRun");
         javafx.scene.control.SelectionMode selectionMode = SelectionMode.SINGLE;
@@ -41,7 +42,10 @@ public class RunSectionPane extends VBox {
         mFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, header);
         mCheckBox = new CheckBox(Dict.STOP_ON_ERROR.toString());
         mCheckBox.disableProperty().bind(mFileChooser.getCheckBox().selectedProperty().not());
-        getChildren().setAll(mFileChooser, mCheckBox);
+        getChildren().setAll(mFileChooser);
+        if (useCheckBox) {
+            getChildren().add(mCheckBox);
+        }
 
         if (addSeparator) {
             getChildren().add(new Separator());
@@ -52,7 +56,7 @@ public class RunSectionPane extends VBox {
         return mFileChooser.getPathAsString();
     }
 
-    public boolean isActivated() {
+    public boolean isEnabled() {
         return mFileChooser.getCheckBox().isSelected();
     }
 
@@ -60,10 +64,10 @@ public class RunSectionPane extends VBox {
         return mCheckBox.isSelected();
     }
 
-    public void load(boolean active, String command, boolean haltOnError) {
-        mFileChooser.getCheckBox().setSelected(active);
-        mFileChooser.setPath(command);
-        mCheckBox.setSelected(haltOnError);
+    void load(ExecuteItem item) {
+        mFileChooser.getCheckBox().setSelected(item.isEnabled());
+        mFileChooser.setPath(item.getCommand());
+        mCheckBox.setSelected(item.isHaltOnError());
     }
 
 }

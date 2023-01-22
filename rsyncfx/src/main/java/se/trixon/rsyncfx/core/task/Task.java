@@ -118,23 +118,23 @@ public class Task extends BaseItem {
 
         var bundle = NbBundle.getBundle(Task.class);
 
-        addOptionalToSummary(mExecuteSection.isBefore(), mExecuteSection.getBeforeCommand(), bundle.getString("TaskExecutePanel.beforePanel.header"));
-        if (mExecuteSection.isBefore() && mExecuteSection.isBeforeHaltOnError()) {
+        addOptionalToSummary(mExecuteSection.getBefore().isEnabled(), mExecuteSection.getBefore().getCommand(), bundle.getString("TaskExecutePanel.beforePanel.header"));
+        if (mExecuteSection.getBefore().isEnabled() && mExecuteSection.getBefore().isHaltOnError()) {
             mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
         }
 
-        addOptionalToSummary(mExecuteSection.isAfterFailure(), mExecuteSection.getAfterFailureCommand(), bundle.getString("TaskExecutePanel.afterFailurePanel.header"));
-        if (mExecuteSection.isAfterFailure() && mExecuteSection.isAfterFailureHaltOnError()) {
+        addOptionalToSummary(mExecuteSection.getAfterFail().isEnabled(), mExecuteSection.getAfterFail().getCommand(), bundle.getString("TaskExecutePanel.afterFailurePanel.header"));
+        if (mExecuteSection.getAfterFail().isEnabled() && mExecuteSection.getAfterFail().isHaltOnError()) {
             mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
         }
 
-        addOptionalToSummary(mExecuteSection.isAfterSuccess(), mExecuteSection.getAfterSuccessCommand(), bundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
-        if (mExecuteSection.isAfterSuccess() && mExecuteSection.isAfterSuccessHaltOnError()) {
+        addOptionalToSummary(mExecuteSection.getAfterOk().isEnabled(), mExecuteSection.getAfterOk().getCommand(), bundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
+        if (mExecuteSection.getAfterOk().isEnabled() && mExecuteSection.getAfterOk().isHaltOnError()) {
             mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
         }
 
-        addOptionalToSummary(mExecuteSection.isAfter(), mExecuteSection.getAfterCommand(), bundle.getString("TaskExecutePanel.afterPanel.header"));
-        if (mExecuteSection.isAfter() && mExecuteSection.isAfterHaltOnError()) {
+        addOptionalToSummary(mExecuteSection.getAfter().isEnabled(), mExecuteSection.getAfter().getCommand(), bundle.getString("TaskExecutePanel.afterPanel.header"));
+        if (mExecuteSection.getAfter().isEnabled() && mExecuteSection.getAfter().isHaltOnError()) {
             mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
         }
 

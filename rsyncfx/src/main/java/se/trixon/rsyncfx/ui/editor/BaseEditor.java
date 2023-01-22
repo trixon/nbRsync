@@ -28,6 +28,7 @@ import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.rsyncfx.core.BaseItem;
+import se.trixon.rsyncfx.core.ExecuteItem;
 import se.trixon.rsyncfx.core.StorageManager;
 
 /**
@@ -45,6 +46,10 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
 
     public BaseEditor() {
         createUI();
+    }
+
+    public Tab createNoteTab() {
+        return new Tab(Dict.NOTE.toString(), mNoteTextArea);
     }
 
     public TabPane getTabPane() {
@@ -68,8 +73,10 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         return mItem;
     }
 
-    public Tab createNoteTab() {
-        return new Tab(Dict.NOTE.toString(), mNoteTextArea);
+    public void save(ExecuteItem item, RunSectionPane runSectionPane) {
+        item.setEnabled(runSectionPane.isEnabled());
+        item.setHaltOnError(runSectionPane.isHaltOnError());
+        item.setCommand(runSectionPane.getCommand());
     }
 
     private void createUI() {

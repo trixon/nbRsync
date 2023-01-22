@@ -90,14 +90,14 @@ public class Job extends BaseItem {
         mSummaryBuilder.append("<h1>").append(getName()).append("</h1>");
         var bundle = NbBundle.getBundle(Job.class);
 
-        addOptionalToSummary(mExecuteSection.isBefore(), mExecuteSection.getBeforeCommand(), bundle.getString("JobPanel.beforePanel.header"));
-        if (mExecuteSection.isBefore() && mExecuteSection.isBeforeHaltOnError()) {
+        addOptionalToSummary(mExecuteSection.getBefore().isEnabled(), mExecuteSection.getBefore().getCommand(), bundle.getString("JobPanel.beforePanel.header"));
+        if (mExecuteSection.getBefore().isEnabled() && mExecuteSection.getBefore().isHaltOnError()) {
             mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
         }
 
-        addOptionalToSummary(mExecuteSection.isAfterFailure(), mExecuteSection.getAfterFailureCommand(), bundle.getString("JobPanel.afterFailurePanel.header"));
-        addOptionalToSummary(mExecuteSection.isAfterSuccess(), mExecuteSection.getAfterSuccessCommand(), bundle.getString("JobPanel.afterSuccessPanel.header"));
-        addOptionalToSummary(mExecuteSection.isAfter(), mExecuteSection.getAfterCommand(), bundle.getString("JobPanel.afterPanel.header"));
+        addOptionalToSummary(mExecuteSection.getAfterFail().isEnabled(), mExecuteSection.getAfterFail().getCommand(), bundle.getString("JobPanel.afterFailurePanel.header"));
+        addOptionalToSummary(mExecuteSection.getAfterOk().isEnabled(), mExecuteSection.getAfterOk().getCommand(), bundle.getString("JobPanel.afterSuccessPanel.header"));
+        addOptionalToSummary(mExecuteSection.getAfter().isEnabled(), mExecuteSection.getAfter().getCommand(), bundle.getString("JobPanel.afterPanel.header"));
 
         for (Task task : getTasks()) {
             mSummaryBuilder.append("<hr>");

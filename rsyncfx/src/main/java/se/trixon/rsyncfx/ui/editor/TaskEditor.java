@@ -39,7 +39,7 @@ public class TaskEditor extends BaseEditor<Task> {
     private FileChooserPane mDirSourceFileChooser;
     private Task mItem;
     private final TaskManager mManager = TaskManager.getInstance();
-    private RunSectionPane mRunAfterFailureSection;
+    private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
     private RunSectionPane mRunAfterSection;
     private RunSectionPane mRunBeforeSection;
@@ -60,10 +60,10 @@ public class TaskEditor extends BaseEditor<Task> {
         mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
 
         var execute = item.getExecuteSection();
-        mRunBeforeSection.load(execute.isBefore(), execute.getBeforeCommand(), execute.isBeforeHaltOnError());
-        mRunAfterFailureSection.load(execute.isAfterFailure(), execute.getAfterFailureCommand(), execute.isAfterFailureHaltOnError());
-        mRunAfterOkSection.load(execute.isAfterSuccess(), execute.getAfterSuccessCommand(), execute.isAfterSuccessHaltOnError());
-        mRunAfterSection.load(execute.isAfter(), execute.getAfterCommand(), execute.isAfterHaltOnError());
+        mRunBeforeSection.load(execute.getBefore());
+        mRunAfterFailSection.load(execute.getAfterFail());
+        mRunAfterOkSection.load(execute.getAfterOk());
+        mRunAfterSection.load(execute.getAfter());
         mRunStopJobOnErrorCheckBox.setSelected(execute.isJobHaltOnError());
 
         super.load(item);
@@ -80,21 +80,10 @@ public class TaskEditor extends BaseEditor<Task> {
         mItem.setNoAdditionalDir(mDirForceSourceSlashCheckBox.isSelected());
 
         var execute = mItem.getExecuteSection();
-        execute.setBefore(mRunBeforeSection.isActivated());
-        execute.setBeforeHaltOnError(mRunBeforeSection.isHaltOnError());
-        execute.setBeforeCommand(mRunBeforeSection.getCommand());
-
-        execute.setAfterFailure(mRunAfterFailureSection.isActivated());
-        execute.setAfterFailureHaltOnError(mRunAfterFailureSection.isHaltOnError());
-        execute.setAfterFailureCommand(mRunAfterFailureSection.getCommand());
-
-        execute.setAfterSuccess(mRunAfterOkSection.isActivated());
-        execute.setAfterSuccessHaltOnError(mRunAfterOkSection.isHaltOnError());
-        execute.setAfterSuccessCommand(mRunAfterOkSection.getCommand());
-
-        execute.setAfter(mRunAfterSection.isActivated());
-        execute.setAfterHaltOnError(mRunAfterSection.isHaltOnError());
-        execute.setAfterCommand(mRunAfterSection.getCommand());
+        save(execute.getBefore(), mRunBeforeSection);
+        save(execute.getAfterFail(), mRunAfterFailSection);
+        save(execute.getAfterOk(), mRunAfterOkSection);
+        save(execute.getAfter(), mRunAfterSection);
 
         execute.setJobHaltOnError(mRunStopJobOnErrorCheckBox.isSelected());
         return super.save();
@@ -135,16 +124,16 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private Tab createRunTab() {
-        mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true);
-        mRunAfterFailureSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFailure"), true);
-        mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true);
-        mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true);
+        mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, true);
+        mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFailure"), true, true);
+        mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true, true);
+        mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, true);
 
         mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
 
         var root = new VBox(FxHelper.getUIScaled(12),
                 mRunBeforeSection,
-                mRunAfterFailureSection,
+                mRunAfterFailSection,
                 mRunAfterOkSection,
                 mRunAfterSection,
                 mRunStopJobOnErrorCheckBox

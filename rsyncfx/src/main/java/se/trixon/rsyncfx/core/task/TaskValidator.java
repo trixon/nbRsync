@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -82,10 +82,11 @@ public class TaskValidator implements Serializable {
         TaskExecuteSection executeSection = mTask.getExecuteSection();
         var bundle = NbBundle.getBundle(Task.class);
 
-        validateFile(executeSection.isBefore(), executeSection.getBeforeCommand(), bundle.getString("TaskExecutePanel.beforePanel.header"));
-        validateFile(executeSection.isAfterFailure(), executeSection.getAfterFailureCommand(), bundle.getString("TaskExecutePanel.afterFailurePanel.header"));
-        validateFile(executeSection.isAfterSuccess(), executeSection.getAfterSuccessCommand(), bundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
-        validateFile(executeSection.isAfter(), executeSection.getAfterCommand(), bundle.getString("TaskExecutePanel.afterPanel.header"));
+        //TODO
+//        validateFile(executeSection.isBefore(), executeSection.getBeforeCommand(), bundle.getString("TaskExecutePanel.beforePanel.header"));
+//        validateFile(executeSection.isAfterFailure(), executeSection.getAfterFailureCommand(), bundle.getString("TaskExecutePanel.afterFailurePanel.header"));
+//        validateFile(executeSection.isAfterSuccess(), executeSection.getAfterSuccessCommand(), bundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
+//        validateFile(executeSection.isAfter(), executeSection.getAfterCommand(), bundle.getString("TaskExecutePanel.afterPanel.header"));
     }
 
     private void validateFile(boolean active, String command, String header) {

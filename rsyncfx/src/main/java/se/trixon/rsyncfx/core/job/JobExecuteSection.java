@@ -15,102 +15,12 @@
  */
 package se.trixon.rsyncfx.core.job;
 
-import com.google.gson.annotations.SerializedName;
+import se.trixon.rsyncfx.core.BaseExcecuteSection;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class JobExecuteSection extends JobSection {
+public class JobExecuteSection extends BaseExcecuteSection {
 
-    @SerializedName("after")
-    private boolean mAfter;
-    @SerializedName("afterCommand")
-    private String mAfterCommand = "";
-    @SerializedName("afterFailure")
-    private boolean mAfterFailure;
-    @SerializedName("afterFailureCommand")
-    private String mAfterFailureCommand = "";
-    @SerializedName("afterSuccess")
-    private boolean mAfterSuccess;
-    @SerializedName("afterSuccessCommand")
-    private String mAfterSuccessCommand = "";
-    @SerializedName("before")
-    private boolean mBefore;
-    @SerializedName("beforeCommand")
-    private String mBeforeCommand = "";
-    @SerializedName("beforeHaltOnError")
-    private boolean mBeforeHaltOnError;
-
-    public String getAfterCommand() {
-        return mAfterCommand;
-    }
-
-    public String getAfterFailureCommand() {
-        return mAfterFailureCommand;
-    }
-
-    public String getAfterSuccessCommand() {
-        return mAfterSuccessCommand;
-    }
-
-    public String getBeforeCommand() {
-        return mBeforeCommand;
-    }
-
-    public boolean isAfter() {
-        return mAfter;
-    }
-
-    public boolean isAfterFailure() {
-        return mAfterFailure;
-    }
-
-    public boolean isAfterSuccess() {
-        return mAfterSuccess;
-    }
-
-    public boolean isBefore() {
-        return mBefore;
-    }
-
-    public boolean isBeforeHaltOnError() {
-        return mBeforeHaltOnError;
-    }
-
-    public void setAfter(boolean value) {
-        mAfter = value;
-    }
-
-    public void setAfterCommand(String value) {
-        mAfterCommand = value;
-    }
-
-    public void setAfterFailure(boolean value) {
-        mAfterFailure = value;
-    }
-
-    public void setAfterFailureCommand(String value) {
-        mAfterFailureCommand = value;
-    }
-
-    public void setAfterSuccess(boolean value) {
-        mAfterSuccess = value;
-    }
-
-    public void setAfterSuccessCommand(String value) {
-        mAfterSuccessCommand = value;
-    }
-
-    public void setBefore(boolean value) {
-        mBefore = value;
-    }
-
-    public void setBeforeCommand(String value) {
-        mBeforeCommand = value;
-    }
-
-    public void setBeforeHaltOnError(boolean value) {
-        mBeforeHaltOnError = value;
-    }
 }
