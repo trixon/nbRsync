@@ -98,7 +98,7 @@ public class App extends Application {
         FxHelper.runLaterDelayed(0, () -> {
             mWorkbench.openModule(mMainModule);
             mWorkbench.openModule(mEditorModule);
-            mWorkbench.openModule(mHistoryModule);
+//            mWorkbench.openModule(mHistoryModule);
             mWorkbench.openModule(mMainModule);
             mWorkbench.openModule(mEditorModule);
 

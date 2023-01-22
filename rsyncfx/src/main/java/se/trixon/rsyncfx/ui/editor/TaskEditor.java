@@ -15,9 +15,16 @@
  */
 package se.trixon.rsyncfx.ui.editor;
 
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import se.trixon.almond.util.Dict;
+import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.fx.control.FileChooserPane;
 import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.task.Task;
 
@@ -27,6 +34,9 @@ import se.trixon.rsyncfx.core.task.Task;
  */
 public class TaskEditor extends BaseEditor<Task> {
 
+    private FileChooserPane mDirDestFileChooser;
+    private CheckBox mDirForceSourceSlashCheckBox;
+    private FileChooserPane mDirSourceFileChooser;
     private Task mItem;
     private final TaskManager mManager = TaskManager.getInstance();
 
@@ -39,6 +49,11 @@ public class TaskEditor extends BaseEditor<Task> {
         if (item == null) {
             item = new Task();
         }
+
+        mDirSourceFileChooser.setPath(item.getSource());
+        mDirDestFileChooser.setPath(item.getDestination());
+        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
+
         super.load(item);
         mItem = item;
     }
@@ -48,12 +63,48 @@ public class TaskEditor extends BaseEditor<Task> {
         var map = mManager.getIdToItem();
         map.putIfAbsent(mItem.getId(), mItem);
 
+        mItem.setSource(mDirSourceFileChooser.getPathAsString());
+        mItem.setDestination(mDirDestFileChooser.getPathAsString());
+        mItem.setNoAdditionalDir(mDirForceSourceSlashCheckBox.isSelected());
+
         return super.save();
     }
 
+    private Tab createDirsTab() {
+        var sourceTitle = Dict.SOURCE.toString();
+        var destTitle = Dict.DESTINATION.toString();
+        var selectionMode = SelectionMode.SINGLE;
+        var objectMode = FileChooserPane.ObjectMode.FILE;
+
+        mDirSourceFileChooser = new FileChooserPane(sourceTitle, sourceTitle, objectMode, selectionMode);
+        mDirDestFileChooser = new FileChooserPane(destTitle, destTitle, objectMode, selectionMode);
+        mDirForceSourceSlashCheckBox = new CheckBox(mBundle.getString("TaskEditor.forceSourceSlash"));
+
+        var button = new Button(mBundle.getString("TaskEditor.swapSourceDest"));
+        button.setOnAction(actionEvent -> {
+            var source = mDirSourceFileChooser.getPathAsString();
+            mDirSourceFileChooser.setPath(mDirDestFileChooser.getPathAsString());
+            mDirDestFileChooser.setPath(source);
+        });
+
+        var borderPane = new BorderPane(mDirForceSourceSlashCheckBox);
+        BorderPane.setAlignment(mDirForceSourceSlashCheckBox, Pos.CENTER_LEFT);
+        borderPane.setRight(button);
+
+        var root = new VBox(FxHelper.getUIScaled(12),
+                mDirSourceFileChooser,
+                mDirDestFileChooser,
+                borderPane
+        );
+
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mDirSourceFileChooser);
+
+        var tab = new Tab(Dict.DIRECTORIES.toString(), root);
+
+        return tab;
+    }
+
     private void createUI() {
-        var dirPane = new VBox();
-        var dirTab = new Tab(Dict.DIRECTORY.toString(), dirPane);
 
         var runPane = new VBox();
         var runTab = new Tab(Dict.RUN.toString(), runPane);
@@ -65,7 +116,7 @@ public class TaskEditor extends BaseEditor<Task> {
         var excludeTab = new Tab(Dict.EXCLUDE.toString(), excludePane);
 
         getTabPane().getTabs().addAll(
-                dirTab,
+                createDirsTab(),
                 runTab,
                 optionsTab,
                 excludeTab
