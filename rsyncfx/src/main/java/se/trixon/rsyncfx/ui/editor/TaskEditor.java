@@ -125,7 +125,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
     private Tab createRunTab() {
         mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, true);
-        mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFailure"), true, true);
+        mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, true);
         mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true, true);
         mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, true);
 

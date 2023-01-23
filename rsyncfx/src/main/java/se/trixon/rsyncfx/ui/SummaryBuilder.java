@@ -15,10 +15,14 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import static j2html.TagCreator.*;
+import j2html.tags.specialized.DivTag;
+import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
+import se.trixon.rsyncfx.core.ExecuteItem;
 import se.trixon.rsyncfx.core.job.Job;
-import se.trixon.rsyncfx.core.task.Task;
+import se.trixon.rsyncfx.ui.editor.BaseEditor;
 
 /**
  *
@@ -26,89 +30,48 @@ import se.trixon.rsyncfx.core.task.Task;
  */
 public class SummaryBuilder {
 
-    private Job mJob;
-    private StringBuilder mJobBuilder;
-    private StringBuilder mTaskBuilder;
+    private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
 
     public SummaryBuilder() {
     }
 
     public String getHtml(Job job) {
-        mJob = job;
+        var exec = job.getExecuteSection();
 
-        return getSummaryAsHtmlJob();
+        var html = body(div(
+                h1(job.getName()),
+                getExecTag(exec.getBefore(), mBundle.getString("JobEditor.runBefore")),
+                getExecTag(exec.getAfterFail(), mBundle.getString("JobEditor.runAfterFail")),
+                getExecTag(exec.getAfterOk(), mBundle.getString("JobEditor.runAfterOk")),
+                getExecTag(exec.getAfter(), mBundle.getString("JobEditor.runAfter")),
+                each(job.getTasks(), task -> div(
+                hr(),
+                h2(task.getName()),
+                 p(join(b(Dict.SOURCE.toString()), br(), i(task.getSource()))),
+                p(join(b(Dict.DESTINATION.toString()), br(), i(task.getDestination()))),
+                getExecTag(task.getExecuteSection().getBefore(), mBundle.getString("TaskEditor.runBefore")),
+                getExecTag(task.getExecuteSection().getAfterFail(), mBundle.getString("TaskEditor.runAfterFail")),
+                getExecTag(task.getExecuteSection().getAfterOk(), mBundle.getString("TaskEditor.runAfterOk")),
+                getExecTag(task.getExecuteSection().getAfter(), mBundle.getString("TaskEditor.runAfter")),
+                iff(task.getExecuteSection().isJobHaltOnError(), p(mBundle.getString("TaskEditor.stopJobOnError"))),
+                h3("rsync"),
+                p(task.getCommandAsString())
+        )
+                ),
+                hr()
+        ));
+
+        return html.render();
     }
 
-    private void addOptionalForJob(boolean active, String command, String header) {
-        if (active) {
-            mJobBuilder.append(String.format("<p><b>%s</b><br /><i>%s</i></p>", header, command));
+    private DivTag getExecTag(ExecuteItem item, String text) {
+        if (item.isEnabled()) {
+            return div(
+                    p(join(b(text), br(), i(item.getCommand()))),
+                    iff(item.isHaltOnError(), p(Dict.STOP_ON_ERROR.toString()))
+            );
+        } else {
+            return null;
         }
-    }
-
-    private void addOptionalForTask(boolean active, String command, String header) {
-        if (active) {
-            mTaskBuilder.append(String.format("<p><b>%s</b><br /><i>%s</i></p>", header, command));
-        }
-    }
-
-    private String getSummaryAsHtml(Task task) {
-        mTaskBuilder = new StringBuilder("<h2>").append(task.getName()).append("</h2>");
-
-        addOptionalForTask(true, task.getSource(), Dict.SOURCE.toString());
-        addOptionalForTask(true, task.getDestination(), Dict.DESTINATION.toString());
-
-        var bundle = NbBundle.getBundle(Task.class);
-        var mExecuteSection = task.getExecuteSection();
-        addOptionalForTask(mExecuteSection.getBefore().isEnabled(), mExecuteSection.getBefore().getCommand(), bundle.getString("TaskExecutePanel.beforePanel.header"));
-        if (mExecuteSection.getBefore().isEnabled() && mExecuteSection.getBefore().isHaltOnError()) {
-            mTaskBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalForTask(mExecuteSection.getAfterFail().isEnabled(), mExecuteSection.getAfterFail().getCommand(), bundle.getString("TaskExecutePanel.afterFailurePanel.header"));
-        if (mExecuteSection.getAfterFail().isEnabled() && mExecuteSection.getAfterFail().isHaltOnError()) {
-            mTaskBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalForTask(mExecuteSection.getAfterOk().isEnabled(), mExecuteSection.getAfterOk().getCommand(), bundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
-        if (mExecuteSection.getAfterOk().isEnabled() && mExecuteSection.getAfterOk().isHaltOnError()) {
-            mTaskBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalForTask(mExecuteSection.getAfter().isEnabled(), mExecuteSection.getAfter().getCommand(), bundle.getString("TaskExecutePanel.afterPanel.header"));
-        if (mExecuteSection.getAfter().isEnabled() && mExecuteSection.getAfter().isHaltOnError()) {
-            mTaskBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        if (mExecuteSection.isJobHaltOnError()) {
-            mTaskBuilder.append("<p>").append(bundle.getString("TaskExecutePanel.jobHaltOnErrorCheckBox.text")).append("</p>");
-        }
-
-        mTaskBuilder.append("<h2>rsync</h2>").append(task.getCommandAsString());
-
-        return mTaskBuilder.toString();
-    }
-
-    private String getSummaryAsHtmlJob() {
-        mJobBuilder = new StringBuilder("<html><body>");
-        mJobBuilder.append("<h1>").append(mJob.getName()).append("</h1>");
-        var bundle = NbBundle.getBundle(Job.class);
-        var mExecuteSection = mJob.getExecuteSection();
-        addOptionalForJob(mExecuteSection.getBefore().isEnabled(), mExecuteSection.getBefore().getCommand(), bundle.getString("JobPanel.beforePanel.header"));
-        if (mExecuteSection.getBefore().isEnabled() && mExecuteSection.getBefore().isHaltOnError()) {
-            mJobBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalForJob(mExecuteSection.getAfterFail().isEnabled(), mExecuteSection.getAfterFail().getCommand(), bundle.getString("JobPanel.afterFailurePanel.header"));
-        addOptionalForJob(mExecuteSection.getAfterOk().isEnabled(), mExecuteSection.getAfterOk().getCommand(), bundle.getString("JobPanel.afterSuccessPanel.header"));
-        addOptionalForJob(mExecuteSection.getAfter().isEnabled(), mExecuteSection.getAfter().getCommand(), bundle.getString("JobPanel.afterPanel.header"));
-
-        for (Task task : mJob.getTasks()) {
-            mJobBuilder.append("<hr>");
-            mJobBuilder.append(getSummaryAsHtml(task));
-        }
-
-        mJobBuilder.append("</body></html>");
-
-        return mJobBuilder.toString();
     }
 }
