@@ -16,6 +16,7 @@
 package se.trixon.rsyncfx.ui.editor;
 
 import java.util.ArrayList;
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -28,7 +29,6 @@ import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.almond.util.fx.control.FileChooserPane;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.TaskManager;
@@ -50,18 +50,18 @@ public class JobEditor extends BaseEditor<Job> {
     private CheckBox mLogSeparateCheckBox;
     private final ToggleGroup mLogToggleGroup = new ToggleGroup();
     private RadioButton mLogUniqueRadioButton;
-    private final JobManager mManager = JobManager.getInstance();
     private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
     private RunSectionPane mRunAfterSection;
     private RunSectionPane mRunBeforeSection;
 
     public JobEditor() {
+        super(JobManager.getInstance());
         createUI();
     }
 
     @Override
-    public void load(Job item) {
+    public void load(Job item, Node saveNode) {
         if (item == null) {
             item = new Job();
         }
@@ -82,7 +82,7 @@ public class JobEditor extends BaseEditor<Job> {
         mListSelectionView.getSourceItems().removeAll(tasks);
         mListSelectionView.getTargetItems().setAll(tasks);
 
-        super.load(item);
+        super.load(item, saveNode);
         mItem = item;
     }
 
@@ -194,11 +194,6 @@ public class JobEditor extends BaseEditor<Job> {
                 createLogTab(),
                 createNoteTab()
         );
-    }
-
-    private void loadRun(FileChooserPane fcp, boolean selected, String command) {
-        fcp.getCheckBox().setSelected(selected);
-        fcp.setPath(command);
     }
 
     private void moveSelectedTasksDown(ListView<Task> listView) {

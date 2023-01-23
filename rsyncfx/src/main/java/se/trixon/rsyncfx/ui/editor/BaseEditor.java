@@ -16,6 +16,9 @@
 package se.trixon.rsyncfx.ui.editor;
 
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
+import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -24,10 +27,14 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import org.apache.commons.lang3.StringUtils;
+import org.controlsfx.validation.ValidationSupport;
+import org.controlsfx.validation.Validator;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.rsyncfx.core.BaseItem;
+import se.trixon.rsyncfx.core.BaseManager;
 import se.trixon.rsyncfx.core.ExecuteItem;
 import se.trixon.rsyncfx.core.StorageManager;
 
@@ -38,14 +45,19 @@ import se.trixon.rsyncfx.core.StorageManager;
 public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
 
     protected ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
+    protected BaseManager<T> mManager;
+    protected final ValidationSupport mValidationSupport = new ValidationSupport();
     private final TextField mDescTextField = new TextField();
     private T mItem;
     private final TextField mNameTextField = new TextField();
     private final TextArea mNoteTextArea = new TextArea();
+    private Node mSaveNode;
     private final TabPane mTabPane = new TabPane();
 
-    public BaseEditor() {
+    public BaseEditor(BaseManager<T> manager) {
+        mManager = manager;
         createUI();
+        initValidation();
     }
 
     public Tab createNoteTab() {
@@ -56,8 +68,9 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         return mTabPane;
     }
 
-    public void load(T item) {
+    public void load(T item, Node saveNode) {
         mItem = item;
+        mSaveNode = saveNode;
         mNameTextField.setText(item.getName());
         mDescTextField.setText(item.getDescription());
         mNoteTextArea.setText(item.getNote());
@@ -96,5 +109,33 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
         mNoteTextArea.setPrefHeight(68);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), descLabel, mTabPane);
+    }
+
+    private void initValidation() {
+        mValidationSupport.validationResultProperty().addListener((p, o, n) -> {
+            mSaveNode.setDisable(mValidationSupport.isInvalid());
+        });
+
+        mValidationSupport.initInitialDecoration();
+
+        final String textRequired = "Text is required";
+        final String textUnique = "Text has to be unique";
+
+        Predicate uniqueNamePredicate = (Predicate) (Object o) -> {
+            var newName = mNameTextField.getText();
+            if (!mManager.exists(newName)) {
+                return true;
+            } else {
+                return StringUtils.equalsIgnoreCase(newName, mItem.getName());
+            }
+        };
+
+        Platform.runLater(() -> {
+            mValidationSupport.registerValidator(mNameTextField, true, Validator.combine(
+                    Validator.createEmptyValidator(textRequired),
+                    Validator.createPredicateValidator(uniqueNamePredicate, textUnique)
+            ));
+            mValidationSupport.registerValidator(mDescTextField, true, Validator.createEmptyValidator(textRequired));
+        });
     }
 }

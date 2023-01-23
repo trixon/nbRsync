@@ -15,13 +15,16 @@
  */
 package se.trixon.rsyncfx.ui.editor;
 
+import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import org.controlsfx.validation.Validator;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPane;
@@ -38,7 +41,6 @@ public class TaskEditor extends BaseEditor<Task> {
     private CheckBox mDirForceSourceSlashCheckBox;
     private FileChooserPane mDirSourceFileChooser;
     private Task mItem;
-    private final TaskManager mManager = TaskManager.getInstance();
     private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
     private RunSectionPane mRunAfterSection;
@@ -46,11 +48,13 @@ public class TaskEditor extends BaseEditor<Task> {
     private CheckBox mRunStopJobOnErrorCheckBox;
 
     public TaskEditor() {
+        super(TaskManager.getInstance());
         createUI();
+        initValidation();
     }
 
     @Override
-    public void load(Task item) {
+    public void load(Task item, Node saveNode) {
         if (item == null) {
             item = new Task();
         }
@@ -66,7 +70,7 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunAfterSection.load(execute.getAfter());
         mRunStopJobOnErrorCheckBox.setSelected(execute.isJobHaltOnError());
 
-        super.load(item);
+        super.load(item, saveNode);
         mItem = item;
     }
 
@@ -159,6 +163,15 @@ public class TaskEditor extends BaseEditor<Task> {
                 excludeTab,
                 createNoteTab()
         );
+    }
+
+    private void initValidation() {
+        final String textRequired = "Text is required";
+
+        Platform.runLater(() -> {
+            mValidationSupport.registerValidator(mDirSourceFileChooser.getTextField(), true, Validator.createEmptyValidator(textRequired));
+            mValidationSupport.registerValidator(mDirDestFileChooser.getTextField(), true, Validator.createEmptyValidator(textRequired));
+        });
     }
 
 }

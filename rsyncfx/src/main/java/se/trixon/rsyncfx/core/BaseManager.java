@@ -54,6 +54,11 @@ public abstract class BaseManager<T extends BaseItem> {
         return getIdToItem().containsValue(item);
     }
 
+    public boolean exists(String name) {
+        return getItems().stream()
+                .anyMatch(item -> (StringUtils.equalsIgnoreCase(name, item.getName())));
+    }
+
     public T getById(String id) {
         return getIdToItem().get(id);
     }

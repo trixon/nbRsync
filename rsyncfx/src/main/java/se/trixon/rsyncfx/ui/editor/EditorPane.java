@@ -234,9 +234,9 @@ public class EditorPane extends HBox {
 
             var dialogPane = alert.getDialogPane();
             var editor = mManager.getEditor();
-            editor.load(item);
+            editor.load(item, dialogPane.lookupButton(saveButtonType));
             dialogPane.setContent(editor);
-            dialogPane.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(640));
+            dialogPane.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(660));
             dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
 
             var result = alert.showAndWait();
