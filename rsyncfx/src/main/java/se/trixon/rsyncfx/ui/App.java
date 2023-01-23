@@ -100,7 +100,7 @@ public class App extends Application {
             mWorkbench.openModule(mEditorModule);
 //            mWorkbench.openModule(mHistoryModule);
             mWorkbench.openModule(mMainModule);
-            mWorkbench.openModule(mEditorModule);
+//            mWorkbench.openModule(mEditorModule);
 
             for (var module : mWorkbench.getModules()) {
                 if (module instanceof BaseModule baseModule) {

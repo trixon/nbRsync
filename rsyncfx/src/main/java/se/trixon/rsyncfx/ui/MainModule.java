@@ -51,6 +51,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     private final ListView<Job> mListView = new ListView<>();
     private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class).node("sessionManager"));
     private final SplitPane mSplitPane = new SplitPane();
+    private SummaryBuilder mSummaryBuilder;
     private final WebView mWebView = new WebView();
 
     public MainModule() {
@@ -71,6 +72,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         initListeners();
 
         displaySystemInformation();
+        mSummaryBuilder = new SummaryBuilder();
     }
 
     @Override
@@ -123,7 +125,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     private void initListeners() {
         mListView.getSelectionModel().selectedItemProperty().addListener((p, o, job) -> {
             if (job != null) {
-                mWebView.getEngine().loadContent(job.getSummaryAsHtml());
+                mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
             } else {
                 displaySystemInformation();
             }

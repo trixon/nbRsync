@@ -17,9 +17,6 @@ package se.trixon.rsyncfx.core.job;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
-import org.apache.commons.lang3.StringUtils;
-import org.openide.util.NbBundle;
-import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.BaseItem;
 import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.task.Task;
@@ -40,10 +37,8 @@ public class Job extends BaseItem {
     private boolean mLogOutput = true;
     @SerializedName("logSeparateErrors")
     private boolean mLogSeparateErrors = true;
-    private transient StringBuilder mSummaryBuilder;
     @SerializedName("tasks")
     private ArrayList<String> mTaskIds = new ArrayList<>();
-//    private transient List<Task> mTasks = new ArrayList<>();
 
     public Job() {
         mExecuteSection = new JobExecuteSection();
@@ -57,56 +52,12 @@ public class Job extends BaseItem {
         mExecuteSection = new JobExecuteSection();
     }
 
-    public String getCaption(boolean verbose) {
-        String caption;
-        if (verbose) {
-            String template = "<html><center><h2><b>%s</b></h2><p><i>%s</i></p><br />%s <font size=\"6\">%s</font></center></html>";
-            caption = String.format(template, mName, mDescription, getLastRunDateTime("-"), getLastRunStatus());
-        } else {
-            String template = "<html><b>%s</b><i>%s</i> %s %s</html>";
-            String description = mDescription;
-            if (StringUtils.isEmpty(description)) {
-                description = "&nbsp;";
-            } else {
-                description = String.format("(%s)", description);
-            }
-            caption = String.format(template, mName, description, getLastRunDateTime(""), getLastRunStatus());
-        }
-
-        return caption;
-    }
-
     public JobExecuteSection getExecuteSection() {
         return mExecuteSection;
     }
 
     public int getLogMode() {
         return mLogMode;
-    }
-
-    @Override
-    public String getSummaryAsHtml() {
-        mSummaryBuilder = new StringBuilder("<html><body>");
-        mSummaryBuilder.append("<h1>").append(getName()).append("</h1>");
-        var bundle = NbBundle.getBundle(Job.class);
-
-        addOptionalToSummary(mExecuteSection.getBefore().isEnabled(), mExecuteSection.getBefore().getCommand(), bundle.getString("JobPanel.beforePanel.header"));
-        if (mExecuteSection.getBefore().isEnabled() && mExecuteSection.getBefore().isHaltOnError()) {
-            mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalToSummary(mExecuteSection.getAfterFail().isEnabled(), mExecuteSection.getAfterFail().getCommand(), bundle.getString("JobPanel.afterFailurePanel.header"));
-        addOptionalToSummary(mExecuteSection.getAfterOk().isEnabled(), mExecuteSection.getAfterOk().getCommand(), bundle.getString("JobPanel.afterSuccessPanel.header"));
-        addOptionalToSummary(mExecuteSection.getAfter().isEnabled(), mExecuteSection.getAfter().getCommand(), bundle.getString("JobPanel.afterPanel.header"));
-
-        for (Task task : getTasks()) {
-            mSummaryBuilder.append("<hr>");
-            mSummaryBuilder.append(task.getSummaryAsHtml());
-        }
-
-        mSummaryBuilder.append("</body></html>");
-
-        return mSummaryBuilder.toString();
     }
 
     public ArrayList<String> getTaskIds() {
@@ -157,28 +108,8 @@ public class Job extends BaseItem {
         mTaskIds = taskIds;
     }
 
-//    public void setTasks(List<Task> tasksSkip) {
-//        mTasks = tasksSkip;
-//    }
-//
-//    public void setTasks(DefaultListModel model) {
-//        mTasks.clear();
-//        mTaskIds.clear();
-//
-//        for (Object object : model.toArray()) {
-//            Task task = (Task) object;
-//            mTasks.add(task);
-//            mTaskIds.add(task.getId());
-//        }
-//    }
     @Override
     public String toString() {
         return getName();
-    }
-
-    private void addOptionalToSummary(boolean active, String command, String header) {
-        if (active) {
-            mSummaryBuilder.append(String.format("<p><b>%s</b><br /><i>%s</i></p>", header, command));
-        }
     }
 }

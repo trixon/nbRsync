@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.openide.util.NbBundle;
-import se.trixon.almond.util.Dict;
 import se.trixon.rsyncfx.core.BaseItem;
 
 /**
@@ -45,7 +43,6 @@ public class Task extends BaseItem {
     private final OptionSection mOptionSection;
     @SerializedName("source")
     private String mSource;
-    private transient StringBuilder mSummaryBuilder;
 
     public Task() {
         mExecuteSection = new TaskExecuteSection();
@@ -68,8 +65,13 @@ public class Task extends BaseItem {
         String destination;
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            source = "/cygdrive/" + mSource.replace(":", "").replace("\\", "/");
-            destination = "/cygdrive/" + mDestination.replace(":", "").replace("\\", "/");
+            var s = StringUtils.remove(mSource, ":");
+            s = StringUtils.replace(s, "\\", "/");
+            source = "/cygdrive/" + s;
+
+            var d = StringUtils.remove(mDestination, ":");
+            d = StringUtils.replace(d, "\\", "/");
+            destination = "/cygdrive/" + d;
         } else {
             source = mSource;
             destination = mDestination;
@@ -109,44 +111,6 @@ public class Task extends BaseItem {
         return mSource;
     }
 
-    @Override
-    public String getSummaryAsHtml() {
-        mSummaryBuilder = new StringBuilder("<h2>").append(getName()).append("</h2>");
-
-        addOptionalToSummary(true, getSource(), Dict.SOURCE.toString());
-        addOptionalToSummary(true, getDestination(), Dict.DESTINATION.toString());
-
-        var bundle = NbBundle.getBundle(Task.class);
-
-        addOptionalToSummary(mExecuteSection.getBefore().isEnabled(), mExecuteSection.getBefore().getCommand(), bundle.getString("TaskExecutePanel.beforePanel.header"));
-        if (mExecuteSection.getBefore().isEnabled() && mExecuteSection.getBefore().isHaltOnError()) {
-            mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalToSummary(mExecuteSection.getAfterFail().isEnabled(), mExecuteSection.getAfterFail().getCommand(), bundle.getString("TaskExecutePanel.afterFailurePanel.header"));
-        if (mExecuteSection.getAfterFail().isEnabled() && mExecuteSection.getAfterFail().isHaltOnError()) {
-            mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalToSummary(mExecuteSection.getAfterOk().isEnabled(), mExecuteSection.getAfterOk().getCommand(), bundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
-        if (mExecuteSection.getAfterOk().isEnabled() && mExecuteSection.getAfterOk().isHaltOnError()) {
-            mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        addOptionalToSummary(mExecuteSection.getAfter().isEnabled(), mExecuteSection.getAfter().getCommand(), bundle.getString("TaskExecutePanel.afterPanel.header"));
-        if (mExecuteSection.getAfter().isEnabled() && mExecuteSection.getAfter().isHaltOnError()) {
-            mSummaryBuilder.append(Dict.STOP_ON_ERROR.toString());
-        }
-
-        if (mExecuteSection.isJobHaltOnError()) {
-            mSummaryBuilder.append("<p>").append(bundle.getString("TaskExecutePanel.jobHaltOnErrorCheckBox.text")).append("</p>");
-        }
-
-        mSummaryBuilder.append("<h2>rsync</h2>").append(getCommandAsString());
-
-        return mSummaryBuilder.toString();
-    }
-
     public boolean isDryRun() {
         return mOptionSection.getCommand().contains("--dry-run");
     }
@@ -182,9 +146,4 @@ public class Task extends BaseItem {
         }
     }
 
-    private void addOptionalToSummary(boolean active, String command, String header) {
-        if (active) {
-            mSummaryBuilder.append(String.format("<p><b>%s</b><br /><i>%s</i></p>", header, command));
-        }
-    }
 }
