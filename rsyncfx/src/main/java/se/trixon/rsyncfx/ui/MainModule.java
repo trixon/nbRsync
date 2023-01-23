@@ -18,10 +18,13 @@ package se.trixon.rsyncfx.ui;
 import com.dlsc.gemsfx.util.SessionManager;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -32,11 +35,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.web.WebView;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
@@ -87,7 +94,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         });
 
         var aboutRsyncToolbarItem = new ToolbarItem(Dict.ABOUT_S.toString().formatted("rsync"), MaterialIcon._Notification.SYNC.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
-            System.out.println("ABOUT RSYNC");
+            displayRsyncInformation();
         });
 
         getToolbarControlsLeft().setAll(
@@ -107,6 +114,35 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
 
         var nullSelectionBooleanBinding = mListView.getSelectionModel().selectedItemProperty().isNull();
         startToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
+    }
+
+    private void displayRsyncInformation() {
+        var processBuilder = new ProcessBuilder(new String[]{mOptions.getRsyncPath()});
+        String result = "";
+
+        try {
+            var process = processBuilder.start();
+            result = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+            process.waitFor();
+            var information = StringUtils.substringBefore(result, "Usage: rsync");
+            var alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(RsyncFx.getInstance().getStage());
+
+            alert.setTitle(Dict.ABOUT_S.toString().formatted("rsync"));
+            alert.setGraphic(null);
+            alert.setHeaderText(null);
+            alert.setResizable(true);
+
+            alert.setContentText(information);
+            var dialogPane = alert.getDialogPane();
+
+            dialogPane.setPrefWidth(FxHelper.getUIScaled(600));
+            FxHelper.removeSceneInitFlicker(dialogPane);
+
+            FxHelper.showAndWait(alert, RsyncFx.getInstance().getStage());
+        } catch (IOException | InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void displaySystemInformation() {
