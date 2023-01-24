@@ -27,7 +27,9 @@ import se.trixon.almond.util.OptionsBase;
  */
 public class Options extends OptionsBase {
 
+    public static final int DEFAULT_MAIN_MODE = 0;
     public static final String DEFAULT_PATH_RSYNC = "rsync";
+    public static final String KEY_MAIN_MODE = "main.mode";
     public static final String KEY_PATH_RSYNC = "path.rsync";
 
     private static final boolean DEFAULT_UI_NIGHTMODE = false;

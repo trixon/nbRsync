@@ -15,30 +15,20 @@
  */
 package se.trixon.rsyncfx.ui;
 
-import com.dlsc.gemsfx.util.SessionManager;
 import com.dlsc.workbenchfx.Workbench;
 import com.dlsc.workbenchfx.view.controls.ToolbarItem;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SplitPane;
-import javafx.scene.input.MouseButton;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.web.WebView;
-import org.openide.util.NbPreferences;
 import se.trixon.almond.util.Dict;
-import se.trixon.almond.util.SystemHelper;
-import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.rsyncfx.Options;
+import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
-import se.trixon.rsyncfx.core.job.Job;
 import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
 import se.trixon.rsyncfx.ui.common.BaseModule;
 
@@ -48,11 +38,9 @@ import se.trixon.rsyncfx.ui.common.BaseModule;
  */
 public class MainModule extends BaseModule implements AlwaysOpenTab {
 
-    private final ListView<Job> mListView = new ListView<>();
-    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class).node("sessionManager"));
-    private final SplitPane mSplitPane = new SplitPane();
-    private SummaryBuilder mSummaryBuilder;
-    private final WebView mWebView = new WebView();
+    private MainGridView mMainGridView;
+    private MainListView mMainListView;
+    private final BorderPane mRoot = new BorderPane();
 
     public MainModule() {
         super(Dict.HOME.toString(), MaterialIcon._Action.HOME.getImageView(ICON_SIZE_MODULE, Color.WHITE).getImage());
@@ -60,7 +48,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
 
     @Override
     public Node activate() {
-        return mSplitPane;
+        return mRoot;
     }
 
     @Override
@@ -68,120 +56,80 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         super.init(workbench);
 
         createUI();
-        initBindings();
-        initListeners();
-
-        displaySystemInformation();
-        mSummaryBuilder = new SummaryBuilder();
-    }
-
-    @Override
-    public void updateNightMode(boolean state) {
-        var name = state ? "darkWeb.css" : "lightWeb.css";
-        mWebView.getEngine().setUserStyleSheetLocation(getClass().getResource(name).toExternalForm());
+        initAccelerators();
+        updateMainMode();
     }
 
     private void createUI() {
+        mMainGridView = new MainGridView();
+        mMainListView = new MainListView();
+
         var startToolbarItem = new ToolbarItem(Dict.START.toString(), MaterialIcon._Av.PLAY_ARROW.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
             doStart();
         });
+
+        var gridToolbarItem = new ToolbarItem(MaterialIcon._Navigation.APPS.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
+            updateMainMode(0);
+        });
+        gridToolbarItem.setTooltip(new Tooltip("GRID VIEW"));
+
+        var listToolbarItem = new ToolbarItem(MaterialIcon._Action.LIST.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
+            updateMainMode(1);
+        });
+        listToolbarItem.setTooltip(new Tooltip("LIST VIEW"));
 
         getToolbarControlsLeft().setAll(
                 startToolbarItem
         );
 
-        mSplitPane.getItems().setAll(mListView, mWebView);
-        mListView.itemsProperty().bind(mJobManager.itemsProperty());
+        getToolbarControlsRight().setAll(
+                gridToolbarItem,
+                listToolbarItem
+        );
 
-        mListView.setMinWidth(FxHelper.getUIScaled(250));
-        SplitPane.setResizableWithParent(mListView, Boolean.FALSE);
-        mListView.setCellFactory(listView -> new JobListCell());
-
-        var nullSelectionBooleanBinding = mListView.getSelectionModel().selectedItemProperty().isNull();
-        startToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
-    }
-
-    private void displaySystemInformation() {
-        mWebView.getEngine().loadContent("<pre>%s</pre>".formatted(SystemHelper.getSystemInfo()));
+//        var nullSelectionBooleanBinding = mListView.getSelectionModel().selectedItemProperty().isNull();
+//        startToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
     }
 
     private void doStart() {
-        System.out.println("START " + mListView.getSelectionModel().getSelectedItem());
+        System.out.println("START");
     }
 
-    private void initBindings() {
-        mSplitPane.setDividerPositions(0);
-        mSessionManager.register("mainModule.splitter1", mSplitPane.getDividers().get(0).positionProperty());
-    }
+    private void initAccelerators() {
+        var accelerators = RsyncFx.getInstance().getStage().getScene().getAccelerators();
 
-    private void initListeners() {
-        mListView.getSelectionModel().selectedItemProperty().addListener((p, o, job) -> {
-            if (job != null) {
-                mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
-            } else {
-                displaySystemInformation();
-            }
+        accelerators.put(new KeyCodeCombination(KeyCode.NUMPAD1, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateMainMode(0);
         });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.NUMPAD1, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateMainMode(0);
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateMainMode(0);
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.NUMPAD2, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateMainMode(1);
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateMainMode(1);
+        });
+
     }
 
-    class JobListCell extends ListCell<Job> {
-
-        private final Label mDescLabel = new Label();
-        private final Label mLastLabel = new Label();
-        private final Label mNameLabel = new Label();
-        private VBox mRoot;
-        private final SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat();
-
-        public JobListCell() {
-            createUI();
+    private void updateMainMode() {
+        if (mOptions.getInt(Options.KEY_MAIN_MODE, Options.DEFAULT_MAIN_MODE) == 0) {
+            mRoot.setCenter(mMainGridView.getNode());
+        } else {
+            mRoot.setCenter(mMainListView.getNode());
         }
+    }
 
-        @Override
-        protected void updateItem(Job job, boolean empty) {
-            super.updateItem(job, empty);
-
-            if (job == null || empty) {
-                clearContent();
-            } else {
-                addContent(job);
-            }
-        }
-
-        private void addContent(Job job) {
-            setText(null);
-
-            mNameLabel.setText(job.getName());
-            mDescLabel.setText(job.getDescription());
-            String lastRun = "-";
-            if (job.getLastRun() != 0) {
-                lastRun = mSimpleDateFormat.format(new Date(job.getLastRun()));
-            }
-            mLastLabel.setText(lastRun);
-
-            setGraphic(mRoot);
-        }
-
-        private void clearContent() {
-            setText(null);
-            setGraphic(null);
-        }
-
-        private void createUI() {
-            String fontFamily = mDefaultFont.getFamily();
-            double fontSize = mDefaultFont.getSize();
-
-            mNameLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.4));
-            mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
-            mLastLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
-
-            mRoot = new VBox(mNameLabel, mDescLabel, mLastLabel);
-            mRoot.setAlignment(Pos.CENTER_LEFT);
-            mRoot.setOnMouseClicked(mouseEvent -> {
-                if (mouseEvent.getButton() == MouseButton.PRIMARY
-                        && mouseEvent.getClickCount() == 2) {
-                    doStart();
-                }
-            });
-        }
+    private void updateMainMode(int mode) {
+        mOptions.put(Options.KEY_MAIN_MODE, mode);
+        updateMainMode();
     }
 }

@@ -15,10 +15,13 @@
  */
 package se.trixon.rsyncfx;
 
+import com.dlsc.gemsfx.util.SessionManager;
 import com.dlsc.workbenchfx.Workbench;
 import javafx.stage.Stage;
+import org.openide.util.NbPreferences;
 import se.trixon.almond.util.ExecutionFlow;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.rsyncfx.ui.MainModule;
 
 /**
  *
@@ -29,6 +32,7 @@ public class RsyncFx {
     public static final int ICON_SIZE_TOOLBAR = 32;
 
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
+    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class).node("sessionManager"));
     private Stage mStage;
     private Workbench mWorkbench;
 
@@ -49,6 +53,10 @@ public class RsyncFx {
 
     public ExecutionFlow getExecutionFlow() {
         return mExecutionFlow;
+    }
+
+    public SessionManager getSessionManager() {
+        return mSessionManager;
     }
 
     public Stage getStage() {
