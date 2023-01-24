@@ -72,6 +72,7 @@ public class OptionsPane extends VBox {
         mNightModeToggleSwitch.setMaxWidth(Double.MAX_VALUE);
         mNightModeToggleSwitch.selectedProperty().bindBidirectional(mOptions.nightModeProperty());
 
+        mRsyncChooser.setEnabledPathExpander(false);
         mRsyncChooser.setPath(mOptions.getRsyncPath());
     }
 
