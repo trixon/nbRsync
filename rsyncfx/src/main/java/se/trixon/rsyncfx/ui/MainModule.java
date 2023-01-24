@@ -117,32 +117,36 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     }
 
     private void displayRsyncInformation() {
-        var processBuilder = new ProcessBuilder(new String[]{mOptions.getRsyncPath()});
-        String result = "";
+        new Thread(() -> {
+            var processBuilder = new ProcessBuilder(new String[]{mOptions.getRsyncPath()});
+            String result = "";
 
-        try {
-            var process = processBuilder.start();
-            result = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-            process.waitFor();
-            var information = StringUtils.substringBefore(result, "Usage: rsync");
-            var alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.initOwner(RsyncFx.getInstance().getStage());
+            try {
+                var process = processBuilder.start();
+                result = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+                process.waitFor();
+                var information = StringUtils.substringBefore(result, "Usage: rsync");
+                FxHelper.runLater(() -> {
+                    var alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.initOwner(RsyncFx.getInstance().getStage());
 
-            alert.setTitle(Dict.ABOUT_S.toString().formatted("rsync"));
-            alert.setGraphic(null);
-            alert.setHeaderText(null);
-            alert.setResizable(true);
+                    alert.setTitle(Dict.ABOUT_S.toString().formatted("rsync"));
+                    alert.setGraphic(null);
+                    alert.setHeaderText(null);
+                    alert.setResizable(true);
 
-            alert.setContentText(information);
-            var dialogPane = alert.getDialogPane();
+                    alert.setContentText(information);
+                    var dialogPane = alert.getDialogPane();
 
-            dialogPane.setPrefWidth(FxHelper.getUIScaled(600));
-            FxHelper.removeSceneInitFlicker(dialogPane);
+                    dialogPane.setPrefWidth(FxHelper.getUIScaled(600));
+                    FxHelper.removeSceneInitFlicker(dialogPane);
 
-            FxHelper.showAndWait(alert, RsyncFx.getInstance().getStage());
-        } catch (IOException | InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+                    FxHelper.showAndWait(alert, RsyncFx.getInstance().getStage());
+                });
+            } catch (IOException | InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }).start();
     }
 
     private void displaySystemInformation() {
