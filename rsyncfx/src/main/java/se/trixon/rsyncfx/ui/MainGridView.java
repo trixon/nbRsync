@@ -15,11 +15,15 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.rsyncfx.core.job.Job;
@@ -45,15 +49,24 @@ public class MainGridView extends MainViewBase {
     }
 
     private void createUI() {
-        mRoot.setTop(mComboBox);
-        mRoot.setCenter(mGridPane);
-        mRoot.setBackground(FxHelper.createBackground(Color.BLUE));
+//        mRoot.setBackground(FxHelper.createBackground(Color.BLUE));
         mGridPane.setBackground(FxHelper.createBackground(Color.CYAN));
         mComboBox.prefWidthProperty().bind(mRoot.widthProperty());
-
+        mRoot.setOpacity(1.0);
         var button = new Button("job");
         mGridPane.add(button, 0, 0);
 
+        mGridPane.setMaxSize(400, 300);
+//        mRoot.getChildren().setAll(mComboBox, mGridPane);
+//        mRoot = new VBox(mComboBox, mGridPane);
+        mRoot.setCenter(mGridPane);
+        mRoot.setTop(mComboBox);
+        var label = new Label("xxx");
+        mRoot.setCenter(mGridPane);
+        label.setAlignment(Pos.TOP_RIGHT);
+        label.setBackground(FxHelper.createBackground(Color.RED));
+        VBox.setVgrow(mGridPane, Priority.NEVER);
+//        GridPane.setFillWidth(label, true);
     }
 
     private void initBindings() {
