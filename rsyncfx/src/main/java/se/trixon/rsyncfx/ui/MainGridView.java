@@ -15,11 +15,9 @@
  */
 package se.trixon.rsyncfx.ui;
 
-import javafx.geometry.Pos;
+import java.util.ArrayList;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -34,6 +32,9 @@ import se.trixon.rsyncfx.core.job.Job;
  */
 public class MainGridView extends MainViewBase {
 
+    private static final int NUM_OF_BUTTONS = 9;
+    private static final int NUM_OF_COLUMNS = 3;
+    private final ArrayList<SpeedDialButton> mButtons = new ArrayList<>();
     private final ComboBox<Job> mComboBox = new ComboBox<>();
     private final GridPane mGridPane = new GridPane();
     private final BorderPane mRoot = new BorderPane();
@@ -49,24 +50,21 @@ public class MainGridView extends MainViewBase {
     }
 
     private void createUI() {
-//        mRoot.setBackground(FxHelper.createBackground(Color.BLUE));
-        mGridPane.setBackground(FxHelper.createBackground(Color.CYAN));
+        mRoot.setBackground(FxHelper.createBackground(Color.GRAY));
         mComboBox.prefWidthProperty().bind(mRoot.widthProperty());
-        mRoot.setOpacity(1.0);
-        var button = new Button("job");
-        mGridPane.add(button, 0, 0);
 
-        mGridPane.setMaxSize(400, 300);
-//        mRoot.getChildren().setAll(mComboBox, mGridPane);
-//        mRoot = new VBox(mComboBox, mGridPane);
-        mRoot.setCenter(mGridPane);
+        for (int i = 0; i < NUM_OF_BUTTONS; i++) {
+            var speedDialButton = new SpeedDialButton();
+            mButtons.add(speedDialButton);
+            speedDialButton.getButton().setDisable((i & 1) == 0);
+            mGridPane.add(speedDialButton.getRoot(), i % NUM_OF_COLUMNS, i % NUM_OF_BUTTONS / NUM_OF_COLUMNS);
+        }
+
+        FxHelper.autoSizeColumn(mGridPane, NUM_OF_COLUMNS);
+        mGridPane.setMaxSize(1, 1);
         mRoot.setTop(mComboBox);
-        var label = new Label("xxx");
         mRoot.setCenter(mGridPane);
-        label.setAlignment(Pos.TOP_RIGHT);
-        label.setBackground(FxHelper.createBackground(Color.RED));
         VBox.setVgrow(mGridPane, Priority.NEVER);
-//        GridPane.setFillWidth(label, true);
     }
 
     private void initBindings() {

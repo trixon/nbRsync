@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
@@ -106,8 +105,7 @@ public class App extends Application {
         initListeners();
 
         mStage.show();
-
-        FxHelper.runLaterDelayed(0, () -> {
+        FxHelper.runLaterDelayed(10, () -> {
             mWorkbench.openModule(mMainModule);
 //            mWorkbench.openModule(mEditorModule);
 //            mWorkbench.openModule(mHistoryModule);
@@ -338,7 +336,7 @@ public class App extends Application {
         String darkTheme = getClass().getResource("darkTheme.css").toExternalForm();
         String darculaTheme = FxHelper.class.getResource("darcula.css").toExternalForm();
 
-        ObservableList<String> stylesheets = mWorkbench.getStylesheets();
+        var stylesheets = mWorkbench.getStylesheets();
         FxHelper.setDarkThemeEnabled(mOptions.isNightMode());
 
         if (mOptions.isNightMode()) {
