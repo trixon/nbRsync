@@ -54,9 +54,8 @@ public class MainGridView extends MainViewBase {
         mComboBox.prefWidthProperty().bind(mRoot.widthProperty());
 
         for (int i = 0; i < NUM_OF_BUTTONS; i++) {
-            var speedDialButton = new SpeedDialButton();
+            var speedDialButton = new SpeedDialButton(i);
             mButtons.add(speedDialButton);
-            speedDialButton.getButton().setDisable((i & 1) == 0);
             mGridPane.add(speedDialButton.getRoot(), i % NUM_OF_COLUMNS, i % NUM_OF_BUTTONS / NUM_OF_COLUMNS);
         }
 

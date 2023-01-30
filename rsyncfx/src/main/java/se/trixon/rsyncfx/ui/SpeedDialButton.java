@@ -15,10 +15,12 @@
  */
 package se.trixon.rsyncfx.ui;
 
+import java.util.prefs.Preferences;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
@@ -27,6 +29,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import org.openide.util.NbPreferences;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.rsyncfx.core.JobManager;
@@ -39,17 +42,26 @@ import se.trixon.rsyncfx.core.job.Job;
 public class SpeedDialButton {
 
     private final Button mButton = new Button();
-    private final Text mDescText = new Text("DESCRIPTION");
+    private final Label mDescText = new Label();
+    private MenuItem mEditMenuItem;
+    private MenuItem mEditorMenuItem;
+    private final int mIndex;
     private final VBox mInternalBox = new VBox();
+    private Job mJob;
     private final JobManager mJobManager = JobManager.getInstance();
     private final Text mLastRunText = new Text("yyyy-MM-dd");
     private final Text mNameText = new Text("NAME");
+    private final Preferences mPreferences = NbPreferences.forModule(SpeedDialButton.class).node("speedDial");
+    private MenuItem mResetMenuItem;
     private final BorderPane mRoot = new BorderPane();
 
-    public SpeedDialButton() {
+    public SpeedDialButton(int index) {
+        mIndex = index;
         createUI();
         initListeners();
         initContextMenu();
+
+        load();
     }
 
     public Button getButton() {
@@ -63,7 +75,6 @@ public class SpeedDialButton {
     private void createUI() {
         mInternalBox.getChildren().setAll(mNameText, mDescText, mLastRunText);
         mNameText.setTextAlignment(TextAlignment.CENTER);
-        mNameText.setFill(Color.RED);
 
         VBox.setVgrow(mNameText, Priority.ALWAYS);
 
@@ -76,22 +87,28 @@ public class SpeedDialButton {
         FxHelper.setMargin(FxHelper.getUIScaledInsets(16), mRoot);
     }
 
+    private String getKey() {
+        return "button_%d".formatted(mIndex);
+    }
+
     private void initContextMenu() {
         var contextMenu = new ContextMenu();
 
-        var editMenuItem = new MenuItem(Dict.EDIT.toString());
-        editMenuItem.setOnAction(actionEvent -> {
+        mEditMenuItem = new MenuItem(Dict.EDIT.toString());
+        mEditMenuItem.setOnAction(actionEvent -> {
         });
 
-        var editorMenuItem = new MenuItem(Dict.EDITOR.toString());
-        editorMenuItem.setOnAction(actionEvent -> {
+        mEditorMenuItem = new MenuItem(Dict.EDITOR.toString());
+        mEditorMenuItem.setOnAction(actionEvent -> {
         });
 
-        var resetMenuItem = new MenuItem(Dict.RESET.toString());
-        resetMenuItem.setOnAction(actionEvent -> {
+        mResetMenuItem = new MenuItem(Dict.RESET.toString());
+        mResetMenuItem.setOnAction(actionEvent -> {
+            mPreferences.remove(getKey());
+            load();
         });
 
-        contextMenu.getItems().addAll(editMenuItem, editorMenuItem, resetMenuItem);
+        contextMenu.getItems().addAll(mEditMenuItem, mEditorMenuItem, mResetMenuItem);
 
         if (mJobManager.hasItems()) {
             contextMenu.getItems().add(new SeparatorMenuItem());
@@ -99,7 +116,8 @@ public class SpeedDialButton {
                 var menuItem = new MenuItem(job.getName());
                 contextMenu.getItems().add(menuItem);
                 menuItem.setOnAction(actionEvent -> {
-                    System.out.println("store job id for button index");
+                    mPreferences.put(getKey(), job.getId());
+                    load();
                 });
             }
         }
@@ -113,6 +131,28 @@ public class SpeedDialButton {
     private void initListeners() {
         mJobManager.getItems().addListener((ListChangeListener.Change<? extends Job> c) -> {
             initContextMenu();
+            load();
         });
+    }
+
+    private void load() {
+        var jobId = mPreferences.get(getKey(), null);
+        mJob = mJobManager.getById(jobId);
+        var disabled = mJob == null;
+
+        mButton.setDisable(disabled);
+        mEditMenuItem.setDisable(disabled);
+        mEditorMenuItem.setDisable(disabled);
+        mResetMenuItem.setDisable(disabled);
+
+        if (disabled) {
+            mNameText.setText("");
+            mDescText.setText("");
+            mLastRunText.setText("");
+        } else {
+            mNameText.setText(mJob.getName());
+            mDescText.setText(mJob.getDescription());
+            mLastRunText.setText(mJob.getLastRunDateTime("?"));
+        }
     }
 }
