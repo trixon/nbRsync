@@ -43,8 +43,8 @@ import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
-import se.trixon.rsyncfx.RsyncFx;
-import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.Jota;
+import static se.trixon.rsyncfx.Jota.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.core.BaseItem;
 import se.trixon.rsyncfx.core.BaseManager;
 import se.trixon.rsyncfx.core.JobManager;
@@ -63,7 +63,7 @@ public class EditorPane extends HBox {
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
     private final JobManager mJobManager = JobManager.getInstance();
     private BaseItemPane mJobPane;
-    private final RsyncFx mRsyncFx = RsyncFx.getInstance();
+    private final Jota mJota = Jota.getInstance();
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private BaseItemPane mTaskPane;
 
@@ -99,7 +99,7 @@ public class EditorPane extends HBox {
     }
 
     private void initListeners() {
-        mRsyncFx.getGlobalState().addListener(gsce -> {
+        mJota.getGlobalState().addListener(gsce -> {
             Job job = gsce.getValue();
 
             if (job != null) {
@@ -111,7 +111,7 @@ public class EditorPane extends HBox {
                     mJobPane.edit(job);
                 });
             }
-        }, RsyncFx.GSC_EDITOR);
+        }, Jota.GSC_EDITOR);
     }
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {
@@ -145,7 +145,7 @@ public class EditorPane extends HBox {
                 return false;
             }
 
-            var stage = RsyncFx.getInstance().getStage();
+            var stage = mJota.getStage();
             var alert = new Alert(AlertType.CONFIRMATION);
             alert.initOwner(stage);
             alert.setTitle(title);
@@ -239,7 +239,7 @@ public class EditorPane extends HBox {
         }
 
         private void edit(T item) {
-            var stage = RsyncFx.getInstance().getStage();
+            var stage = mJota.getStage();
             var alert = new Alert(Alert.AlertType.NONE);
             alert.initOwner(stage);
             alert.setTitle(item == null ? Dict.ADD.toString() : Dict.EDIT.toString());

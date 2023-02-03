@@ -54,8 +54,8 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.dialogs.ExceptionDialogDisplayerHandler;
 import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.rsyncfx.Jota;
 import se.trixon.rsyncfx.Options;
-import se.trixon.rsyncfx.RsyncFx;
 import se.trixon.rsyncfx.ui.common.BaseModule;
 import se.trixon.rsyncfx.ui.common.CustomTab;
 import se.trixon.rsyncfx.ui.editor.EditorModule;
@@ -80,7 +80,7 @@ public class App extends Application {
     private Action mOptionsAction;
     private Action mQuitAction;
     private Action mRestartAction;
-    private final RsyncFx mRsyncFx = RsyncFx.getInstance();
+    private final Jota mJota = Jota.getInstance();
     private Stage mStage;
     private StatusBar mStatusBar = new StatusBar();
     private Workbench mWorkbench;
@@ -96,7 +96,7 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         Logger.getLogger("").addHandler(new ExceptionDialogDisplayerHandler(stage));
         mStage = stage;
-        mRsyncFx.setStage(stage);
+        mJota.setStage(stage);
         createUI();
 
         initAccelerators();
@@ -144,7 +144,7 @@ public class App extends Application {
                 .tabFactory(CustomTab::new)
                 .build();
         mWorkbench.getStylesheets().add(App.class.getResource("baseTheme.css").toExternalForm());
-        mRsyncFx.setWorkbench(mWorkbench);
+        mJota.setWorkbench(mWorkbench);
 
         var root = new BorderPane(mWorkbench);
 
@@ -193,7 +193,7 @@ public class App extends Application {
                 var information = StringUtils.substringBefore(result, "Usage: rsync");
                 FxHelper.runLater(() -> {
                     var alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.initOwner(RsyncFx.getInstance().getStage());
+                    alert.initOwner(mJota.getStage());
 
                     alert.setTitle(Dict.ABOUT_S.toString().formatted("rsync"));
                     alert.setGraphic(null);
@@ -206,7 +206,7 @@ public class App extends Application {
                     dialogPane.setPrefWidth(FxHelper.getUIScaled(600));
                     FxHelper.removeSceneInitFlicker(dialogPane);
 
-                    FxHelper.showAndWait(alert, RsyncFx.getInstance().getStage());
+                    FxHelper.showAndWait(alert, mJota.getStage());
                 });
             } catch (IOException | InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
@@ -328,9 +328,9 @@ public class App extends Application {
             updateNightMode();
         });
 
-        mRsyncFx.getGlobalState().addListener(gsce -> {
+        mJota.getGlobalState().addListener(gsce -> {
             mWorkbench.openModule(mEditorModule);
-        }, RsyncFx.GSC_EDITOR);
+        }, Jota.GSC_EDITOR);
     }
 
     private void updateNightMode() {

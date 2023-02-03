@@ -28,7 +28,7 @@ import se.trixon.rsyncfx.ui.MainModule;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class RsyncFx {
+public class Jota {
 
     public static final int ICON_SIZE_TOOLBAR = 32;
     public static final String GSC_EDITOR = "key.editor";
@@ -46,11 +46,11 @@ public class RsyncFx {
         return (int) (getIconSizeToolBar() / 1.3);
     }
 
-    public static RsyncFx getInstance() {
+    public static Jota getInstance() {
         return Holder.INSTANCE;
     }
 
-    private RsyncFx() {
+    private Jota() {
     }
 
     public ExecutionFlow getExecutionFlow() {
@@ -83,6 +83,6 @@ public class RsyncFx {
 
     private static class Holder {
 
-        private static final RsyncFx INSTANCE = new RsyncFx();
+        private static final Jota INSTANCE = new Jota();
     }
 }

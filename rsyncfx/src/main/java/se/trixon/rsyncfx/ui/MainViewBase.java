@@ -19,7 +19,7 @@ import com.dlsc.gemsfx.util.SessionManager;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 import se.trixon.rsyncfx.Options;
-import se.trixon.rsyncfx.RsyncFx;
+import se.trixon.rsyncfx.Jota;
 import se.trixon.rsyncfx.core.JobManager;
 
 /**
@@ -31,7 +31,7 @@ public abstract class MainViewBase {
     protected final Font mDefaultFont = Font.getDefault();
     protected final JobManager mJobManager = JobManager.getInstance();
     protected final Options mOptions = Options.getInstance();
-    protected final SessionManager mSessionManager = RsyncFx.getInstance().getSessionManager();
+    protected final SessionManager mSessionManager = Jota.getInstance().getSessionManager();
     protected SummaryBuilder mSummaryBuilder;
 
     public MainViewBase() {

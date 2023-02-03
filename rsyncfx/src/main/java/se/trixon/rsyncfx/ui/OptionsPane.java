@@ -24,8 +24,8 @@ import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPane;
+import se.trixon.rsyncfx.Jota;
 import se.trixon.rsyncfx.Options;
-import se.trixon.rsyncfx.RsyncFx;
 
 /**
  *
@@ -33,6 +33,7 @@ import se.trixon.rsyncfx.RsyncFx;
  */
 public class OptionsPane extends VBox {
 
+    private static final Jota sJota = Jota.getInstance();
     private final ResourceBundle mBundle = NbBundle.getBundle(OptionsPane.class);
     private final ToggleSwitch mNightModeToggleSwitch = new ToggleSwitch(Dict.NIGHT_MODE.toString());
     private final Options mOptions = Options.getInstance();
@@ -40,7 +41,7 @@ public class OptionsPane extends VBox {
 
     public static void displayOptions() {
         var alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.initOwner(RsyncFx.getInstance().getStage());
+        alert.initOwner(sJota.getStage());
 
         alert.setTitle(Dict.OPTIONS.toString());
         alert.setGraphic(null);
@@ -54,7 +55,7 @@ public class OptionsPane extends VBox {
         dialogPane.setPrefWidth(FxHelper.getUIScaled(400));
         FxHelper.removeSceneInitFlicker(dialogPane);
 
-        FxHelper.showAndWait(alert, RsyncFx.getInstance().getStage());
+        FxHelper.showAndWait(alert, sJota.getStage());
         optionsPane.save();
     }
 

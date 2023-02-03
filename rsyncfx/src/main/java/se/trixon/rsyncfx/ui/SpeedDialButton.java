@@ -32,7 +32,7 @@ import javafx.scene.text.TextAlignment;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.rsyncfx.RsyncFx;
+import se.trixon.rsyncfx.Jota;
 import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.job.Job;
@@ -57,7 +57,7 @@ public class SpeedDialButton {
     private final Preferences mPreferences = NbPreferences.forModule(SpeedDialButton.class).node("speedDial");
     private MenuItem mResetMenuItem;
     private final BorderPane mRoot = new BorderPane();
-    private final RsyncFx mRsyncFx = RsyncFx.getInstance();
+    private final Jota mJota = Jota.getInstance();
 
     public SpeedDialButton(int index) {
         mIndex = index;
@@ -100,12 +100,12 @@ public class SpeedDialButton {
 
         mEditMenuItem = new MenuItem(Dict.EDIT.toString());
         mEditMenuItem.setOnAction(actionEvent -> {
-            mRsyncFx.getGlobalState().put(RsyncFx.GSC_EDITOR, mJob);
+            mJota.getGlobalState().put(Jota.GSC_EDITOR, mJob);
         });
 
         mEditorMenuItem = new MenuItem(Dict.EDITOR.toString());
         mEditorMenuItem.setOnAction(actionEvent -> {
-            mRsyncFx.getGlobalState().put(RsyncFx.GSC_EDITOR, null);
+            mJota.getGlobalState().put(Jota.GSC_EDITOR, null);
         });
 
         mResetMenuItem = new MenuItem(Dict.RESET.toString());

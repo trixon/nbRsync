@@ -27,8 +27,8 @@ import javafx.scene.paint.Color;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.Options;
-import se.trixon.rsyncfx.RsyncFx;
-import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.Jota;
+import static se.trixon.rsyncfx.Jota.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
 import se.trixon.rsyncfx.ui.common.BaseModule;
@@ -95,7 +95,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     }
 
     private void initAccelerators() {
-        var accelerators = RsyncFx.getInstance().getStage().getScene().getAccelerators();
+        var accelerators = Jota.getInstance().getStage().getScene().getAccelerators();
 
         accelerators.put(new KeyCodeCombination(KeyCode.NUMPAD1, KeyCombination.SHORTCUT_DOWN), () -> {
             updateMainMode(0);
