@@ -15,6 +15,7 @@
  */
 package se.trixon.rsyncfx.boot;
 
+import java.io.IOException;
 import java.util.ResourceBundle;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Arg;
@@ -22,11 +23,13 @@ import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Env;
 import org.openide.LifecycleManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.util.PomInfo;
 import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.core.JobManager;
+import se.trixon.rsyncfx.core.StorageManager;
 import se.trixon.rsyncfx.ui.App;
 
 /**
@@ -73,8 +76,10 @@ public class DoArgsProcessing implements ArgsProcessor {
         if (mVersionOption) {
             displayVersion();
         } else if (mListOption) {
+            load();
             listJobs();
         } else if (mStartOption != null) {
+            load();
             startJob(mStartOption);
         }
 
@@ -87,11 +92,21 @@ public class DoArgsProcessing implements ArgsProcessor {
     }
 
     private void listJobs() {
-        System.out.println("LIST JOBS");
+        for (var job : JobManager.getInstance().getItems()) {
+            System.out.println(job.getName());
+        }
+    }
+
+    private void load() {
+        try {
+            StorageManager.getInstance().load();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void startJob(String jobName) {
-        var job = JobManager.getInstance().getById(jobName);
+        var job = JobManager.getInstance().getByName(jobName);
         if (job != null) {
             mExecutorManager.start(job);
         } else {
