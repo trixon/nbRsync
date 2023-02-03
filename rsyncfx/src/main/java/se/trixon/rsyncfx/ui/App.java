@@ -67,7 +67,7 @@ import se.trixon.rsyncfx.ui.history.HistoryModule;
  */
 public class App extends Application {
 
-    public static final String APP_TITLE = "rsyncFX";
+    public static final String APP_TITLE = "JotaSync";
     private Action mAboutAction;
     private Action mAboutRsyncAction;
     private Action mHomeAction;
