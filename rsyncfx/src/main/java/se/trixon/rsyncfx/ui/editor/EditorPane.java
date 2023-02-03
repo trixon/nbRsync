@@ -63,11 +63,13 @@ public class EditorPane extends HBox {
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
     private final JobManager mJobManager = JobManager.getInstance();
     private BaseItemPane mJobPane;
+    private final RsyncFx mRsyncFx = RsyncFx.getInstance();
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private BaseItemPane mTaskPane;
 
     public EditorPane() {
         createUI();
+        initListeners();
     }
 
     public BaseItemPane getJobPane() {
@@ -94,6 +96,22 @@ public class EditorPane extends HBox {
 
         mTaskPane.getListView().setCellFactory(listView -> new ItemListCellRenderer<>() {
         });
+    }
+
+    private void initListeners() {
+        mRsyncFx.getGlobalState().addListener(gsce -> {
+            Job job = gsce.getValue();
+
+            if (job != null) {
+                FxHelper.runLaterDelayed(10, () -> {
+                    var listView = mJobPane.getListView();
+                    listView.requestFocus();
+                    listView.getSelectionModel().select(job);
+                    FxHelper.scrollToItemIfNotVisible(listView, job);
+                    mJobPane.edit(job);
+                });
+            }
+        }, RsyncFx.GSC_EDITOR);
     }
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {

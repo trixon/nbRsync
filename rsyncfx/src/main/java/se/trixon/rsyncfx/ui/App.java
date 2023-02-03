@@ -327,6 +327,10 @@ public class App extends Application {
         mOptions.nightModeProperty().addListener((p, o, n) -> {
             updateNightMode();
         });
+
+        mRsyncFx.getGlobalState().addListener(gsce -> {
+            mWorkbench.openModule(mEditorModule);
+        }, RsyncFx.GSC_EDITOR);
     }
 
     private void updateNightMode() {

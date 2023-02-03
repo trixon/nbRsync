@@ -30,10 +30,10 @@ import se.trixon.rsyncfx.ui.common.BaseModule;
 public class EditorModule extends BaseModule implements AlwaysOpenTab {
 
     private BorderPane mRoot = new BorderPane();
-    private Workbench mWorkbench;
 
     public EditorModule() {
         super("", MaterialIcon._Content.CREATE.getImageView(ICON_SIZE_MODULE, Color.WHITE).getImage());
+        createUI();
     }
 
     @Override
@@ -44,9 +44,6 @@ public class EditorModule extends BaseModule implements AlwaysOpenTab {
     @Override
     public void init(Workbench workbench) {
         super.init(workbench);
-        mWorkbench = workbench;
-
-        createUI();
     }
 
     private void createUI() {
