@@ -63,6 +63,16 @@ public abstract class BaseManager<T extends BaseItem> {
         return getIdToItem().get(id);
     }
 
+    public T getByName(String name) {
+        for (var item : getItems()) {
+            if (StringUtils.equalsIgnoreCase(name, item.getName())) {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
     public abstract BaseEditor getEditor();
 
     public final ObservableMap<String, T> getIdToItem() {
@@ -77,17 +87,6 @@ public abstract class BaseManager<T extends BaseItem> {
 
     public abstract String getLabelSingular();
 
-//    public Set<T> getSet() {
-//        return new HashSet<>(getItems());
-//    }
-//
-//    public Set<String> getSetId() {
-//        var list = getItems().stream()
-//                .map(task -> task.getId())
-//                .toList();
-//
-//        return new HashSet<>(list);
-//    }
     public boolean hasItems() {
         return !getIdToItem().isEmpty();
     }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,8 @@ import org.openide.LifecycleManager;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.util.PomInfo;
+import se.trixon.rsyncfx.core.ExecutorManager;
+import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.ui.App;
 
 /**
@@ -57,6 +59,7 @@ public class DoArgsProcessing implements ArgsProcessor {
     @Messages("DoArgsProcessing.version.desc=print the version information and exit")
     public boolean mVersionOption;
     private final ResourceBundle mBundle = NbBundle.getBundle(DoArgsProcessing.class);
+    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
 
     {
         Installer.GUI = false;
@@ -88,6 +91,11 @@ public class DoArgsProcessing implements ArgsProcessor {
     }
 
     private void startJob(String jobName) {
-        System.out.println("START JOB <%s>".formatted(jobName));
+        var job = JobManager.getInstance().getById(jobName);
+        if (job != null) {
+            mExecutorManager.start(job);
+        } else {
+            System.out.println("JOB NOT FOUND " + jobName);
+        }
     }
 }

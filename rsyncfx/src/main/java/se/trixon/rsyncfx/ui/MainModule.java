@@ -29,6 +29,7 @@ import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.Options;
 import se.trixon.rsyncfx.RsyncFx;
 import static se.trixon.rsyncfx.RsyncFx.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
 import se.trixon.rsyncfx.ui.common.BaseModule;
 
@@ -38,9 +39,11 @@ import se.trixon.rsyncfx.ui.common.BaseModule;
  */
 public class MainModule extends BaseModule implements AlwaysOpenTab {
 
+    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private MainGridView mMainGridView;
     private MainListView mMainListView;
     private final BorderPane mRoot = new BorderPane();
+    private ToolbarItem mStartToolbarItem;
 
     public MainModule() {
         super(Dict.HOME.toString(), MaterialIcon._Action.HOME.getImageView(ICON_SIZE_MODULE, Color.WHITE).getImage());
@@ -64,8 +67,8 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         mMainGridView = new MainGridView();
         mMainListView = new MainListView();
 
-        var startToolbarItem = new ToolbarItem(Dict.START.toString(), MaterialIcon._Av.PLAY_ARROW.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
-            doStart();
+        mStartToolbarItem = new ToolbarItem(Dict.START.toString(), MaterialIcon._Av.PLAY_ARROW.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
+            mExecutorManager.start(mMainListView.getListView().getSelectionModel().getSelectedItem());
         });
 
         var gridToolbarItem = new ToolbarItem(MaterialIcon._Navigation.APPS.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
@@ -79,7 +82,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         listToolbarItem.setTooltip(new Tooltip("LIST VIEW"));
 
         getToolbarControlsLeft().setAll(
-                startToolbarItem
+                mStartToolbarItem
         );
 
         getToolbarControlsRight().setAll(
@@ -89,10 +92,6 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
 
 //        var nullSelectionBooleanBinding = mListView.getSelectionModel().selectedItemProperty().isNull();
 //        startToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
-    }
-
-    private void doStart() {
-        System.out.println("START");
     }
 
     private void initAccelerators() {
@@ -123,8 +122,10 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
     private void updateMainMode() {
         if (mOptions.getInt(Options.KEY_MAIN_MODE, Options.DEFAULT_MAIN_MODE) == 0) {
             mRoot.setCenter(mMainGridView.getNode());
+            mStartToolbarItem.setDisable(true);
         } else {
             mRoot.setCenter(mMainListView.getNode());
+            mStartToolbarItem.setDisable(false);
         }
     }
 

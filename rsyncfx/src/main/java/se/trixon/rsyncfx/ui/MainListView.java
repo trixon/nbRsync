@@ -30,6 +30,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.web.WebView;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.core.job.Job;
 
 /**
@@ -38,6 +39,7 @@ import se.trixon.rsyncfx.core.job.Job;
  */
 public class MainListView extends MainViewBase {
 
+    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final ListView<Job> mListView = new ListView<>();
     private SplitPane mSplitPane;
     private final WebView mWebView = new WebView();
@@ -51,6 +53,10 @@ public class MainListView extends MainViewBase {
         updateNightMode(mOptions.isNightMode());
 
         displaySystemInformation();
+    }
+
+    public ListView<Job> getListView() {
+        return mListView;
     }
 
     @Override
@@ -130,6 +136,11 @@ public class MainListView extends MainViewBase {
                 lastRun = mSimpleDateFormat.format(new Date(job.getLastRun()));
             }
             mLastLabel.setText(lastRun);
+            mRoot.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
+                    mExecutorManager.start(job);
+                }
+            });
 
             setGraphic(mRoot);
         }
@@ -149,11 +160,6 @@ public class MainListView extends MainViewBase {
 
             mRoot = new VBox(mNameLabel, mDescLabel, mLastLabel);
             mRoot.setAlignment(Pos.CENTER_LEFT);
-            mRoot.setOnMouseClicked(mouseEvent -> {
-                if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
-                    System.out.println("start");
-                }
-            });
         }
     }
 

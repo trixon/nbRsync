@@ -32,6 +32,7 @@ import javafx.scene.text.TextAlignment;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.core.JobManager;
 import se.trixon.rsyncfx.core.job.Job;
 
@@ -45,6 +46,7 @@ public class SpeedDialButton {
     private final Label mDescText = new Label();
     private MenuItem mEditMenuItem;
     private MenuItem mEditorMenuItem;
+    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final int mIndex;
     private final VBox mInternalBox = new VBox();
     private Job mJob;
@@ -132,6 +134,10 @@ public class SpeedDialButton {
         mJobManager.getItems().addListener((ListChangeListener.Change<? extends Job> c) -> {
             initContextMenu();
             load();
+        });
+
+        mButton.setOnAction(actionEvent -> {
+            mExecutorManager.start(mJob);
         });
     }
 
