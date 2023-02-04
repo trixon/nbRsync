@@ -141,7 +141,7 @@ public class SpeedDialButton {
         });
 
         mButton.setOnAction(actionEvent -> {
-            mExecutorManager.start(mJob);
+            mExecutorManager.requestStart(mJob);
         });
     }
 

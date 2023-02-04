@@ -26,9 +26,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.icons.material.MaterialIcon;
-import se.trixon.rsyncfx.Options;
 import se.trixon.rsyncfx.Jota;
 import static se.trixon.rsyncfx.Jota.getIconSizeToolBarInt;
+import se.trixon.rsyncfx.Options;
 import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.ui.common.AlwaysOpenTab;
 import se.trixon.rsyncfx.ui.common.BaseModule;
@@ -68,7 +68,7 @@ public class MainModule extends BaseModule implements AlwaysOpenTab {
         mMainListView = new MainListView();
 
         mStartToolbarItem = new ToolbarItem(Dict.START.toString(), MaterialIcon._Av.PLAY_ARROW.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {
-            mExecutorManager.start(mMainListView.getListView().getSelectionModel().getSelectedItem());
+            mExecutorManager.requestStart(mMainListView.getListView().getSelectionModel().getSelectedItem());
         });
 
         var gridToolbarItem = new ToolbarItem(MaterialIcon._Navigation.APPS.getImageView(getIconSizeToolBarInt(), Color.WHITE), mouseEvent -> {

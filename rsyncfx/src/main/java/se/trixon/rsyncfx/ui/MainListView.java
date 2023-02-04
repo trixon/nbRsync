@@ -138,7 +138,7 @@ public class MainListView extends MainViewBase {
             mLastLabel.setText(lastRun);
             mRoot.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
-                    mExecutorManager.start(job);
+                    mExecutorManager.requestStart(job);
                 }
             });
 
