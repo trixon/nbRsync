@@ -75,7 +75,7 @@ public class TaskValidator implements Serializable {
         ExcludeSection excludeSection = mTask.getExcludeSection();
         var bundle = NbBundle.getBundle(Task.class);
 
-        validateFile(excludeSection.isManualFileUsed(), excludeSection.getManualFilePath(), bundle.getString("TaskExcludePanel.externalFilePanel.header"));
+//        validateFile(excludeSection.isManualFileUsed(), excludeSection.getManualFilePath(), bundle.getString("TaskExcludePanel.externalFilePanel.header"));
     }
 
     private void validateExecutors() {

@@ -30,6 +30,9 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPane;
 import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.task.Task;
+import se.trixon.rsyncfx.ui.editor.task.DualListPane;
+import se.trixon.rsyncfx.ui.editor.task.ExcludeOption;
+import se.trixon.rsyncfx.ui.editor.task.RsyncOption;
 
 /**
  *
@@ -45,6 +48,7 @@ public class TaskEditor extends BaseEditor<Task> {
     private RunSectionPane mRunAfterOkSection;
     private RunSectionPane mRunAfterSection;
     private RunSectionPane mRunBeforeSection;
+    private RunSectionPane mRunExcludeSection;
     private CheckBox mRunStopJobOnErrorCheckBox;
 
     public TaskEditor() {
@@ -70,6 +74,7 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunAfterSection.load(execute.getAfter());
         mRunStopJobOnErrorCheckBox.setSelected(execute.isJobHaltOnError());
 
+        mRunExcludeSection.load(item.getExcludeSection().getExternalFile());
         super.load(item, saveNode);
         mItem = item;
     }
@@ -88,6 +93,7 @@ public class TaskEditor extends BaseEditor<Task> {
         save(execute.getAfterFail(), mRunAfterFailSection);
         save(execute.getAfterOk(), mRunAfterOkSection);
         save(execute.getAfter(), mRunAfterSection);
+        save(mItem.getExcludeSection().getExternalFile(), mRunExcludeSection);
 
         execute.setJobHaltOnError(mRunStopJobOnErrorCheckBox.isSelected());
         return super.save();
@@ -127,6 +133,38 @@ public class TaskEditor extends BaseEditor<Task> {
         return tab;
     }
 
+    private Tab createExcludeTab() {
+        var dlp = new DualListPane<ExcludeOption>();
+        mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
+        var borderPane = new BorderPane(dlp.getRoot());
+        borderPane.setBottom(mRunExcludeSection);
+
+        for (var option : ExcludeOption.values()) {
+            option.setDynamicArg(null);
+            dlp.getAvailablePane().getItems().add(option);
+        }
+        dlp.getAvailablePane().updateList();
+
+        var tab = new Tab(Dict.EXCLUDE.toString(), borderPane);
+
+        return tab;
+    }
+
+    private Tab createOptionsTab() {
+        var dlp = new DualListPane<RsyncOption>();
+
+        for (var option : RsyncOption.values()) {
+            option.setDynamicArg(null);
+            dlp.getAvailablePane().getItems().add(option);
+        }
+
+        dlp.getAvailablePane().updateList();
+
+        var tab = new Tab(Dict.OPTIONS.toString(), dlp.getRoot());
+
+        return tab;
+    }
+
     private Tab createRunTab() {
         mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, true);
         mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, true);
@@ -150,17 +188,11 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private void createUI() {
-        var optionsPane = new VBox();
-        var optionsTab = new Tab(Dict.OPTIONS.toString(), optionsPane);
-
-        var excludePane = new VBox();
-        var excludeTab = new Tab(Dict.EXCLUDE.toString(), excludePane);
-
         getTabPane().getTabs().addAll(
                 createDirsTab(),
                 createRunTab(),
-                optionsTab,
-                excludeTab,
+                createOptionsTab(),
+                createExcludeTab(),
                 createNoteTab()
         );
     }

@@ -107,7 +107,7 @@ public class App extends Application {
         mStage.show();
         FxHelper.runLaterDelayed(10, () -> {
             mWorkbench.openModule(mMainModule);
-//            mWorkbench.openModule(mEditorModule);
+            mWorkbench.openModule(mEditorModule);
 //            mWorkbench.openModule(mHistoryModule);
 
             for (var module : mWorkbench.getModules()) {

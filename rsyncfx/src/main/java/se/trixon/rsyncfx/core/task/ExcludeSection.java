@@ -18,6 +18,7 @@ package se.trixon.rsyncfx.core.task;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+import se.trixon.rsyncfx.core.ExecuteItem;
 
 /**
  *
@@ -25,10 +26,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ExcludeSection extends TaskSection {
 
-    @SerializedName("manualFilePath")
-    private String mManualFilePath;
-    @SerializedName("manualFileUsed")
-    private boolean mManualFileUsed;
+    @SerializedName("externalFile")
+    private ExecuteItem mExternalFile = new ExecuteItem();
     @SerializedName("options")
     private String mOptions = "";
 
@@ -36,39 +35,27 @@ public class ExcludeSection extends TaskSection {
     public List<String> getCommand() {
         mCommand.clear();
 
-        for (String option : mOptions.split(" ")) {
-            for (String option2 : option.split(OPT_SEPARATOR)) {
+        for (var option : mOptions.split(" ")) {
+            for (var option2 : option.split(OPT_SEPARATOR)) {
                 if (StringUtils.isNotBlank(option2)) {
                     add(option2);
                 }
             }
         }
 
-        if (mManualFileUsed && StringUtils.isNotBlank(mManualFilePath)) {
-            add("--exclude-from=" + mManualFilePath);
+        if (mExternalFile.isEnabled() && StringUtils.isNotBlank(mExternalFile.getCommand())) {
+            add("--exclude-from=" + mExternalFile.getCommand());
         }
 
         return mCommand;
     }
 
-    public String getManualFilePath() {
-        return mManualFilePath;
+    public ExecuteItem getExternalFile() {
+        return mExternalFile;
     }
 
     public String getOptions() {
         return mOptions;
-    }
-
-    public boolean isManualFileUsed() {
-        return mManualFileUsed;
-    }
-
-    public void setManualFilePath(String value) {
-        mManualFilePath = value;
-    }
-
-    public void setManualFileUsed(boolean value) {
-        mManualFileUsed = value;
     }
 
     public void setOptions(String value) {

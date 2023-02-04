@@ -1,0 +1,19 @@
+Options
+
+ARGS
+     --include=PATTERN       don't exclude files matching PATTERN
+     --include-from=FILE     read include patterns from FILE
+
+ -F                          same as --filter='dir-merge /.rsync-filter'
+                             repeated: --filter='- .rsync-filter'
+
+SPECIAL
+
+     --no-OPTION             turn off an implied OPTION (e.g. --no-D)
+
+SKIP
+
+     --exclude=PATTERN       exclude files matching PATTERN
+     --exclude-from=FILE     read exclude patterns from FILE
+     --version               print version number
+(-h) --help                  show this help (-h is --help only if used alone)
