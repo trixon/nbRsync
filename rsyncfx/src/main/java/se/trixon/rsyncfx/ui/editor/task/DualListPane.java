@@ -38,6 +38,7 @@ import se.trixon.rsyncfx.Jota;
 public class DualListPane<T extends OptionHandler> {
 
     private final ListPane<T> mAvailablePane = new ListPane<>("available");
+    private Action mClearAction;
     private final Jota mJota = Jota.getInstance();
     private final HBox mRoot = new HBox();
     private final ListPane<T> mSelectedPane = new ListPane<>("selected");
@@ -59,6 +60,12 @@ public class DualListPane<T extends OptionHandler> {
         return mSelectedPane;
     }
 
+    public void updateLists() {
+        mAvailablePane.updateList();
+        mSelectedPane.updateList();
+        updateClearButtonState();
+    }
+
     private void createUI() {
         int iconSize = Jota.getIconSizeToolBarInt();
         mAvailablePane.setHeader(Dict.AVAILABLE.toString());
@@ -76,16 +83,17 @@ public class DualListPane<T extends OptionHandler> {
         deactivateAction.setGraphic(MaterialIcon._Navigation.ARROW_BACK.getImageView(iconSize));
         deactivateAction.disabledProperty().bind(mSelectedPane.getListView().getSelectionModel().selectedItemProperty().isNull());
 
-        var clearAction = new Action(Dict.OPTIONS.toString(), actionEvent -> {
+        mClearAction = new Action(Dict.OPTIONS.toString(), actionEvent -> {
             itemClear();
         });
-        clearAction.setGraphic(MaterialIcon._Content.CLEAR.getImageView(iconSize));
+        mClearAction.setGraphic(MaterialIcon._Content.CLEAR.getImageView(iconSize));
+        mClearAction.setDisabled(true);
 
         var actions = Arrays.asList(
                 ActionUtils.ACTION_SPAN,
                 activateAction,
                 deactivateAction,
-                clearAction,
+                mClearAction,
                 ActionUtils.ACTION_SPAN
         );
 
@@ -126,11 +134,9 @@ public class DualListPane<T extends OptionHandler> {
                 selectedItems.add(selectedItem);
                 availableItems.remove(selectedItem);
             }
-
         }
 
-        mAvailablePane.updateList();
-        mSelectedPane.updateList();
+        updateLists();
     }
 
     private void itemClear() {
@@ -140,8 +146,7 @@ public class DualListPane<T extends OptionHandler> {
         }
 
         mSelectedPane.getItems().clear();
-        mAvailablePane.updateList();
-        mSelectedPane.updateList();
+        updateLists();
     }
 
     private void itemDeactivate() {
@@ -154,8 +159,7 @@ public class DualListPane<T extends OptionHandler> {
             selectedItem.setDynamicArg(null);
         }
 
-        mAvailablePane.updateList();
-        mSelectedPane.updateList();
+        updateLists();
     }
 
     private String requestArg(T t) {
@@ -172,5 +176,9 @@ public class DualListPane<T extends OptionHandler> {
         var result = textInputDialog.showAndWait();
 
         return result.orElse(null);
+    }
+
+    private void updateClearButtonState() {
+        mClearAction.setDisabled(mSelectedPane.getItems().isEmpty());
     }
 }

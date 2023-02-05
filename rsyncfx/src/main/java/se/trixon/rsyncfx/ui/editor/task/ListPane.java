@@ -23,6 +23,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
@@ -51,6 +52,7 @@ public class ListPane<T extends OptionHandler> {
         mRoot = new BorderPane(mListView);
         mRoot.setTop(new VBox(mLabel, mTextField));
         mListView.setCellFactory(listView -> new OptionListCell());
+        mListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         mTextField.textProperty().addListener((p, o, n) -> {
             updateList();
         });

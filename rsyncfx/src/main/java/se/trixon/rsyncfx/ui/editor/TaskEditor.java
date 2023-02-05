@@ -15,6 +15,7 @@
  */
 package se.trixon.rsyncfx.ui.editor;
 
+import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -24,6 +25,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.Validator;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
@@ -32,6 +34,7 @@ import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.task.Task;
 import se.trixon.rsyncfx.ui.editor.task.DualListPane;
 import se.trixon.rsyncfx.ui.editor.task.ExcludeOption;
+import se.trixon.rsyncfx.ui.editor.task.OptionHandler;
 import se.trixon.rsyncfx.ui.editor.task.RsyncOption;
 
 /**
@@ -43,7 +46,9 @@ public class TaskEditor extends BaseEditor<Task> {
     private FileChooserPane mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
     private FileChooserPane mDirSourceFileChooser;
+    private DualListPane<ExcludeOption> mExcludeDualListPane;
     private Task mItem;
+    private DualListPane<RsyncOption> mOptionDualListPane;
     private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
     private RunSectionPane mRunAfterSection;
@@ -75,6 +80,8 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunStopJobOnErrorCheckBox.setSelected(execute.isJobHaltOnError());
 
         mRunExcludeSection.load(item.getExcludeSection().getExternalFile());
+        loadOptions(item.getOptionSection().getOptions());
+        loadExcludes(item.getExcludeSection().getOptions());
         super.load(item, saveNode);
         mItem = item;
     }
@@ -96,6 +103,17 @@ public class TaskEditor extends BaseEditor<Task> {
         save(mItem.getExcludeSection().getExternalFile(), mRunExcludeSection);
 
         execute.setJobHaltOnError(mRunStopJobOnErrorCheckBox.isSelected());
+
+        var opts = mOptionDualListPane.getSelectedPane().getItems().stream()
+                .map(o -> o.getArg())
+                .toList();
+        mItem.getOptionSection().setOptions(StringUtils.join(opts, " "));
+
+        var excludes = mExcludeDualListPane.getSelectedPane().getItems().stream()
+                .map(o -> o.getArg())
+                .toList();
+        mItem.getExcludeSection().setOptions(StringUtils.join(excludes, " "));
+
         return super.save();
     }
 
@@ -134,16 +152,16 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private Tab createExcludeTab() {
-        var dlp = new DualListPane<ExcludeOption>();
+        mExcludeDualListPane = new DualListPane<>();
         mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
-        var borderPane = new BorderPane(dlp.getRoot());
+        var borderPane = new BorderPane(mExcludeDualListPane.getRoot());
         borderPane.setBottom(mRunExcludeSection);
 
         for (var option : ExcludeOption.values()) {
             option.setDynamicArg(null);
-            dlp.getAvailablePane().getItems().add(option);
+            mExcludeDualListPane.getAvailablePane().getItems().add(option);
         }
-        dlp.getAvailablePane().updateList();
+        mExcludeDualListPane.updateLists();
 
         var tab = new Tab(Dict.EXCLUDE.toString(), borderPane);
 
@@ -151,16 +169,16 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private Tab createOptionsTab() {
-        var dlp = new DualListPane<RsyncOption>();
+        mOptionDualListPane = new DualListPane<>();
 
         for (var option : RsyncOption.values()) {
             option.setDynamicArg(null);
-            dlp.getAvailablePane().getItems().add(option);
+            mOptionDualListPane.getAvailablePane().getItems().add(option);
         }
 
-        dlp.getAvailablePane().updateList();
+        mOptionDualListPane.updateLists();
 
-        var tab = new Tab(Dict.OPTIONS.toString(), dlp.getRoot());
+        var tab = new Tab(Dict.OPTIONS.toString(), mOptionDualListPane.getRoot());
 
         return tab;
     }
@@ -204,6 +222,55 @@ public class TaskEditor extends BaseEditor<Task> {
             mValidationSupport.registerValidator(mDirSourceFileChooser.getTextField(), true, Validator.createEmptyValidator(textRequired));
             mValidationSupport.registerValidator(mDirDestFileChooser.getTextField(), true, Validator.createEmptyValidator(textRequired));
         });
+    }
+
+    private void loadExcludes(String joinedOptions) {
+        var options = StringUtils.splitPreserveAllTokens(joinedOptions, " ");
+        var availableItems = mExcludeDualListPane.getAvailablePane().getItems();
+        var selectedItems = mExcludeDualListPane.getSelectedPane().getItems();
+        var itemsToRemove = new ArrayList<OptionHandler>();
+
+        for (var optionString : options) {
+            for (var option : availableItems) {
+                if (StringUtils.equals(optionString, option.getArg())) {
+                    selectedItems.add(option);
+                    itemsToRemove.add(option);
+                    break;
+                }
+            }
+        }
+
+        availableItems.removeAll(itemsToRemove);
+
+        mExcludeDualListPane.updateLists();
+    }
+
+    private void loadOptions(String joinedOptions) {
+        var options = StringUtils.splitPreserveAllTokens(joinedOptions, " ");
+        var availableItems = mOptionDualListPane.getAvailablePane().getItems();
+        var selectedItems = mOptionDualListPane.getSelectedPane().getItems();
+        var itemsToRemove = new ArrayList<OptionHandler>();
+
+        for (var optionString : options) {
+            for (var option : availableItems) {
+                if (optionString.contains("=")) {
+                    String[] elements = StringUtils.split(optionString, "=", 2);
+                    if (StringUtils.equals(elements[0], StringUtils.split(option.getArg(), "=", 2)[0])) {
+                        option.setDynamicArg(elements[1]);
+                        selectedItems.add(option);
+                        itemsToRemove.add(option);
+                    }
+                } else if (StringUtils.equals(optionString, option.getArg())) {
+                    selectedItems.add(option);
+                    itemsToRemove.add(option);
+                    break;
+                }
+            }
+        }
+
+        availableItems.removeAll(itemsToRemove);
+
+        mOptionDualListPane.updateLists();
     }
 
 }
