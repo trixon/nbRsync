@@ -17,17 +17,20 @@ package se.trixon.rsyncfx.ui.editor.task;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.apache.commons.lang3.StringUtils;
+import se.trixon.rsyncfx.Jota;
 
 /**
  *
@@ -37,12 +40,14 @@ public class ListPane<T extends OptionHandler> {
 
     private final ArrayList<T> mFilteredItems = new ArrayList<>();
     private final ArrayList<T> mItems = new ArrayList<>();
+    private final String mKey;
     private final Label mLabel = new Label();
     private final ListView<T> mListView = new ListView<>();
     private final BorderPane mRoot;
     private final TextField mTextField = new TextField();
 
-    public ListPane() {
+    public ListPane(String key) {
+        mKey = key;
         mRoot = new BorderPane(mListView);
         mRoot.setTop(new VBox(mLabel, mTextField));
         mListView.setCellFactory(listView -> new OptionListCell());
@@ -59,8 +64,16 @@ public class ListPane<T extends OptionHandler> {
         return mItems;
     }
 
+    public ListView<T> getListView() {
+        return mListView;
+    }
+
     public Node getRoot() {
         return mRoot;
+    }
+
+    public ObservableList<T> getSelectedItems() {
+        return getListView().getSelectionModel().getSelectedItems();
     }
 
     public void setHeader(String value) {
@@ -117,6 +130,12 @@ public class ListPane<T extends OptionHandler> {
             }
             mDescLabel.setText(option.getTitle());
             mArgLabel.setText(arg);
+            mRoot.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
+                    Jota.getInstance().getGlobalState().put("dblclck_" + mKey, option);
+                }
+            });
+
             setGraphic(mRoot);
         }
 
