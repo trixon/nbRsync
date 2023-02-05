@@ -17,11 +17,11 @@ package se.trixon.rsyncfx.ui.editor.task;
 
 import java.util.Arrays;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.action.Action;
@@ -52,7 +52,7 @@ public class DualListPane<T extends OptionHandler> {
         return mAvailablePane;
     }
 
-    public Node getRoot() {
+    public Region getRoot() {
         return mRoot;
     }
 

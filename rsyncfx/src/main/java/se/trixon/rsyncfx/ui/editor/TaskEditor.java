@@ -153,6 +153,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
     private Tab createExcludeTab() {
         mExcludeDualListPane = new DualListPane<>();
+        mExcludeDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 16, 0));
         mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
         var borderPane = new BorderPane(mExcludeDualListPane.getRoot());
         borderPane.setBottom(mRunExcludeSection);
@@ -170,6 +171,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
     private Tab createOptionsTab() {
         mOptionDualListPane = new DualListPane<>();
+        mOptionDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0));
 
         for (var option : RsyncOption.values()) {
             option.setDynamicArg(null);

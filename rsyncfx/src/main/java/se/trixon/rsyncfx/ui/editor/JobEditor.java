@@ -140,7 +140,7 @@ public class JobEditor extends BaseEditor<Job> {
         mRunBeforeSection = new RunSectionPane(mBundle.getString("JobEditor.runBefore"), true, true);
         mRunAfterFailSection = new RunSectionPane(mBundle.getString("JobEditor.runAfterFail"), false, true);
         mRunAfterOkSection = new RunSectionPane(mBundle.getString("JobEditor.runAfterOk"), false, true);
-        mRunAfterSection = new RunSectionPane(mBundle.getString("JobEditor.runAfter"), false, true);
+        mRunAfterSection = new RunSectionPane(mBundle.getString("JobEditor.runAfter"), false, false);
 
         var root = new VBox(FxHelper.getUIScaled(12),
                 mRunBeforeSection,
