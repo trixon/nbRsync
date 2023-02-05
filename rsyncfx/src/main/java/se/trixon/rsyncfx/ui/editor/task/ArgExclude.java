@@ -24,7 +24,7 @@ import static se.trixon.rsyncfx.core.task.TaskSection.OPT_SEPARATOR;
  *
  * @author Patrik Karlström
  */
-public enum ExcludeOption implements OptionHandler {
+public enum ArgExclude implements ArgBase {
     //_DUMMY_WINDOWS("should only be visible on windows", SystemUtils.IS_OS_WINDOWS),
     TEMP_DIRS("--exclude=**/*tmp*/" + OPT_SEPARATOR + "--exclude=**/*temp*/" + OPT_SEPARATOR + "--exclude=**/*Tmp*/" + OPT_SEPARATOR + "--exclude=**/*Temp*/", true),
     BACKUP_FILES("--exclude=**~", true),
@@ -36,10 +36,10 @@ public enum ExcludeOption implements OptionHandler {
     GVFS("--exclude=**/.gvfs/", SystemUtils.IS_OS_LINUX);
     private final boolean mActive;
     private final String mArg;
-    private final ResourceBundle mBundle = SystemHelper.getBundle(ExcludeOption.class, "ExcludeOption");
+    private final ResourceBundle mBundle = SystemHelper.getBundle(ArgExclude.class, "ArgExclude");
     private final String mTitle;
 
-    private ExcludeOption(String arg, boolean active) {
+    private ArgExclude(String arg, boolean active) {
         mArg = arg;
         mActive = active;
         mTitle = mBundle.containsKey(name()) ? mBundle.getString(name()) : "_MISSING DESCRIPTION " + name();

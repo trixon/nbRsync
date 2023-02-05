@@ -35,7 +35,7 @@ import se.trixon.rsyncfx.Jota;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class DualListPane<T extends OptionHandler> {
+public class DualListPane<T extends ArgBase> {
 
     private final ListPane<T> mAvailablePane = new ListPane<>("available");
     private Action mClearAction;

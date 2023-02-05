@@ -32,10 +32,10 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPane;
 import se.trixon.rsyncfx.core.TaskManager;
 import se.trixon.rsyncfx.core.task.Task;
+import se.trixon.rsyncfx.ui.editor.task.ArgBase;
+import se.trixon.rsyncfx.ui.editor.task.ArgExclude;
+import se.trixon.rsyncfx.ui.editor.task.ArgRsync;
 import se.trixon.rsyncfx.ui.editor.task.DualListPane;
-import se.trixon.rsyncfx.ui.editor.task.ExcludeOption;
-import se.trixon.rsyncfx.ui.editor.task.OptionHandler;
-import se.trixon.rsyncfx.ui.editor.task.RsyncOption;
 
 /**
  *
@@ -43,12 +43,12 @@ import se.trixon.rsyncfx.ui.editor.task.RsyncOption;
  */
 public class TaskEditor extends BaseEditor<Task> {
 
+    private DualListPane<ArgExclude> mArgExcludeDualListPane;
+    private DualListPane<ArgRsync> mArgRsyncDualListPane;
     private FileChooserPane mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
     private FileChooserPane mDirSourceFileChooser;
-    private DualListPane<ExcludeOption> mExcludeDualListPane;
     private Task mItem;
-    private DualListPane<RsyncOption> mOptionDualListPane;
     private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
     private RunSectionPane mRunAfterSection;
@@ -80,8 +80,8 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunStopJobOnErrorCheckBox.setSelected(execute.isJobHaltOnError());
 
         mRunExcludeSection.load(item.getExcludeSection().getExternalFile());
-        loadOptions(item.getOptionSection().getOptions());
-        loadExcludes(item.getExcludeSection().getOptions());
+        loadArgRsync(item.getOptionSection().getOptions());
+        loadArgExcludes(item.getExcludeSection().getOptions());
         super.load(item, saveNode);
         mItem = item;
     }
@@ -104,17 +104,51 @@ public class TaskEditor extends BaseEditor<Task> {
 
         execute.setJobHaltOnError(mRunStopJobOnErrorCheckBox.isSelected());
 
-        var opts = mOptionDualListPane.getSelectedPane().getItems().stream()
+        var opts = mArgRsyncDualListPane.getSelectedPane().getItems().stream()
                 .map(o -> o.getArg())
                 .toList();
         mItem.getOptionSection().setOptions(StringUtils.join(opts, " "));
 
-        var excludes = mExcludeDualListPane.getSelectedPane().getItems().stream()
+        var excludes = mArgExcludeDualListPane.getSelectedPane().getItems().stream()
                 .map(o -> o.getArg())
                 .toList();
         mItem.getExcludeSection().setOptions(StringUtils.join(excludes, " "));
 
         return super.save();
+    }
+
+    private Tab createArgExcludeTab() {
+        mArgExcludeDualListPane = new DualListPane<>();
+        mArgExcludeDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 16, 0));
+        mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
+        var borderPane = new BorderPane(mArgExcludeDualListPane.getRoot());
+        borderPane.setBottom(mRunExcludeSection);
+
+        for (var arg : ArgExclude.values()) {
+            arg.setDynamicArg(null);
+            mArgExcludeDualListPane.getAvailablePane().getItems().add(arg);
+        }
+        mArgExcludeDualListPane.updateLists();
+
+        var tab = new Tab(Dict.EXCLUDE.toString(), borderPane);
+
+        return tab;
+    }
+
+    private Tab createArgRsyncTab() {
+        mArgRsyncDualListPane = new DualListPane<>();
+        mArgRsyncDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0));
+
+        for (var arg : ArgRsync.values()) {
+            arg.setDynamicArg(null);
+            mArgRsyncDualListPane.getAvailablePane().getItems().add(arg);
+        }
+
+        mArgRsyncDualListPane.updateLists();
+
+        var tab = new Tab(Dict.OPTIONS.toString(), mArgRsyncDualListPane.getRoot());
+
+        return tab;
     }
 
     private Tab createDirsTab() {
@@ -151,40 +185,6 @@ public class TaskEditor extends BaseEditor<Task> {
         return tab;
     }
 
-    private Tab createExcludeTab() {
-        mExcludeDualListPane = new DualListPane<>();
-        mExcludeDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 16, 0));
-        mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
-        var borderPane = new BorderPane(mExcludeDualListPane.getRoot());
-        borderPane.setBottom(mRunExcludeSection);
-
-        for (var option : ExcludeOption.values()) {
-            option.setDynamicArg(null);
-            mExcludeDualListPane.getAvailablePane().getItems().add(option);
-        }
-        mExcludeDualListPane.updateLists();
-
-        var tab = new Tab(Dict.EXCLUDE.toString(), borderPane);
-
-        return tab;
-    }
-
-    private Tab createOptionsTab() {
-        mOptionDualListPane = new DualListPane<>();
-        mOptionDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0));
-
-        for (var option : RsyncOption.values()) {
-            option.setDynamicArg(null);
-            mOptionDualListPane.getAvailablePane().getItems().add(option);
-        }
-
-        mOptionDualListPane.updateLists();
-
-        var tab = new Tab(Dict.OPTIONS.toString(), mOptionDualListPane.getRoot());
-
-        return tab;
-    }
-
     private Tab createRunTab() {
         mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, true);
         mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, true);
@@ -211,8 +211,8 @@ public class TaskEditor extends BaseEditor<Task> {
         getTabPane().getTabs().addAll(
                 createDirsTab(),
                 createRunTab(),
-                createOptionsTab(),
-                createExcludeTab(),
+                createArgRsyncTab(),
+                createArgExcludeTab(),
                 createNoteTab()
         );
     }
@@ -226,11 +226,11 @@ public class TaskEditor extends BaseEditor<Task> {
         });
     }
 
-    private void loadExcludes(String joinedOptions) {
+    private void loadArgExcludes(String joinedOptions) {
         var options = StringUtils.splitPreserveAllTokens(joinedOptions, " ");
-        var availableItems = mExcludeDualListPane.getAvailablePane().getItems();
-        var selectedItems = mExcludeDualListPane.getSelectedPane().getItems();
-        var itemsToRemove = new ArrayList<OptionHandler>();
+        var availableItems = mArgExcludeDualListPane.getAvailablePane().getItems();
+        var selectedItems = mArgExcludeDualListPane.getSelectedPane().getItems();
+        var itemsToRemove = new ArrayList<ArgBase>();
 
         for (var optionString : options) {
             for (var option : availableItems) {
@@ -244,14 +244,14 @@ public class TaskEditor extends BaseEditor<Task> {
 
         availableItems.removeAll(itemsToRemove);
 
-        mExcludeDualListPane.updateLists();
+        mArgExcludeDualListPane.updateLists();
     }
 
-    private void loadOptions(String joinedOptions) {
+    private void loadArgRsync(String joinedOptions) {
         var options = StringUtils.splitPreserveAllTokens(joinedOptions, " ");
-        var availableItems = mOptionDualListPane.getAvailablePane().getItems();
-        var selectedItems = mOptionDualListPane.getSelectedPane().getItems();
-        var itemsToRemove = new ArrayList<OptionHandler>();
+        var availableItems = mArgRsyncDualListPane.getAvailablePane().getItems();
+        var selectedItems = mArgRsyncDualListPane.getSelectedPane().getItems();
+        var itemsToRemove = new ArrayList<ArgBase>();
 
         for (var optionString : options) {
             for (var option : availableItems) {
@@ -272,7 +272,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
         availableItems.removeAll(itemsToRemove);
 
-        mOptionDualListPane.updateLists();
+        mArgRsyncDualListPane.updateLists();
     }
 
 }

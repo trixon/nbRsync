@@ -37,7 +37,7 @@ import se.trixon.rsyncfx.Jota;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class ListPane<T extends OptionHandler> {
+public class ListPane<T extends ArgBase> {
 
     private final ArrayList<T> mFilteredItems = new ArrayList<>();
     private final ArrayList<T> mItems = new ArrayList<>();
@@ -122,19 +122,19 @@ public class ListPane<T extends OptionHandler> {
             }
         }
 
-        private void addContent(OptionHandler option) {
+        private void addContent(ArgBase argBase) {
             setText(null);
-            String separator = (StringUtils.isBlank(option.getLongArg()) || StringUtils.isBlank(option.getShortArg())) ? "" : ", ";
+            String separator = (StringUtils.isBlank(argBase.getLongArg()) || StringUtils.isBlank(argBase.getShortArg())) ? "" : ", ";
 
-            var arg = "%s%s%s".formatted(option.getShortArg(), separator, option.getLongArg());
+            var arg = "%s%s%s".formatted(argBase.getShortArg(), separator, argBase.getLongArg());
             if (StringUtils.isBlank(arg)) {
-                arg = option.getArg();
+                arg = argBase.getArg();
             }
-            mDescLabel.setText(option.getTitle());
+            mDescLabel.setText(argBase.getTitle());
             mArgLabel.setText(arg);
             mRoot.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
-                    Jota.getInstance().getGlobalState().put("dblclck_" + mKey, option);
+                    Jota.getInstance().getGlobalState().put("dblclck_" + mKey, argBase);
                 }
             });
 

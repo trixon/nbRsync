@@ -19,7 +19,7 @@ package se.trixon.rsyncfx.ui.editor.task;
  *
  * @author Patrik Karlström
  */
-public interface OptionHandler {
+public interface ArgBase {
 
     boolean filter(String filter);
 

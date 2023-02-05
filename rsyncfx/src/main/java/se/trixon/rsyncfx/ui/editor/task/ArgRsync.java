@@ -23,7 +23,7 @@ import se.trixon.almond.util.SystemHelper;
  *
  * @author Patrik Karlström
  */
-public enum RsyncOption implements OptionHandler {
+public enum ArgRsync implements ArgBase {
     ACLS("A", "acls"),
     ADDRESS(null, "address=ADDRESS"),
     APPEND(null, "append"),
@@ -142,13 +142,13 @@ public enum RsyncOption implements OptionHandler {
     WRITE_BATCH(null, "write-batch=FILE"),
     _8_BIT_OUTPUT("8", "8-bit-output");
 
-    private final ResourceBundle mBundle = SystemHelper.getBundle(RsyncOption.class, "RsyncOption");
+    private final ResourceBundle mBundle = SystemHelper.getBundle(ArgRsync.class, "ArgRsync");
     private final String mLongArg;
     private final String mShortArg;
     private final String mTitle;
     private String mDynamicArg;
 
-    private RsyncOption(String shortArg, String longArg) {
+    private ArgRsync(String shortArg, String longArg) {
         mShortArg = shortArg;
         mLongArg = longArg;
         String key = name();
@@ -209,7 +209,7 @@ public enum RsyncOption implements OptionHandler {
     }
 
     public static void reset() {
-        for (RsyncOption value : RsyncOption.values()) {
+        for (ArgRsync value : ArgRsync.values()) {
             value.setDynamicArg(null);
         }
     }
