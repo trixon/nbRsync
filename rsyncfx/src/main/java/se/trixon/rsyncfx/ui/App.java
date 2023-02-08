@@ -126,11 +126,10 @@ public class App extends Application {
     private void createUI() {
         mStage.getIcons().add(new Image(App.class.getResourceAsStream("logo.png")));
         mStage.setTitle(APP_TITLE);
-        int minWidth = FxHelper.getUIScaled(300);
-        mStage.setMinWidth(minWidth);
-        int minHeight = FxHelper.getUIScaled(250);
-        mStage.setMinHeight(minHeight);
-        StageManager.install(mStage, mOptions.getPreferences().node("stage"), minWidth * 4, minHeight * 3);
+        mStage.setWidth(500);
+        mStage.setHeight(500);
+        mStage.centerOnScreen();
+        StageManager.install(mStage, mOptions.getPreferences().node("stage"), 1, 1);
         initActions();
 
         mMainModule = new MainModule();
@@ -272,9 +271,11 @@ public class App extends Application {
     private void initActions() {
         //restart
         mRestartAction = new Action(Dict.RESTART.toString(), actionEvent -> {
-            var lifecycleManager = LifecycleManager.getDefault();
-            lifecycleManager.markForRestart();
-            lifecycleManager.exit();
+            SystemHelper.runLaterDelayed(0, () -> {
+                var lifecycleManager = LifecycleManager.getDefault();
+                lifecycleManager.markForRestart();
+                lifecycleManager.exit();
+            });
         });
         mRestartAction.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN, KeyCodeCombination.SHIFT_DOWN));
 

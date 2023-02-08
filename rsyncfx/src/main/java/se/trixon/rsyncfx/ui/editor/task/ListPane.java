@@ -31,6 +31,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.apache.commons.lang3.StringUtils;
+import org.controlsfx.control.textfield.TextFields;
 import se.trixon.rsyncfx.Jota;
 
 /**
@@ -45,7 +46,7 @@ public class ListPane<T extends ArgBase> {
     private final Label mLabel = new Label();
     private final ListView<T> mListView = new ListView<>();
     private final BorderPane mRoot;
-    private final TextField mTextField = new TextField();
+    private final TextField mTextField = TextFields.createClearableTextField();
 
     public ListPane(String key) {
         mKey = key;

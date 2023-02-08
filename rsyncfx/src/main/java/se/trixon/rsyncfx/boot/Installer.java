@@ -32,9 +32,15 @@ import se.trixon.rsyncfx.ui.App;
 public class Installer extends ModuleInstall {
 
     static boolean GUI = true;
+    private final StorageManager mStorageManager = StorageManager.getInstance();
 
     @Override
     public void restored() {
+        try {
+            mStorageManager.load();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         initStorage();
         //Give ArgsProcessor a chance to disable GUI
         SystemHelper.runLaterDelayed(100, () -> {
@@ -45,28 +51,21 @@ public class Installer extends ModuleInstall {
     }
 
     private void initStorage() {
-        try {
-            var manager = StorageManager.getInstance();
-            manager.load();
+        var jobManager = mStorageManager.getJobManager();
+        var taskManager = mStorageManager.getTaskManager();
 
-            var jobManager = manager.getJobManager();
-            var taskManager = manager.getTaskManager();
+        var task = new Task();
+        task.setName("Task %d %s".formatted(taskManager.getIdToItem().size(), RandomStringUtils.random(5, true, false)));
+        task.setDescription(RandomStringUtils.random(15, true, true));
+        taskManager.getIdToItem().put(task.getId(), task);
 
-            var task = new Task();
-            task.setName("Task %d %s".formatted(taskManager.getIdToItem().size(), RandomStringUtils.random(5, true, false)));
-            task.setDescription(RandomStringUtils.random(15, true, true));
-            taskManager.getIdToItem().put(task.getId(), task);
+        var job = new Job();
+        job.setName("Job %d %s".formatted(jobManager.getIdToItem().size(), RandomStringUtils.random(5, true, false)));
+        job.setDescription(RandomStringUtils.random(15, true, true));
+        job.getTaskIds().add(task.getId());
+        jobManager.getIdToItem().put(job.getId(), job);
 
-            var job = new Job();
-            job.setName("Job %d %s".formatted(jobManager.getIdToItem().size(), RandomStringUtils.random(5, true, false)));
-            job.setDescription(RandomStringUtils.random(15, true, true));
-            job.getTaskIds().add(task.getId());
-            jobManager.getIdToItem().put(job.getId(), job);
-
-            manager.save();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        mStorageManager.save();
     }
 
 }
