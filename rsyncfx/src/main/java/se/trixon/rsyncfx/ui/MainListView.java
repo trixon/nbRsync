@@ -86,7 +86,7 @@ public class MainListView extends MainViewBase {
 
     private void initListeners() {
         mOptions.nightModeProperty().addListener((p, o, n) -> {
-            updateNightMode(true);
+            updateNightMode(n);
         });
 
         mListView.getSelectionModel().selectedItemProperty().addListener((p, o, job) -> {

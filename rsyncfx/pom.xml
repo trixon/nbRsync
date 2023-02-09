@@ -94,7 +94,7 @@
         <dependency>
             <groupId>com.dlsc.gemsfx</groupId>
             <artifactId>gemsfx</artifactId>
-            <version>1.62.0</version>
+            <version>1.63.0</version>
         </dependency>
         <dependency>
             <groupId>org.controlsfx</groupId>

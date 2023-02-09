@@ -107,7 +107,7 @@ public class App extends Application {
         mStage.show();
         FxHelper.runLaterDelayed(10, () -> {
             mWorkbench.openModule(mMainModule);
-            mWorkbench.openModule(mEditorModule);
+//            mWorkbench.openModule(mEditorModule);
 //            mWorkbench.openModule(mHistoryModule);
 
             for (var module : mWorkbench.getModules()) {
@@ -129,7 +129,8 @@ public class App extends Application {
         mStage.setWidth(500);
         mStage.setHeight(500);
         mStage.centerOnScreen();
-        StageManager.install(mStage, mOptions.getPreferences().node("stage"), 1, 1);
+        var stageManager = StageManager.install(mStage, mOptions.getPreferences().node("stage"), 1, 1);
+        stageManager.setSupportFullScreenAndMaximized(!SystemUtils.IS_OS_MAC);
         initActions();
 
         mMainModule = new MainModule();
