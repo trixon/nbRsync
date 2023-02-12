@@ -16,6 +16,7 @@
 package se.trixon.rsyncfx.ui;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -28,8 +29,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.web.WebView;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.control.action.ActionUtils;
+import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.rsyncfx.Jota;
 import se.trixon.rsyncfx.core.ExecutorManager;
 import se.trixon.rsyncfx.core.job.Job;
 
@@ -43,6 +49,7 @@ public class MainListView extends MainViewBase {
     private final ListView<Job> mListView = new ListView<>();
     private SplitPane mSplitPane;
     private final WebView mWebView = new WebView();
+    private final Jota mJota = Jota.getInstance();
 
     public MainListView() {
         createUI();
@@ -136,6 +143,37 @@ public class MainListView extends MainViewBase {
                 lastRun = mSimpleDateFormat.format(new Date(job.getLastRun()));
             }
             mLastLabel.setText(lastRun);
+
+            var runAction = new Action(Dict.RUN.toString(), actionEvent -> {
+                mExecutorManager.requestStart(job);
+            });
+
+            var editAction = new Action("%s %s".formatted(Dict.EDIT.toString(), job.getName()), actionEvent -> {
+                mJota.getGlobalState().put(Jota.GSC_EDITOR, job);
+            });
+
+            var editorAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
+                mJota.getGlobalState().put(Jota.GSC_EDITOR, null);
+            });
+
+            var actions = Arrays.asList(
+                    runAction,
+                    editAction,
+                    editorAction
+            );
+
+            var contextMenu = ActionUtils.createContextMenu(actions);
+            contextMenu.setOnShowing(windowEvent -> {
+                runAction.setGraphic(MaterialIcon._Av.PLAY_ARROW.getImageView(Jota.getIconSizeToolBarInt()));
+                editAction.setGraphic(MaterialIcon._Content.CREATE.getImageView(Jota.getIconSizeToolBarInt()));
+            });
+
+            mRoot.setOnMousePressed(mouseEvent -> {
+                if (mouseEvent.isSecondaryButtonDown()) {
+                    contextMenu.show(this, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+                }
+            });
+
             mRoot.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
                     mExecutorManager.requestStart(job);
