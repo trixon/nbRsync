@@ -16,16 +16,18 @@
 package se.trixon.rsyncfx.ui;
 
 import com.dlsc.gemsfx.util.StageManager;
-import com.dlsc.workbenchfx.Workbench;
-import com.dlsc.workbenchfx.model.WorkbenchModule;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -43,8 +45,8 @@ import org.controlsfx.control.action.ActionGroup;
 import org.controlsfx.control.action.ActionUtils;
 import org.openide.LifecycleManager;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import se.trixon.almond.nbp.core.ModuleHelper;
-import se.trixon.almond.util.CircularInt;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.PomInfo;
 import se.trixon.almond.util.SystemHelper;
@@ -56,10 +58,6 @@ import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.Jota;
 import se.trixon.rsyncfx.Options;
-import se.trixon.rsyncfx.ui.common.BaseModule;
-import se.trixon.rsyncfx.ui.common.CustomTab;
-import se.trixon.rsyncfx.ui.editor.EditorModule;
-import se.trixon.rsyncfx.ui.history.HistoryModule;
 
 /**
  *
@@ -70,20 +68,20 @@ public class App extends Application {
     public static final String APP_TITLE = "JotaSync";
     private Action mAboutAction;
     private Action mAboutRsyncAction;
-    private Action mHomeAction;
+    private final ResourceBundle mBundle = NbBundle.getBundle(App.class);
     private Action mEditorAction;
-    private WorkbenchModule mEditorModule;
     private Action mHelpAction;
-    private WorkbenchModule mHistoryModule;
-    private WorkbenchModule mMainModule;
+    private Action mHomeAction;
+    private final Jota mJota = Jota.getInstance();
+    private Launcher mLauncher;
+    private RadioMenuItem mLauncher0RadioMenuItem;
+    private RadioMenuItem mLauncher1RadioMenuItem;
     private final Options mOptions = Options.getInstance();
     private Action mOptionsAction;
     private Action mQuitAction;
     private Action mRestartAction;
-    private final Jota mJota = Jota.getInstance();
     private Stage mStage;
     private StatusBar mStatusBar = new StatusBar();
-    private Workbench mWorkbench;
 
     /**
      * @param args the command line arguments
@@ -103,19 +101,7 @@ public class App extends Application {
         updateNightMode();
         FxHelper.removeSceneInitFlicker(mStage);
         initListeners();
-
         mStage.show();
-        FxHelper.runLaterDelayed(10, () -> {
-            mWorkbench.openModule(mMainModule);
-//            mWorkbench.openModule(mEditorModule);
-//            mWorkbench.openModule(mHistoryModule);
-
-            for (var module : mWorkbench.getModules()) {
-                if (module instanceof BaseModule baseModule) {
-                    baseModule.postInit();
-                }
-            }
-        });
     }
 
     @Override
@@ -133,26 +119,15 @@ public class App extends Application {
         stageManager.setSupportFullScreenAndMaximized(!SystemUtils.IS_OS_MAC);
         initActions();
 
-        mMainModule = new MainModule();
-        mEditorModule = new EditorModule();
-        mHistoryModule = new HistoryModule();
-
-        mWorkbench = Workbench.builder(
-                mMainModule,
-                mEditorModule,
-                mHistoryModule)
-                .tabFactory(CustomTab::new)
-                .build();
-        mWorkbench.getStylesheets().add(App.class.getResource("baseTheme.css").toExternalForm());
-        mJota.setWorkbench(mWorkbench);
-
-        var root = new BorderPane(mWorkbench);
+        mLauncher = new Launcher();
+        var root = new BorderPane(mLauncher);
 
         var actions = List.of(
                 new ActionGroup(Dict.FILE_MENU.toString(),
                         mRestartAction,
                         mQuitAction
                 ),
+                new ActionGroup(Dict.VIEW.toString()),
                 new ActionGroup(Dict.TOOLS.toString(),
                         mHomeAction,
                         mEditorAction,
@@ -168,6 +143,23 @@ public class App extends Application {
         );
 
         var menubar = ActionUtils.createMenuBar(actions);
+        mLauncher0RadioMenuItem = new RadioMenuItem(mBundle.getString("launcher.buttons"));
+        mLauncher0RadioMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN));
+        mLauncher0RadioMenuItem.setOnAction(actionEvent -> {
+            updateLauncherMode(0);
+        });
+
+        mLauncher1RadioMenuItem = new RadioMenuItem(mBundle.getString("launcher.list"));
+        mLauncher1RadioMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN));
+        mLauncher1RadioMenuItem.setOnAction(actionEvent -> {
+            updateLauncherMode(1);
+        });
+
+        var toggleGroup = new ToggleGroup();
+        mLauncher0RadioMenuItem.setToggleGroup(toggleGroup);
+        mLauncher1RadioMenuItem.setToggleGroup(toggleGroup);
+        menubar.getMenus().get(1).getItems().addAll(mLauncher0RadioMenuItem, mLauncher1RadioMenuItem);
+        updateLauncherMode();
 
         root.setTop(menubar);
         root.setBottom(mStatusBar);
@@ -217,30 +209,6 @@ public class App extends Application {
     private void initAccelerators() {
         var accelerators = mStage.getScene().getAccelerators();
 
-        accelerators.put(new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHORTCUT_DOWN), () -> {
-            var openModules = mWorkbench.getOpenModules();
-            for (int i = 0; i < openModules.size(); i++) {
-                var module = openModules.get(i);
-                if (module == mWorkbench.getActiveModule()) {
-                    var circularInt = new CircularInt(0, openModules.size() - 1, i);
-                    mWorkbench.openModule(openModules.get(circularInt.inc()));
-                    break;
-                }
-            }
-        });
-
-        accelerators.put(new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHORTCUT_DOWN, KeyCodeCombination.SHIFT_DOWN), () -> {
-            var openModules = mWorkbench.getOpenModules();
-            for (int i = 0; i < openModules.size(); i++) {
-                var module = openModules.get(i);
-                if (module == mWorkbench.getActiveModule()) {
-                    var circularInt = new CircularInt(0, openModules.size() - 1, i);
-                    mWorkbench.openModule(openModules.get(circularInt.dec()));
-                    break;
-                }
-            }
-        });
-
         accelerators.put(new KeyCodeCombination(KeyCode.H, KeyCombination.SHORTCUT_DOWN), () -> {
             mHomeAction.handle(null);
         });
@@ -259,6 +227,25 @@ public class App extends Application {
 
         accelerators.put(new KeyCodeCombination(KeyCode.F1), () -> {
             mHelpAction.handle(null);
+        });
+        accelerators.put(new KeyCodeCombination(KeyCode.NUMPAD1, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateLauncherMode(0);
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.NUMPAD1, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateLauncherMode(0);
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateLauncherMode(0);
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.NUMPAD2, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateLauncherMode(1);
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN), () -> {
+            updateLauncherMode(1);
         });
 
         if (!SystemUtils.IS_OS_MAC) {
@@ -288,13 +275,13 @@ public class App extends Application {
 
         //home
         mHomeAction = new Action(Dict.HOME.toString(), actionEvent -> {
-            mWorkbench.openModule(mMainModule);
+//            mWorkbench.openModule(mMainModule);
         });
         mHomeAction.setAccelerator(new KeyCodeCombination(KeyCode.H, KeyCombination.SHORTCUT_DOWN));
 
         //editor
         mEditorAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
-            mWorkbench.openModule(mEditorModule);
+//            mWorkbench.openModule(mEditorModule);
         });
         mEditorAction.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN));
 
@@ -331,30 +318,38 @@ public class App extends Application {
         });
 
         mJota.getGlobalState().addListener(gsce -> {
-            mWorkbench.openModule(mEditorModule);
+//            mWorkbench.openModule(mEditorModule);
         }, Jota.GSC_EDITOR);
+
+        mOptions.getPreferences()
+                .addPreferenceChangeListener(pce -> {
+                    if (pce.getKey().equalsIgnoreCase(Options.KEY_LAUNCHER_MODE)) {
+                        Platform.runLater(() -> updateLauncherMode());
+                    }
+                });
+    }
+
+    private void updateLauncherMode(int mode) {
+        mOptions.put(Options.KEY_LAUNCHER_MODE, mode);
+    }
+
+    private void updateLauncherMode() {
+        if (mOptions.getInt(Options.KEY_LAUNCHER_MODE, Options.DEFAULT_LAUNCHER_MODE) == 0) {
+            mLauncher0RadioMenuItem.setSelected(true);
+        } else {
+            mLauncher1RadioMenuItem.setSelected(true);
+        }
     }
 
     private void updateNightMode() {
         MaterialIcon.setDefaultColor(mOptions.isNightMode() ? Color.LIGHTGRAY : Color.BLACK);
 
-        String lightTheme = getClass().getResource("lightTheme.css").toExternalForm();
-        String darkTheme = getClass().getResource("darkTheme.css").toExternalForm();
-        String darculaTheme = FxHelper.class.getResource("darcula.css").toExternalForm();
-
-        var stylesheets = mWorkbench.getStylesheets();
         FxHelper.setDarkThemeEnabled(mOptions.isNightMode());
 
         if (mOptions.isNightMode()) {
             FxHelper.loadDarkTheme(mStage.getScene());
-            stylesheets.remove(lightTheme);
-            stylesheets.add(darkTheme);
-            stylesheets.add(darculaTheme);
         } else {
             FxHelper.unloadDarkTheme(mStage.getScene());
-            stylesheets.remove(darkTheme);
-            stylesheets.remove(darculaTheme);
-            stylesheets.add(lightTheme);
         }
     }
 }

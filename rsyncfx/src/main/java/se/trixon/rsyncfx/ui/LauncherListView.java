@@ -43,7 +43,7 @@ import se.trixon.rsyncfx.core.job.Job;
  *
  * @author Patrik Karlström
  */
-public class MainListView extends MainViewBase {
+public class LauncherListView extends LauncherViewBase {
 
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final ListView<Job> mListView = new ListView<>();
@@ -51,7 +51,7 @@ public class MainListView extends MainViewBase {
     private final WebView mWebView = new WebView();
     private final Jota mJota = Jota.getInstance();
 
-    public MainListView() {
+    public LauncherListView() {
         createUI();
 
         initBindings();

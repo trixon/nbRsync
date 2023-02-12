@@ -21,14 +21,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import se.trixon.almond.util.fx.FxHelper;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class MainGridView extends MainViewBase {
+public class LauncherGridView extends LauncherViewBase {
 
     private static final int NUM_OF_BUTTONS = 9;
     private static final int NUM_OF_COLUMNS = 3;
@@ -36,7 +35,7 @@ public class MainGridView extends MainViewBase {
     private final GridPane mGridPane = new GridPane();
     private final BorderPane mRoot = new BorderPane();
 
-    public MainGridView() {
+    public LauncherGridView() {
         createUI();
         initBindings();
     }
@@ -47,7 +46,7 @@ public class MainGridView extends MainViewBase {
     }
 
     private void createUI() {
-        mRoot.setBackground(FxHelper.createBackground(Color.GRAY));
+//        mRoot.setBackground(FxHelper.createBackground(Color.GRAY));
 
         for (int i = 0; i < NUM_OF_BUTTONS; i++) {
             var speedDialButton = new SpeedDialButton(i);

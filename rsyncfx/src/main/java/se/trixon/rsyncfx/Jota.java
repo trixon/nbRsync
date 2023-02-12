@@ -16,13 +16,12 @@
 package se.trixon.rsyncfx;
 
 import com.dlsc.gemsfx.util.SessionManager;
-import com.dlsc.workbenchfx.Workbench;
 import javafx.stage.Stage;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.ExecutionFlow;
 import se.trixon.almond.util.GlobalState;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.rsyncfx.ui.MainModule;
+import se.trixon.rsyncfx.ui.Launcher;
 
 /**
  *
@@ -30,13 +29,12 @@ import se.trixon.rsyncfx.ui.MainModule;
  */
 public class Jota {
 
-    public static final int ICON_SIZE_TOOLBAR = 32;
     public static final String GSC_EDITOR = "key.editor";
+    public static final int ICON_SIZE_TOOLBAR = 32;
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
-    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(MainModule.class).node("sessionManager"));
-    private Stage mStage;
-    private Workbench mWorkbench;
     private final GlobalState mGlobalState = new GlobalState();
+    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(Launcher.class).node("sessionManager"));
+    private Stage mStage;
 
     public static int getIconSizeToolBar() {
         return FxHelper.getUIScaled(ICON_SIZE_TOOLBAR);
@@ -69,16 +67,8 @@ public class Jota {
         return mStage;
     }
 
-    public Workbench getWorkbench() {
-        return mWorkbench;
-    }
-
     public void setStage(Stage stage) {
         mStage = stage;
-    }
-
-    public void setWorkbench(Workbench workbench) {
-        mWorkbench = workbench;
     }
 
     private static class Holder {

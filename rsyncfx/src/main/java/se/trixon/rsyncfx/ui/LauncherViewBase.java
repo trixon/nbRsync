@@ -26,7 +26,7 @@ import se.trixon.rsyncfx.core.JobManager;
  *
  * @author Patrik Karlström
  */
-public abstract class MainViewBase {
+public abstract class LauncherViewBase {
 
     protected final Font mDefaultFont = Font.getDefault();
     protected final JobManager mJobManager = JobManager.getInstance();
@@ -34,7 +34,7 @@ public abstract class MainViewBase {
     protected final SessionManager mSessionManager = Jota.getInstance().getSessionManager();
     protected SummaryBuilder mSummaryBuilder;
 
-    public MainViewBase() {
+    public LauncherViewBase() {
     }
 
     public abstract Node getNode();
