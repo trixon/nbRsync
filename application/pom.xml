@@ -3,16 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>se.trixon.rsyncfx</groupId>
-        <artifactId>rsyncfx-parent</artifactId>
+        <groupId>se.trixon.jotasync</groupId>
+        <artifactId>jotasync-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>rsyncfx-app</artifactId>
+    <artifactId>jotasync-app</artifactId>
     <packaging>nbm-application</packaging>
 
-    <name>rsyncfx-app</name>
+    <name>jotasync-app</name>
 
     <dependencies>
         <!-- NetBeans -->
@@ -24,12 +24,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>rsyncfx-branding</artifactId>
+            <artifactId>jotasync-branding</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>rsyncfx</artifactId>
+            <artifactId>jotasync</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

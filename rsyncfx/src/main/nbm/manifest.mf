@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module-Install: se/trixon/rsyncfx/boot/Installer.class
-OpenIDE-Module-Localizing-Bundle: se/trixon/rsyncfx/Bundle.properties
-

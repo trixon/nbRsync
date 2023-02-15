@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Install: se/trixon/jotasync/boot/Installer.class
+OpenIDE-Module-Localizing-Bundle: se/trixon/jotasync/Bundle.properties
+
