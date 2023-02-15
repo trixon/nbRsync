@@ -65,12 +65,7 @@ public class EditorPane extends HBox {
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private BaseItemPane mTaskPane;
 
-    public EditorPane() {
-        createUI();
-        initListeners();
-    }
-
-    public static void displayEditor() {
+    public static void displayEditor(Job job) {
         var alert = new Alert(Alert.AlertType.INFORMATION);
         alert.initOwner(Jota.getStage());
 
@@ -80,7 +75,7 @@ public class EditorPane extends HBox {
         alert.setResizable(true);
         alert.getButtonTypes().setAll(ButtonType.CLOSE);
 
-        var editorPane = new EditorPane();
+        var editorPane = new EditorPane(job);
         var dialogPane = alert.getDialogPane();
 
         dialogPane.setContent(editorPane);
@@ -89,6 +84,14 @@ public class EditorPane extends HBox {
         FxHelper.removeSceneInitFlicker(dialogPane);
 
         FxHelper.showAndWait(alert, Jota.getStage());
+    }
+
+    public EditorPane(Job job) {
+        createUI();
+        initListeners();
+        if (job != null) {
+            load(job);
+        }
     }
 
     public BaseItemPane getJobPane() {
@@ -116,19 +119,16 @@ public class EditorPane extends HBox {
     }
 
     private void initListeners() {
-        mJota.getGlobalState().addListener(gsce -> {
-            Job job = gsce.getValue();
+    }
 
-            if (job != null) {
-                FxHelper.runLaterDelayed(10, () -> {
-                    var listView = mJobPane.getListView();
-                    listView.requestFocus();
-                    listView.getSelectionModel().select(job);
-                    FxHelper.scrollToItemIfNotVisible(listView, job);
-                    mJobPane.edit(job);
-                });
-            }
-        }, Jota.GSC_EDITOR);
+    private void load(Job job) {
+        FxHelper.runLaterDelayed(10, () -> {
+            var listView = mJobPane.getListView();
+            listView.requestFocus();
+            listView.getSelectionModel().select(job);
+            FxHelper.scrollToItemIfNotVisible(listView, job);
+            mJobPane.edit(job);
+        });
     }
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {

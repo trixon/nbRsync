@@ -282,7 +282,7 @@ public class App extends Application {
 
         //editor
         mEditorAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
-            EditorPane.displayEditor();
+            EditorPane.displayEditor(null);
         });
         mEditorAction.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN));
 
@@ -319,7 +319,7 @@ public class App extends Application {
         });
 
         mJota.getGlobalState().addListener(gsce -> {
-            EditorPane.displayEditor();
+            EditorPane.displayEditor(gsce.getValue());
         }, Jota.GSC_EDITOR);
 
         mOptions.getPreferences()
