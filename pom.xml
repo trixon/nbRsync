@@ -107,10 +107,14 @@
     </modules>
 
     <repositories>
+        <repository>
+            <id>netbeans-next</id>
+            <url>https://repository.apache.org/content/repositories/orgapachenetbeans-1125</url>
+        </repository>
     </repositories>
 
     <properties>
-        <netbeans.version>RELEASE160</netbeans.version>
+        <netbeans.version>RELEASE170</netbeans.version>
         <almond.version>17.0.0-SNAPSHOT</almond.version>
         <brandingToken>jotasync</brandingToken>
     </properties>
