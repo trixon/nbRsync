@@ -15,7 +15,6 @@
  */
 package se.trixon.rsyncfx.ui.editor;
 
-import com.dlsc.workbenchfx.view.controls.ToolbarItem;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -31,20 +30,19 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.control.action.ActionUtils;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.Jota;
-import static se.trixon.rsyncfx.Jota.getIconSizeToolBarInt;
 import se.trixon.rsyncfx.core.BaseItem;
 import se.trixon.rsyncfx.core.BaseManager;
 import se.trixon.rsyncfx.core.JobManager;
@@ -72,6 +70,27 @@ public class EditorPane extends HBox {
         initListeners();
     }
 
+    public static void displayEditor() {
+        var alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initOwner(Jota.getStage());
+
+        alert.setTitle(Dict.EDITOR.toString());
+        alert.setGraphic(null);
+        alert.setHeaderText(null);
+        alert.setResizable(true);
+        alert.getButtonTypes().setAll(ButtonType.CLOSE);
+
+        var editorPane = new EditorPane();
+        var dialogPane = alert.getDialogPane();
+
+        dialogPane.setContent(editorPane);
+        dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
+        dialogPane.setPrefWidth(FxHelper.getUIScaled(700));
+        FxHelper.removeSceneInitFlicker(dialogPane);
+
+        FxHelper.showAndWait(alert, Jota.getStage());
+    }
+
     public BaseItemPane getJobPane() {
         return mJobPane;
     }
@@ -81,8 +100,6 @@ public class EditorPane extends HBox {
     }
 
     private void createUI() {
-        setSpacing(FxHelper.getUIScaled(12));
-
         mJobPane = new BaseItemPane<Job>(mJobManager) {
         };
         mTaskPane = new BaseItemPane<Task>(mTaskManager) {
@@ -116,18 +133,16 @@ public class EditorPane extends HBox {
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {
 
-        private final ToolbarItem mLabelToolbarItem;
         private final ListView<T> mListView = new ListView<>();
         private final BaseManager mManager;
         private final String mTitleP;
         private final String mTitleS;
-        private List<ToolbarItem> mToolBarItems;
+        private List<Action> mActions;
 
         public BaseItemPane(BaseManager manager) {
             mManager = manager;
             mTitleS = mManager.getLabelSingular();
             mTitleP = mManager.getLabelPlural();
-            mLabelToolbarItem = new ToolbarItem("%s".formatted(mTitleS));
 
             createUI();
         }
@@ -136,15 +151,11 @@ public class EditorPane extends HBox {
             return mListView;
         }
 
-        public List<ToolbarItem> getToolBarItems() {
-            return mToolBarItems;
+        public List<Action> getActions() {
+            return mActions;
         }
 
-        private boolean confirm(MouseEvent mouseEvent, String title, String header, String content, String buttonText) {
-            if (mouseEvent != null && mouseEvent.getButton() != MouseButton.PRIMARY) {
-                return false;
-            }
-
+        private boolean confirm(String title, String header, String content, String buttonText) {
             var stage = mJota.getStage();
             var alert = new Alert(AlertType.CONFIRMATION);
             alert.initOwner(stage);
@@ -164,37 +175,33 @@ public class EditorPane extends HBox {
         }
 
         private void createUI() {
-            final int size = getIconSizeToolBarInt();
-            final Color color = Color.WHITE;
+            final int size = Jota.getIconSizeToolBar();
 
-            var addToolbarItem = new ToolbarItem(MaterialIcon._Content.ADD.getImageView(size, color), mouseEvent -> {
-                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
-                    edit(null);
-                }
+            var addAction = new Action(Dict.ADD.toString(), actionEvent -> {
+                edit(null);
             });
-            addToolbarItem.setTooltip(createTooltip(Dict.ADD.toString(), true));
+            addAction.setGraphic(MaterialIcon._Content.ADD.getImageView(size));
 
-            var remToolbarItem = new ToolbarItem(MaterialIcon._Content.REMOVE.getImageView(size, color), mouseEvent -> {
+            var remAction = new Action(Dict.REMOVE.toString(), actionEvent -> {
                 var baseTitle = Dict.Dialog.TITLE_REMOVE_S.toString().formatted(mTitleS.toLowerCase(Locale.ENGLISH));
                 var action = Dict.Dialog.TITLE_REMOVE_S.toString().formatted("'%s'".formatted(getSelected().getName()));
                 var baseHeader = Dict.Dialog.YOU_ARE_ABOUT_TO_S.toString().formatted(action.toLowerCase(Locale.ENGLISH));
 
-                if (confirm(mouseEvent,
-                        baseTitle + "?",
+                if (confirm(baseTitle + "?",
                         baseHeader,
                         Dict.Dialog.ACTION_CANT_BE_UNDONE.toString(),
                         baseTitle)) {
                     onRemove();
                 }
             });
-            remToolbarItem.setTooltip(createTooltip(Dict.REMOVE.toString(), true));
+            remAction.setGraphic(MaterialIcon._Content.REMOVE.getImageView(size));
 
-            var remAllToolbarItem = new ToolbarItem(MaterialIcon._Content.CLEAR.getImageView(size, color), mouseEvent -> {
+            var remAllAction = new Action(Dict.REMOVE_ALL.toString(), actionEvent -> {
                 var baseTitle = Dict.Dialog.TITLE_REMOVE_ALL_S.toString().formatted(mTitleP.toLowerCase(Locale.ENGLISH));
                 var action = Dict.Dialog.TITLE_REMOVE_ALL_S.toString().formatted(mTitleP.toLowerCase(Locale.ENGLISH));
                 var baseHeader = Dict.Dialog.YOU_ARE_ABOUT_TO_S.toString().formatted(action.toLowerCase(Locale.ENGLISH));
 
-                if (confirm(mouseEvent,
+                if (confirm(
                         baseTitle + "?",
                         baseHeader,
                         Dict.Dialog.ACTION_CANT_BE_UNDONE.toString(),
@@ -202,39 +209,39 @@ public class EditorPane extends HBox {
                     onRemoveAll();
                 }
             });
-            remAllToolbarItem.setTooltip(createTooltip(Dict.REMOVE_ALL.toString(), false));
+            remAllAction.setGraphic(MaterialIcon._Content.CLEAR.getImageView(size));
 
-            var editToolbarItem = new ToolbarItem(MaterialIcon._Editor.MODE_EDIT.getImageView(size, color), mouseEvent -> {
-                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
-                    edit(getSelected());
-                }
+            var editAction = new Action(Dict.EDIT.toString(), actionEvent -> {
+                edit(getSelected());
             });
-            editToolbarItem.setTooltip(createTooltip(Dict.EDIT.toString(), true));
+            editAction.setGraphic(MaterialIcon._Editor.MODE_EDIT.getImageView(size));
 
-            var cloneToolbarItem = new ToolbarItem(MaterialIcon._Content.CONTENT_COPY.getImageView(size, color), mouseEvent -> {
-                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
-                    onClone();
-                }
+            var cloneAction = new Action(Dict.CLONE.toString(), actionEvent -> {
+                onClone();
             });
-            cloneToolbarItem.setTooltip(createTooltip(Dict.CLONE.toString(), true));
+            cloneAction.setGraphic(MaterialIcon._Content.CONTENT_COPY.getImageView(size));
 
-            mToolBarItems = List.of(
-                    mLabelToolbarItem,
-                    addToolbarItem,
-                    remToolbarItem,
-                    editToolbarItem,
-                    cloneToolbarItem,
-                    remAllToolbarItem
+            mActions = List.of(
+                    addAction,
+                    remAction,
+                    editAction,
+                    cloneAction,
+                    remAllAction
             );
 
             var nullSelectionBooleanBinding = mListView.getSelectionModel().selectedItemProperty().isNull();
-            editToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
-            cloneToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
-            remToolbarItem.disableProperty().bind(nullSelectionBooleanBinding);
-            remAllToolbarItem.disableProperty().bind(Bindings.isEmpty(mManager.getItems()));
+            editAction.disabledProperty().bind(nullSelectionBooleanBinding);
+            cloneAction.disabledProperty().bind(nullSelectionBooleanBinding);
+            remAction.disabledProperty().bind(nullSelectionBooleanBinding);
+            remAllAction.disabledProperty().bind(Bindings.isEmpty(mManager.getItems()));
 
             mListView.itemsProperty().bind(mManager.itemsProperty());
+            var label = new Label(mTitleP);
+            var toolBar = ActionUtils.createToolBar(mActions, ActionUtils.ActionTextBehavior.HIDE);
+            FxHelper.undecorateButtons(toolBar.getItems().stream());
+            FxHelper.slimToolBar(toolBar);
 
+            setTop(new VBox(label, toolBar));
             setCenter(mListView);
         }
 

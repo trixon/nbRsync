@@ -31,10 +31,10 @@ public class Jota {
 
     public static final String GSC_EDITOR = "key.editor";
     public static final int ICON_SIZE_TOOLBAR = 32;
+    private static Stage sStage;
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
     private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(Launcher.class).node("sessionManager"));
-    private Stage mStage;
 
     public static int getIconSizeToolBar() {
         return FxHelper.getUIScaled(ICON_SIZE_TOOLBAR);
@@ -46,6 +46,14 @@ public class Jota {
 
     public static Jota getInstance() {
         return Holder.INSTANCE;
+    }
+
+    public static Stage getStage() {
+        return sStage;
+    }
+
+    public static void setStage(Stage stage) {
+        sStage = stage;
     }
 
     private Jota() {
@@ -61,14 +69,6 @@ public class Jota {
 
     public SessionManager getSessionManager() {
         return mSessionManager;
-    }
-
-    public Stage getStage() {
-        return mStage;
-    }
-
-    public void setStage(Stage stage) {
-        mStage = stage;
     }
 
     private static class Holder {

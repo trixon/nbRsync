@@ -26,13 +26,16 @@ import static javafx.application.Application.launch;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -58,6 +61,7 @@ import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.rsyncfx.Jota;
 import se.trixon.rsyncfx.Options;
+import se.trixon.rsyncfx.ui.editor.EditorPane;
 
 /**
  *
@@ -69,9 +73,9 @@ public class App extends Application {
     private Action mAboutAction;
     private Action mAboutRsyncAction;
     private final ResourceBundle mBundle = NbBundle.getBundle(App.class);
+    private final DialogPane mDialogPane = new DialogPane();
     private Action mEditorAction;
     private Action mHelpAction;
-    private Action mHomeAction;
     private final Jota mJota = Jota.getInstance();
     private Launcher mLauncher;
     private RadioMenuItem mLauncher0RadioMenuItem;
@@ -81,7 +85,7 @@ public class App extends Application {
     private Action mQuitAction;
     private Action mRestartAction;
     private Stage mStage;
-    private StatusBar mStatusBar = new StatusBar();
+    private final StatusBar mStatusBar = new StatusBar();
 
     /**
      * @param args the command line arguments
@@ -129,7 +133,6 @@ public class App extends Application {
                 ),
                 new ActionGroup(Dict.VIEW.toString()),
                 new ActionGroup(Dict.TOOLS.toString(),
-                        mHomeAction,
                         mEditorAction,
                         ActionUtils.ACTION_SEPARATOR,
                         mOptionsAction
@@ -163,8 +166,16 @@ public class App extends Application {
 
         root.setTop(menubar);
         root.setBottom(mStatusBar);
+        var stackPane = new StackPane(mDialogPane, root);
+        var anchorPane = new AnchorPane(stackPane);
+        //anchorPane.getStyleClass().add("editor");
 
-        var scene = new Scene(root);
+        AnchorPane.setTopAnchor(stackPane, 0d);
+        AnchorPane.setBottomAnchor(stackPane, 0d);
+        AnchorPane.setLeftAnchor(stackPane, 0d);
+        AnchorPane.setRightAnchor(stackPane, 0d);
+
+        var scene = new Scene(anchorPane);
         FxHelper.applyFontScale(scene);
         mStage.setScene(scene);
     }
@@ -185,7 +196,7 @@ public class App extends Application {
                 var information = StringUtils.substringBefore(result, "Usage: rsync");
                 FxHelper.runLater(() -> {
                     var alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.initOwner(mJota.getStage());
+                    alert.initOwner(Jota.getStage());
 
                     alert.setTitle(Dict.ABOUT_S.toString().formatted("rsync"));
                     alert.setGraphic(null);
@@ -198,7 +209,7 @@ public class App extends Application {
                     dialogPane.setPrefWidth(FxHelper.getUIScaled(600));
                     FxHelper.removeSceneInitFlicker(dialogPane);
 
-                    FxHelper.showAndWait(alert, mJota.getStage());
+                    FxHelper.showAndWait(alert, Jota.getStage());
                 });
             } catch (IOException | InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
@@ -208,10 +219,6 @@ public class App extends Application {
 
     private void initAccelerators() {
         var accelerators = mStage.getScene().getAccelerators();
-
-        accelerators.put(new KeyCodeCombination(KeyCode.H, KeyCombination.SHORTCUT_DOWN), () -> {
-            mHomeAction.handle(null);
-        });
 
         accelerators.put(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN), () -> {
             mEditorAction.handle(null);
@@ -273,15 +280,9 @@ public class App extends Application {
         });
         mQuitAction.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.SHORTCUT_DOWN));
 
-        //home
-        mHomeAction = new Action(Dict.HOME.toString(), actionEvent -> {
-//            mWorkbench.openModule(mMainModule);
-        });
-        mHomeAction.setAccelerator(new KeyCodeCombination(KeyCode.H, KeyCombination.SHORTCUT_DOWN));
-
         //editor
         mEditorAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
-//            mWorkbench.openModule(mEditorModule);
+            EditorPane.displayEditor();
         });
         mEditorAction.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN));
 
@@ -318,7 +319,7 @@ public class App extends Application {
         });
 
         mJota.getGlobalState().addListener(gsce -> {
-//            mWorkbench.openModule(mEditorModule);
+            EditorPane.displayEditor();
         }, Jota.GSC_EDITOR);
 
         mOptions.getPreferences()

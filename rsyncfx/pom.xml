@@ -81,17 +81,6 @@
 
         <!--Other-->
         <dependency>
-            <groupId>com.dlsc.workbenchfx</groupId>
-            <artifactId>workbenchfx-core</artifactId>
-            <version>11.3.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.dlsc.gemsfx</groupId>
             <artifactId>gemsfx</artifactId>
             <version>1.63.0</version>

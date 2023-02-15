@@ -17,6 +17,7 @@ package se.trixon.rsyncfx.ui;
 
 import java.util.ResourceBundle;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.ToggleSwitch;
@@ -46,6 +47,7 @@ public class OptionsPane extends VBox {
         alert.setTitle(Dict.OPTIONS.toString());
         alert.setGraphic(null);
         alert.setHeaderText(null);
+        alert.getButtonTypes().setAll(ButtonType.CLOSE);
 
         var optionsPane = new OptionsPane();
         var dialogPane = alert.getDialogPane();
