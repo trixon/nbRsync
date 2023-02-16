@@ -24,8 +24,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openide.util.Exceptions;
@@ -50,7 +48,7 @@ class JobExecutor extends Thread {
     private boolean mDryRun;
     private final StringBuffer mErrBuffer;
     private final Job mJob;
-    private final StorageManager mJotaManager = StorageManager.getInstance();
+    private final StorageManager mStorageManager = StorageManager.getInstance();
     private long mLastRun;
     private int mNumOfFailedTasks;
     private Options mOptions = Options.getInstance();
@@ -58,7 +56,7 @@ class JobExecutor extends Thread {
     private boolean mTaskFailed;
     private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
 
-    JobExecutor(Job job, boolean dryRun) {
+    public JobExecutor(Job job, boolean dryRun) {
         mJob = job;
         mDryRun = dryRun;
 
@@ -144,14 +142,14 @@ class JobExecutor extends Thread {
 
     private void appendHistoryFile(String string) {
         try {
-            FileUtils.write(mJotaManager.getHistoryFile(), string, Charset.defaultCharset(), true);
+            FileUtils.write(mStorageManager.getHistoryFile(), string, Charset.defaultCharset(), true);
         } catch (IOException ex) {
-            Logger.getLogger(JobExecutor.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 
     private String getHistoryLine(String id, String status, String dryRunIndicator) {
-        return String.format("%d %s %s%s\n", id, Jota.nowToDateTime(), status, dryRunIndicator);
+        return String.format("%s %s %s%s\n", id, Jota.nowToDateTime(), status, dryRunIndicator);
     }
 
     private String getRsyncErrorCode(int exitValue) {
@@ -168,8 +166,8 @@ class JobExecutor extends Thread {
         send(ProcessEvent.OUT, s);
         boolean success = false;
 
-        if (new File(command).exists()) {
-            ArrayList<String> commandLine = new ArrayList<>();
+        if (new File(command).isFile()) {
+            var commandLine = new ArrayList<String>();
             commandLine.add(command);
             runProcess(commandLine);
 
@@ -211,7 +209,7 @@ class JobExecutor extends Thread {
     }
 
     private void runProcess(List<String> command) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        var processBuilder = new ProcessBuilder(command);
         mCurrentProcess = processBuilder.start();
 
         new ProcessLogThread(mCurrentProcess.getInputStream(), ProcessEvent.OUT).start();
@@ -222,7 +220,7 @@ class JobExecutor extends Thread {
 
     private int runRsync(Task task) throws InterruptedException {
         try {
-            ArrayList<String> command = new ArrayList<>();
+            var command = new ArrayList<String>();
             command.add(mOptions.getRsyncPath());
             if (mDryRun) {
                 command.add("--dry-run");
@@ -237,7 +235,7 @@ class JobExecutor extends Thread {
             Thread.sleep(500);
             send(ProcessEvent.OUT, "");
         } catch (IOException ex) {
-            Logger.getLogger(JobExecutor.class.getName()).log(Level.SEVERE, null, ex);
+            Exceptions.printStackTrace(ex);
             return 9999;
         }
 
@@ -256,41 +254,24 @@ class JobExecutor extends Thread {
         mTaskFailed = false;
         var taskExecuteSection = task.getExecuteSection();
 
-        // run before
         boolean doNextStep = runTaskStep(taskExecuteSection.getBefore(), "TaskEditor.runBefore");
 
-        // run rsync
         if (doNextStep) {
             int exitValue = runRsync(task);
             boolean rsyncSuccess = exitValue == 0;
             s = String.format("%s %s: rsync (%s)", Jota.nowToDateTime(), Dict.DONE.toString(), getRsyncErrorCode(exitValue));
             mOutBuffer.append(s).append("\n");
             send(ProcessEvent.OUT, s);
-            if (rsyncSuccess) {
-                // run after success
-                doNextStep = runTaskStep(taskExecuteSection.getAfterOk(), "TaskEditor.runAfterOk");
 
-//                command = taskExecuteSection.getAfterSuccessCommand();
-//                if (taskExecuteSection.isAfterSuccess() && StringUtils.isNoneEmpty(command)) {
-//                    doNextStep = runTaskStep(command, taskExecuteSection.isAfterSuccessHaltOnError(), mBundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
-//                }
+            if (rsyncSuccess) {
+                doNextStep = runTaskStep(taskExecuteSection.getAfterOk(), "TaskEditor.runAfterOk");
             } else {
-                // run after failure
                 doNextStep = runTaskStep(taskExecuteSection.getAfterFail(), "TaskEditor.runAfterFail");
-//                command = taskExecuteSection.getAfterFailureCommand();
-//                if (taskExecuteSection.isAfterFailure() && StringUtils.isNoneEmpty(command)) {
-//                    doNextStep = runTaskStep(command, taskExecuteSection.isAfterFailureHaltOnError(), mBundle.getString("TaskExecutePanel.afterFailurePanel.header"));
-//                }
             }
         }
 
         if (doNextStep) {
-            // run after
             runTaskStep(taskExecuteSection.getAfterOk(), "TaskEditor.runAfter");
-//            command = taskExecuteSection.getAfterCommand();
-//            if (taskExecuteSection.isAfter() && StringUtils.isNoneEmpty(command)) {
-//                runTaskStep(command, taskExecuteSection.isAfterHaltOnError(), mBundle.getString("TaskExecutePanel.afterPanel.header"));
-//            }
         }
 
         if (mTaskFailed) {
@@ -303,6 +284,7 @@ class JobExecutor extends Thread {
         send(ProcessEvent.OUT, s);
 
         boolean doNextTask = !(mTaskFailed && taskExecuteSection.isJobHaltOnError());
+
         return doNextTask;
     }
 
@@ -349,7 +331,7 @@ class JobExecutor extends Thread {
     }
 
     private void updateJobStatus(int exitCode) {
-        var job = mJotaManager.getJobManager().getById(mJob.getId());
+        var job = mStorageManager.getJobManager().getById(mJob.getId());
         job.setLastRun(mLastRun);
         job.setLastRunExitCode(exitCode);
 
@@ -357,7 +339,7 @@ class JobExecutor extends Thread {
     }
 
     private void writelogs() {
-        File directory = StorageManager.getInstance().getLogFile();
+        File directory = mStorageManager.getLogFile();
         String jobName = FileHelper.replaceInvalidChars(mJob.getName());
         String outFile = String.format("%s.log", jobName);
         String errFile = String.format("%s.err", jobName);

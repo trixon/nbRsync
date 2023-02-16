@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ public class Installer extends ModuleInstall {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        initStorage();
+        //initStorage();
         //Give ArgsProcessor a chance to disable GUI
         SystemHelper.runLaterDelayed(100, () -> {
             if (GUI) {
