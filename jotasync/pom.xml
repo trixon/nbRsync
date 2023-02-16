@@ -9,6 +9,7 @@
     </parent>
     <artifactId>jotasync</artifactId>
     <packaging>nbm</packaging>
+    <name>jotasync</name>
 
     <build>
         <plugins>
@@ -84,6 +85,16 @@
             <groupId>com.dlsc.gemsfx</groupId>
             <artifactId>gemsfx</artifactId>
             <version>1.63.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.kordamp.ikonli</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.controlsfx</groupId>
@@ -128,5 +139,4 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netbeans.hint.license>apache20</netbeans.hint.license>
     </properties>
-    <name>jotasync</name>
 </project>
