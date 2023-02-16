@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.job.Job;
+import se.trixon.jotasync.core.job.JobValidator;
 import se.trixon.jotasync.ui.App;
 import se.trixon.jotasync.ui.SummaryBuilder;
 
@@ -45,35 +46,44 @@ public class ExecutorManager {
     }
 
     public void requestStart(Job job) {
+        var jobValidator = new JobValidator(job);
         var name = Options.getInstance().isNightMode() ? "darkWeb.css" : "lightWeb.css";
         mWebView.getEngine().setUserStyleSheetLocation(App.class.getResource(name).toExternalForm());
 
         var stage = mJota.getStage();
         var alert = new Alert(Alert.AlertType.NONE);
         alert.initOwner(stage);
-        alert.setTitle(Dict.RUN.toString());
-
-        var runButtonType = new ButtonType(Dict.RUN.toString(), ButtonBar.ButtonData.OK_DONE);
-        var dryRunButtonType = new ButtonType(Dict.DRY_RUN.toString(), ButtonBar.ButtonData.NEXT_FORWARD);
-
-        alert.getButtonTypes().setAll(runButtonType, dryRunButtonType, ButtonType.CANCEL);
         alert.setGraphic(null);
         alert.setHeaderText(null);
         alert.setResizable(true);
-
         var dialogPane = alert.getDialogPane();
-        mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
-
         dialogPane.setContent(mWebView);
         dialogPane.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(660));
         dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
 
-        var result = alert.showAndWait();
+        if (jobValidator.isValid()) {
+            var runButtonType = new ButtonType(Dict.RUN.toString(), ButtonBar.ButtonData.OK_DONE);
+            var dryRunButtonType = new ButtonType(Dict.DRY_RUN.toString(), ButtonBar.ButtonData.NEXT_FORWARD);
 
-        if (result.get() == runButtonType) {
-            start(job);
-        } else if (result.get() == dryRunButtonType) {
-            System.out.println("dry-run");
+            alert.getButtonTypes().setAll(runButtonType, dryRunButtonType, ButtonType.CANCEL);
+            alert.setTitle(Dict.RUN.toString());
+
+            mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
+
+            var result = alert.showAndWait();
+
+            if (result.get() == runButtonType) {
+                start(job);
+            } else if (result.get() == dryRunButtonType) {
+                System.out.println("dry-run");
+            }
+        } else {
+            alert.getButtonTypes().setAll(ButtonType.CLOSE);
+            alert.setTitle(Dict.Dialog.ERROR_VALIDATION.toString());
+            mWebView.getEngine().loadContent(jobValidator.getSummaryAsHtml());
+
+            var result = alert.showAndWait();
+
         }
     }
 

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,18 +16,16 @@
 package se.trixon.jotasync.core.task;
 
 import java.io.File;
-import java.io.Serializable;
-import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
+import se.trixon.jotasync.core.BaseValidator;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class TaskValidator implements Serializable {
+public class TaskValidator extends BaseValidator {
 
     private final StringBuilder mHtmlBuilder;
-    private boolean mInvalid = false;
     private final StringBuilder mStringBuilder;
     private final Task mTask;
 
@@ -41,25 +39,29 @@ public class TaskValidator implements Serializable {
         validateExclusion();
     }
 
+    @Override
+    public void addSummary(String header, String message) {
+        mHtmlBuilder.append(String.format("<p><b>%s</b><br /><i>%s</i><br />&nbsp;</p>", header, message));
+    }
+
+    @Override
     public String getSummary() {
         return mStringBuilder.toString();
     }
 
+    @Override
     public String getSummaryAsHtml() {
         return mHtmlBuilder.toString();
     }
 
+    @Override
     public boolean isValid() {
         return !mInvalid;
     }
 
-    private void addSummary(String header, String message) {
-        mHtmlBuilder.append(String.format("<p><b>%s</b><br /><i>%s</i><br />&nbsp;</p>", header, message));
-    }
-
     private void validateDir(String path, String message) {
         //TODO Add support for remote - well, don't fail...
-        File file = new File(path);
+        var file = new File(path);
         if (!file.isDirectory()) {
             addSummary(message, path);
             mInvalid = true;
@@ -72,28 +74,18 @@ public class TaskValidator implements Serializable {
     }
 
     private void validateExclusion() {
-        ExcludeSection excludeSection = mTask.getExcludeSection();
-        var bundle = NbBundle.getBundle(Task.class);
+        var excludeSection = mTask.getExcludeSection();
 
-//        validateFile(excludeSection.isManualFileUsed(), excludeSection.getManualFilePath(), bundle.getString("TaskExcludePanel.externalFilePanel.header"));
+        validateExecutorItem(excludeSection.getExternalFile(), "TaskEditor.externalFile");
     }
 
     private void validateExecutors() {
-        TaskExecuteSection executeSection = mTask.getExecuteSection();
-        var bundle = NbBundle.getBundle(Task.class);
+        var executeSection = mTask.getExecuteSection();
 
-        //TODO
-//        validateFile(executeSection.isBefore(), executeSection.getBeforeCommand(), bundle.getString("TaskExecutePanel.beforePanel.header"));
-//        validateFile(executeSection.isAfterFailure(), executeSection.getAfterFailureCommand(), bundle.getString("TaskExecutePanel.afterFailurePanel.header"));
-//        validateFile(executeSection.isAfterSuccess(), executeSection.getAfterSuccessCommand(), bundle.getString("TaskExecutePanel.afterSuccessPanel.header"));
-//        validateFile(executeSection.isAfter(), executeSection.getAfterCommand(), bundle.getString("TaskExecutePanel.afterPanel.header"));
+        validateExecutorItem(executeSection.getBefore(), "TaskEditor.runBefore");
+        validateExecutorItem(executeSection.getAfterFail(), "TaskEditor.runAfterFail");
+        validateExecutorItem(executeSection.getAfterOk(), "TaskEditor.runAfterOk");
+        validateExecutorItem(executeSection.getAfter(), "TaskEditor.runAfter");
     }
 
-    private void validateFile(boolean active, String command, String header) {
-        File file = new File(command);
-        if (active && !file.exists()) {
-            mInvalid = true;
-            addSummary(header, String.format("%s: %s", Dict.Dialog.TITLE_FILE_NOT_FOUND.toString(), command));
-        }
-    }
 }
