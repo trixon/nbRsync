@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,7 +108,7 @@ public class DoArgsProcessing implements ArgsProcessor {
     private void startJob(String jobName) {
         var job = JobManager.getInstance().getByName(jobName);
         if (job != null) {
-            mExecutorManager.start(job);
+            mExecutorManager.start(job, false);
         } else {
             System.out.println("JOB NOT FOUND " + jobName);
         }

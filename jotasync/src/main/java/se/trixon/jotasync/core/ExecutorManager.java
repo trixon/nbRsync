@@ -15,6 +15,7 @@
  */
 package se.trixon.jotasync.core;
 
+import java.util.HashMap;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -34,6 +35,8 @@ import se.trixon.jotasync.ui.SummaryBuilder;
  */
 public class ExecutorManager {
 
+    private HashMap<String, JobExecutor> mJobExecutors = new HashMap<>();
+
     private final Jota mJota = Jota.getInstance();
     private final SummaryBuilder mSummaryBuilder = new SummaryBuilder();
     private final WebView mWebView = new WebView();
@@ -43,6 +46,10 @@ public class ExecutorManager {
     }
 
     private ExecutorManager() {
+    }
+
+    public HashMap<String, JobExecutor> getJobExecutors() {
+        return mJobExecutors;
     }
 
     public void requestStart(Job job) {
@@ -73,9 +80,9 @@ public class ExecutorManager {
             var result = alert.showAndWait();
 
             if (result.get() == runButtonType) {
-                start(job);
+                start(job, false);
             } else if (result.get() == dryRunButtonType) {
-                System.out.println("dry-run");
+                start(job, true);
             }
         } else {
             alert.getButtonTypes().setAll(ButtonType.CLOSE);
@@ -87,8 +94,10 @@ public class ExecutorManager {
         }
     }
 
-    public void start(Job job) {
-        System.out.println("Start job> " + job.getName());
+    public void start(Job job, boolean dryRun) {
+        var jobExecutor = new JobExecutor(job, dryRun);
+        mJobExecutors.put(job.getId(), jobExecutor);
+        jobExecutor.start();
     }
 
     private static class Holder {

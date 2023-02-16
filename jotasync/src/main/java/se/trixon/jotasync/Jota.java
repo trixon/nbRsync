@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,8 @@
 package se.trixon.jotasync;
 
 import com.dlsc.gemsfx.util.SessionManager;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javafx.stage.Stage;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.ExecutionFlow;
@@ -38,6 +40,15 @@ public class Jota {
 
     public static int getIconSizeToolBar() {
         return FxHelper.getUIScaled(ICON_SIZE_TOOLBAR);
+    }
+
+    public static String millisToDateTime(long timestamp) {
+        Date date = new Date(timestamp);
+        return new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(date);
+    }
+
+    public static String nowToDateTime() {
+        return millisToDateTime(System.currentTimeMillis());
     }
 
     public static int getIconSizeToolBarInt() {
