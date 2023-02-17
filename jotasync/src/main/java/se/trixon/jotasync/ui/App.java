@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,17 +26,14 @@ import static javafx.application.Application.launch;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.IOUtils;
@@ -50,6 +47,7 @@ import org.openide.LifecycleManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import se.trixon.almond.nbp.core.ModuleHelper;
+import se.trixon.almond.util.CircularInt;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.PomInfo;
 import se.trixon.almond.util.SystemHelper;
@@ -58,9 +56,9 @@ import se.trixon.almond.util.fx.AboutModel;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.dialogs.ExceptionDialogDisplayerHandler;
 import se.trixon.almond.util.fx.dialogs.about.AboutPane;
-import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
+import se.trixon.jotasync.core.JobManager;
 import se.trixon.jotasync.ui.editor.EditorPane;
 
 /**
@@ -73,19 +71,19 @@ public class App extends Application {
     private Action mAboutAction;
     private Action mAboutRsyncAction;
     private final ResourceBundle mBundle = NbBundle.getBundle(App.class);
-    private final DialogPane mDialogPane = new DialogPane();
     private Action mEditorAction;
     private Action mHelpAction;
     private final Jota mJota = Jota.getInstance();
-    private Launcher mLauncher;
     private RadioMenuItem mLauncher0RadioMenuItem;
     private RadioMenuItem mLauncher1RadioMenuItem;
+    private LauncherTab mLauncherTab;
     private final Options mOptions = Options.getInstance();
     private Action mOptionsAction;
     private Action mQuitAction;
     private Action mRestartAction;
     private Stage mStage;
     private final StatusBar mStatusBar = new StatusBar();
+    private TabPane mTabPane;
 
     /**
      * @param args the command line arguments
@@ -98,7 +96,7 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         Logger.getLogger("").addHandler(new ExceptionDialogDisplayerHandler(stage));
         mStage = stage;
-        mJota.setStage(stage);
+        Jota.setStage(stage);
         createUI();
 
         initAccelerators();
@@ -122,9 +120,16 @@ public class App extends Application {
         var stageManager = StageManager.install(mStage, mOptions.getPreferences().node("stage"), 1, 1);
         stageManager.setSupportFullScreenAndMaximized(!SystemUtils.IS_OS_MAC);
         initActions();
+        mLauncherTab = new LauncherTab();
+        mTabPane = new TabPane(mLauncherTab);
+        mTabPane.setTabMinHeight(Jota.getIconSizeTab() * 0.8);
+        mTabPane.setTabMaxHeight(Jota.getIconSizeTab() * 1.2);
+        try {
+            mTabPane.getTabs().addAll(new LogTab(JobManager.getInstance().getItems().get(0)));
+        } catch (Exception e) {
+        }
 
-        mLauncher = new Launcher();
-        var root = new BorderPane(mLauncher);
+        var root = new BorderPane(mTabPane);
 
         var actions = List.of(
                 new ActionGroup(Dict.FILE_MENU.toString(),
@@ -166,16 +171,8 @@ public class App extends Application {
 
         root.setTop(menubar);
         root.setBottom(mStatusBar);
-        var stackPane = new StackPane(mDialogPane, root);
-        var anchorPane = new AnchorPane(stackPane);
-        //anchorPane.getStyleClass().add("editor");
 
-        AnchorPane.setTopAnchor(stackPane, 0d);
-        AnchorPane.setBottomAnchor(stackPane, 0d);
-        AnchorPane.setLeftAnchor(stackPane, 0d);
-        AnchorPane.setRightAnchor(stackPane, 0d);
-
-        var scene = new Scene(anchorPane);
+        var scene = new Scene(root);
         FxHelper.applyFontScale(scene);
         mStage.setScene(scene);
     }
@@ -219,6 +216,17 @@ public class App extends Application {
 
     private void initAccelerators() {
         var accelerators = mStage.getScene().getAccelerators();
+        accelerators.put(new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHORTCUT_DOWN), () -> {
+            var selectionModel = mTabPane.getSelectionModel();
+            var circularInt = new CircularInt(0, mTabPane.getTabs().size() - 1, selectionModel.getSelectedIndex());
+            selectionModel.select(circularInt.inc());
+        });
+
+        accelerators.put(new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHORTCUT_DOWN, KeyCodeCombination.SHIFT_DOWN), () -> {
+            var selectionModel = mTabPane.getSelectionModel();
+            var circularInt = new CircularInt(0, mTabPane.getTabs().size() - 1, selectionModel.getSelectedIndex());
+            selectionModel.select(circularInt.dec());
+        });
 
         accelerators.put(new KeyCodeCombination(KeyCode.E, KeyCombination.SHORTCUT_DOWN), () -> {
             mEditorAction.handle(null);
@@ -343,8 +351,6 @@ public class App extends Application {
     }
 
     private void updateNightMode() {
-        MaterialIcon.setDefaultColor(mOptions.isNightMode() ? Color.LIGHTGRAY : Color.BLACK);
-
         FxHelper.setDarkThemeEnabled(mOptions.isNightMode());
 
         if (mOptions.isNightMode()) {

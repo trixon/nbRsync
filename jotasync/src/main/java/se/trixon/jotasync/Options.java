@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,10 @@ package se.trixon.jotasync;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.scene.paint.Color;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.OptionsBase;
+import se.trixon.almond.util.icons.material.MaterialIcon;
 
 /**
  *
@@ -72,6 +74,8 @@ public class Options extends OptionsBase {
 
     private void initListeners() {
         ChangeListener<Object> changeListener = (observable, oldValue, newValue) -> {
+            MaterialIcon.setDefaultColor(isNightMode() ? Color.LIGHTGRAY : Color.BLACK);
+
             save();
         };
 

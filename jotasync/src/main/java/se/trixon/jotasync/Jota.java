@@ -23,7 +23,7 @@ import org.openide.util.NbPreferences;
 import se.trixon.almond.util.ExecutionFlow;
 import se.trixon.almond.util.GlobalState;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.jotasync.ui.Launcher;
+import se.trixon.jotasync.ui.LauncherTab;
 
 /**
  *
@@ -32,23 +32,18 @@ import se.trixon.jotasync.ui.Launcher;
 public class Jota {
 
     public static final String GSC_EDITOR = "key.editor";
-    public static final int ICON_SIZE_TOOLBAR = 32;
+    private static final int ICON_SIZE_TOOLBAR = 32;
     private static Stage sStage;
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
-    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(Launcher.class).node("sessionManager"));
+    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(LauncherTab.class).node("sessionManager"));
+
+    public static int getIconSizeTab() {
+        return (int) FxHelper.getUIScaled(ICON_SIZE_TOOLBAR * 1.5);
+    }
 
     public static int getIconSizeToolBar() {
         return FxHelper.getUIScaled(ICON_SIZE_TOOLBAR);
-    }
-
-    public static String millisToDateTime(long timestamp) {
-        Date date = new Date(timestamp);
-        return new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(date);
-    }
-
-    public static String nowToDateTime() {
-        return millisToDateTime(System.currentTimeMillis());
     }
 
     public static int getIconSizeToolBarInt() {
@@ -61,6 +56,15 @@ public class Jota {
 
     public static Stage getStage() {
         return sStage;
+    }
+
+    public static String millisToDateTime(long timestamp) {
+        Date date = new Date(timestamp);
+        return new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(date);
+    }
+
+    public static String nowToDateTime() {
+        return millisToDateTime(System.currentTimeMillis());
     }
 
     public static void setStage(Stage stage) {

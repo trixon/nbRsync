@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,20 +16,21 @@
 package se.trixon.jotasync.ui;
 
 import javafx.application.Platform;
-import javafx.scene.layout.BorderPane;
+import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 
 /**
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class Launcher extends BorderPane {
+public class LauncherTab extends BaseTab {
 
     private LauncherGridView mLauncherGridView;
     private LauncherListView mLauncherListView;
     private final Options mOptions = Options.getInstance();
 
-    public Launcher() {
+    public LauncherTab() {
         createUI();
 
         mOptions.getPreferences().addPreferenceChangeListener(pce -> {
@@ -39,18 +40,26 @@ public class Launcher extends BorderPane {
         });
 
         updateLauncherMode();
+        updateNightMode();
+    }
+
+    @Override
+    public void updateNightMode() {
+        setGraphic(MaterialIcon._Action.HOME.getImageView(Jota.getIconSizeTab()));
+
     }
 
     private void createUI() {
+        setClosable(false);
         mLauncherGridView = new LauncherGridView();
         mLauncherListView = new LauncherListView();
     }
 
     private void updateLauncherMode() {
         if (mOptions.getInt(Options.KEY_LAUNCHER_MODE, Options.DEFAULT_LAUNCHER_MODE) == 0) {
-            setCenter(mLauncherGridView.getNode());
+            setContent(mLauncherGridView.getNode());
         } else {
-            setCenter(mLauncherListView.getNode());
+            setContent(mLauncherListView.getNode());
         }
     }
 }
