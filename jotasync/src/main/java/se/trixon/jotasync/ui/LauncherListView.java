@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ package se.trixon.jotasync.ui;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -37,6 +38,7 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.ExecutorManager;
+import se.trixon.jotasync.core.Rsync;
 import se.trixon.jotasync.core.job.Job;
 
 /**
@@ -82,7 +84,14 @@ public class LauncherListView extends LauncherViewBase {
     }
 
     private void displaySystemInformation() {
-        mWebView.getEngine().loadContent("<pre>%s</pre>".formatted(SystemHelper.getSystemInfo()));
+        FxHelper.runLater(() -> {
+            mWebView.getEngine().loadContent("<h2>%s</h2><pre>%s</pre><h2>%s</h2><pre>%s</pre>".formatted(
+                    Dict.SYSTEM.toString().toUpperCase(Locale.ENGLISH),
+                    SystemHelper.getSystemInfo(),
+                    "RSYNC",
+                    Rsync.getInfo()
+            ));
+        });
     }
 
     private void initBindings() {

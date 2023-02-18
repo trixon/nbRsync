@@ -16,8 +16,6 @@
 package se.trixon.jotasync.ui;
 
 import com.dlsc.gemsfx.util.StageManager;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -36,15 +34,12 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.controlsfx.control.StatusBar;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionGroup;
 import org.controlsfx.control.action.ActionUtils;
 import org.openide.LifecycleManager;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import se.trixon.almond.nbp.core.ModuleHelper;
 import se.trixon.almond.util.CircularInt;
@@ -59,6 +54,7 @@ import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.JobManager;
+import se.trixon.jotasync.core.Rsync;
 import se.trixon.jotasync.ui.editor.EditorPane;
 
 /**
@@ -151,13 +147,13 @@ public class App extends Application {
         );
 
         var menubar = ActionUtils.createMenuBar(actions);
-        mLauncher0RadioMenuItem = new RadioMenuItem(mBundle.getString("launcher.buttons"));
+        mLauncher0RadioMenuItem = new RadioMenuItem(mBundle.getString("launcher.list"));
         mLauncher0RadioMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN));
         mLauncher0RadioMenuItem.setOnAction(actionEvent -> {
             updateLauncherMode(0);
         });
 
-        mLauncher1RadioMenuItem = new RadioMenuItem(mBundle.getString("launcher.list"));
+        mLauncher1RadioMenuItem = new RadioMenuItem(mBundle.getString("launcher.buttons"));
         mLauncher1RadioMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.DIGIT2, KeyCombination.SHORTCUT_DOWN));
         mLauncher1RadioMenuItem.setOnAction(actionEvent -> {
             updateLauncherMode(1);
@@ -183,34 +179,23 @@ public class App extends Application {
 
     private void displayRsyncInformation() {
         new Thread(() -> {
-            var processBuilder = new ProcessBuilder(new String[]{mOptions.getRsyncPath()});
-            String result = "";
+            FxHelper.runLater(() -> {
+                var alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.initOwner(Jota.getStage());
 
-            try {
-                var process = processBuilder.start();
-                result = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-                process.waitFor();
-                var information = StringUtils.substringBefore(result, "Usage: rsync");
-                FxHelper.runLater(() -> {
-                    var alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.initOwner(Jota.getStage());
+                alert.setTitle(Dict.ABOUT_S.toString().formatted("rsync"));
+                alert.setGraphic(null);
+                alert.setHeaderText(null);
+                alert.setResizable(true);
 
-                    alert.setTitle(Dict.ABOUT_S.toString().formatted("rsync"));
-                    alert.setGraphic(null);
-                    alert.setHeaderText(null);
-                    alert.setResizable(true);
+                alert.setContentText(Rsync.getInfo());
+                var dialogPane = alert.getDialogPane();
 
-                    alert.setContentText(information);
-                    var dialogPane = alert.getDialogPane();
+                dialogPane.setPrefWidth(FxHelper.getUIScaled(600));
+                FxHelper.removeSceneInitFlicker(dialogPane);
 
-                    dialogPane.setPrefWidth(FxHelper.getUIScaled(600));
-                    FxHelper.removeSceneInitFlicker(dialogPane);
-
-                    FxHelper.showAndWait(alert, Jota.getStage());
-                });
-            } catch (IOException | InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                FxHelper.showAndWait(alert, Jota.getStage());
+            });
         }).start();
     }
 

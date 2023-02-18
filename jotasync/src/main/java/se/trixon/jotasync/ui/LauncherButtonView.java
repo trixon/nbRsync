@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,29 +15,24 @@
  */
 package se.trixon.jotasync.ui;
 
-import java.util.ArrayList;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
 import se.trixon.almond.util.fx.FxHelper;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class LauncherGridView extends LauncherViewBase {
+public class LauncherButtonView extends LauncherViewBase {
 
     private static final int NUM_OF_BUTTONS = 9;
     private static final int NUM_OF_COLUMNS = 3;
-    private final ArrayList<SpeedDialButton> mButtons = new ArrayList<>();
-    private final GridPane mGridPane = new GridPane();
-    private final BorderPane mRoot = new BorderPane();
+    private final StackPane mRoot = new StackPane();
 
-    public LauncherGridView() {
+    public LauncherButtonView() {
         createUI();
-        initBindings();
     }
 
     @Override
@@ -46,21 +41,18 @@ public class LauncherGridView extends LauncherViewBase {
     }
 
     private void createUI() {
-//        mRoot.setBackground(FxHelper.createBackground(Color.GRAY));
+        var mGridPane = new GridPane();
 
         for (int i = 0; i < NUM_OF_BUTTONS; i++) {
             var speedDialButton = new SpeedDialButton(i);
-            mButtons.add(speedDialButton);
             mGridPane.add(speedDialButton.getRoot(), i % NUM_OF_COLUMNS, i % NUM_OF_BUTTONS / NUM_OF_COLUMNS);
         }
 
         FxHelper.autoSizeColumn(mGridPane, NUM_OF_COLUMNS);
         mGridPane.setMaxSize(1, 1);
-        mRoot.setCenter(mGridPane);
-        VBox.setVgrow(mGridPane, Priority.NEVER);
+        mRoot.getChildren().add(mGridPane);
+        StackPane.setAlignment(mGridPane, Pos.CENTER);
+        mGridPane.setHgap(40);
+        mGridPane.setVgap(40);
     }
-
-    private void initBindings() {
-    }
-
 }

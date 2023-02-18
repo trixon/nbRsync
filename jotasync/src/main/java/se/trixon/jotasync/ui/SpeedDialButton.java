@@ -17,18 +17,15 @@ package se.trixon.jotasync.ui;
 
 import java.util.prefs.Preferences;
 import javafx.collections.ListChangeListener;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
@@ -44,19 +41,18 @@ import se.trixon.jotasync.core.job.Job;
 public class SpeedDialButton {
 
     private final Button mButton = new Button();
-    private final Label mDescText = new Label();
+    private final Label mDescLabel = new Label();
     private MenuItem mEditMenuItem;
     private MenuItem mEditorMenuItem;
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final int mIndex;
-    private final VBox mInternalBox = new VBox();
     private Job mJob;
     private final JobManager mJobManager = JobManager.getInstance();
-    private final Text mLastRunText = new Text("yyyy-MM-dd");
-    private final Text mNameText = new Text("NAME");
+    private final Label mLastRunLabel = new Label();
+    private final Label mNameLabel = new Label();
     private final Preferences mPreferences = NbPreferences.forModule(SpeedDialButton.class).node("speedDial");
     private MenuItem mResetMenuItem;
-    private final BorderPane mRoot = new BorderPane();
+    private final StackPane mRoot = new StackPane();
     private final Jota mJota = Jota.getInstance();
 
     public SpeedDialButton(int index) {
@@ -77,18 +73,21 @@ public class SpeedDialButton {
     }
 
     private void createUI() {
-        mInternalBox.getChildren().setAll(mNameText, mDescText, mLastRunText);
-        mNameText.setTextAlignment(TextAlignment.CENTER);
+        var internalBox = new VBox();
+        internalBox.getChildren().setAll(mNameLabel, mDescLabel, mLastRunLabel);
+        internalBox.setAlignment(Pos.CENTER);
+        mButton.setGraphic(internalBox);
+        mRoot.getChildren().add(mButton);
+        mRoot.setMinSize(300, 200);
 
-        VBox.setVgrow(mNameText, Priority.ALWAYS);
-
-        mButton.setGraphic(mInternalBox);
-        mRoot.setCenter(mButton);
-        mRoot.setBackground(FxHelper.createBackground(Color.CORAL));
         FxHelper.autoSizeRegionHorizontal(mButton);
         FxHelper.autoSizeRegionVertical(mButton);
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(66), mButton);
-        FxHelper.setMargin(FxHelper.getUIScaledInsets(16), mRoot);
+
+        mNameLabel.setStyle("-fx-font-size: 1.8em;-fx-font-weight: bold;");
+        mDescLabel.setStyle("-fx-font-size: 1.4em;-fx-font-style: italic;");
+        mLastRunLabel.setStyle("-fx-font-size: 1.4em;");
+
+        mDescLabel.setPadding(FxHelper.getUIScaledInsets(12, 0, 12, 0));
     }
 
     private String getKey() {
@@ -132,6 +131,10 @@ public class SpeedDialButton {
         mRoot.setOnMousePressed(mouseEvent -> {
             contextMenu.show(mRoot, mouseEvent.getScreenX(), mouseEvent.getScreenY());
         });
+
+        mResetMenuItem.disableProperty().bind(mButton.disableProperty());
+        mEditorMenuItem.disableProperty().bind(mButton.disableProperty());
+        mEditMenuItem.disableProperty().bind(mButton.disableProperty());
     }
 
     private void initListeners() {
@@ -153,18 +156,14 @@ public class SpeedDialButton {
         var disabled = mJob == null;
 
         mButton.setDisable(disabled);
-        mEditMenuItem.setDisable(disabled);
-        mEditorMenuItem.setDisable(disabled);
-        mResetMenuItem.setDisable(disabled);
 
         if (disabled) {
-            mNameText.setText("");
-            mDescText.setText("");
-            mLastRunText.setText("");
+            FxHelper.clearLabel(mNameLabel, mDescLabel, mLastRunLabel);
+
         } else {
-            mNameText.setText(mJob.getName());
-            mDescText.setText(mJob.getDescription());
-            mLastRunText.setText(mJob.getLastRunDateTime("?"));
+            mNameLabel.setText(mJob.getName());
+            mDescLabel.setText(mJob.getDescription());
+            mLastRunLabel.setText(mJob.getLastRunDateTime("?"));
         }
     }
 }

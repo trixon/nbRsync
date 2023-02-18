@@ -26,7 +26,7 @@ import se.trixon.jotasync.Options;
  */
 public class LauncherTab extends BaseTab {
 
-    private LauncherGridView mLauncherGridView;
+    private LauncherButtonView mLauncherButtonView;
     private LauncherListView mLauncherListView;
     private final Options mOptions = Options.getInstance();
 
@@ -46,20 +46,19 @@ public class LauncherTab extends BaseTab {
     @Override
     public void updateNightMode() {
         setGraphic(MaterialIcon._Action.HOME.getImageView(Jota.getIconSizeTab()));
-
     }
 
     private void createUI() {
         setClosable(false);
-        mLauncherGridView = new LauncherGridView();
+        mLauncherButtonView = new LauncherButtonView();
         mLauncherListView = new LauncherListView();
     }
 
     private void updateLauncherMode() {
         if (mOptions.getInt(Options.KEY_LAUNCHER_MODE, Options.DEFAULT_LAUNCHER_MODE) == 0) {
-            setContent(mLauncherGridView.getNode());
-        } else {
             setContent(mLauncherListView.getNode());
+        } else {
+            setContent(mLauncherButtonView.getNode());
         }
     }
 }
