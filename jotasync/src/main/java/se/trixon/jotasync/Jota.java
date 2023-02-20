@@ -32,6 +32,7 @@ import se.trixon.jotasync.ui.LauncherTab;
 public class Jota {
 
     public static final String GSC_EDITOR = "key.editor";
+    public static final String GSC_JOB_STARTED = "key.job.started";
     private static final int ICON_SIZE_TOOLBAR = 32;
     private static Stage sStage;
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();

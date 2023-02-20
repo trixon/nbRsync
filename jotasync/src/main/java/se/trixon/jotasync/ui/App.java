@@ -53,6 +53,7 @@ import se.trixon.almond.util.fx.dialogs.ExceptionDialogDisplayerHandler;
 import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
+import se.trixon.jotasync.core.ExecutorManager;
 import se.trixon.jotasync.core.JobManager;
 import se.trixon.jotasync.core.Rsync;
 import se.trixon.jotasync.ui.editor.EditorPane;
@@ -100,6 +101,14 @@ public class App extends Application {
         FxHelper.removeSceneInitFlicker(mStage);
         initListeners();
         mStage.show();
+
+        FxHelper.runLaterDelayed(50, () -> {
+            try {
+                ExecutorManager.getInstance().start(JobManager.getInstance().getItems().get(0), true);
+            } catch (Exception e) {
+            }
+
+        });
     }
 
     @Override
@@ -120,10 +129,7 @@ public class App extends Application {
         mTabPane = new TabPane(mLauncherTab);
         mTabPane.setTabMinHeight(Jota.getIconSizeTab() * 0.8);
         mTabPane.setTabMaxHeight(Jota.getIconSizeTab() * 1.2);
-        try {
-            mTabPane.getTabs().addAll(new LogTab(JobManager.getInstance().getItems().get(0)));
-        } catch (Exception e) {
-        }
+        mTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
 
         var root = new BorderPane(mTabPane);
 
@@ -314,6 +320,12 @@ public class App extends Application {
         mJota.getGlobalState().addListener(gsce -> {
             EditorPane.displayEditor(gsce.getValue());
         }, Jota.GSC_EDITOR);
+
+        mJota.getGlobalState().addListener(gsce -> {
+            LogTab tab = new LogTab(gsce.getValue());
+            mTabPane.getTabs().add(tab);
+            mTabPane.getSelectionModel().select(tab);
+        }, Jota.GSC_JOB_STARTED);
 
         mOptions.getPreferences()
                 .addPreferenceChangeListener(pce -> {

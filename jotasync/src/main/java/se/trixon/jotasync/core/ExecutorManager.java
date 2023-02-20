@@ -35,8 +35,7 @@ import se.trixon.jotasync.ui.SummaryBuilder;
  */
 public class ExecutorManager {
 
-    private HashMap<String, JobExecutor> mJobExecutors = new HashMap<>();
-
+    private final HashMap<String, JobExecutor> mJobExecutors = new HashMap<>();
     private final Jota mJota = Jota.getInstance();
     private final SummaryBuilder mSummaryBuilder = new SummaryBuilder();
     private final WebView mWebView = new WebView();
@@ -90,13 +89,13 @@ public class ExecutorManager {
             mWebView.getEngine().loadContent(jobValidator.getSummaryAsHtml());
 
             var result = alert.showAndWait();
-
         }
     }
 
     public void start(Job job, boolean dryRun) {
         var jobExecutor = new JobExecutor(job, dryRun);
         mJobExecutors.put(job.getId(), jobExecutor);
+        mJota.getGlobalState().put(Jota.GSC_JOB_STARTED, job);
         jobExecutor.start();
     }
 
