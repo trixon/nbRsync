@@ -48,7 +48,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.2.1</version>
                     <executions>
                         <execution>
                             <id>enforce</id>
@@ -107,10 +107,10 @@
     </modules>
 
     <repositories>
-        <repository>
+        <!--        <repository>
             <id>netbeans-next</id>
             <url>https://repository.apache.org/content/repositories/orgapachenetbeans-1125</url>
-        </repository>
+        </repository>-->
     </repositories>
 
     <properties>
