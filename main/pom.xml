@@ -7,9 +7,9 @@
         <version>0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>jotasync</artifactId>
+    <artifactId>main</artifactId>
     <packaging>nbm</packaging>
-    <name>jotasync</name>
+    <name>main</name>
 
     <build>
         <plugins>

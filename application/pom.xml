@@ -9,10 +9,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jotasync-app</artifactId>
+    <artifactId>application</artifactId>
     <packaging>nbm-application</packaging>
 
-    <name>jotasync-app</name>
+    <name>application</name>
 
     <dependencies>
         <!-- NetBeans -->

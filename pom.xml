@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>se.trixon.jotasync</groupId>
-    <artifactId>jotasync-parent</artifactId>
+    <artifactId>parent</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>jotasync-parent</name>
+    <name>parent</name>
 
     <build>
         <pluginManagement>
@@ -103,7 +103,7 @@
     <modules>
         <module>branding</module>
         <module>application</module>
-        <module>jotasync</module>
+        <module>main</module>
     </modules>
 
     <repositories>

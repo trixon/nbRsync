@@ -9,10 +9,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jotasync-branding</artifactId>
+    <artifactId>branding</artifactId>
     <packaging>nbm</packaging>
 
-    <name>jotasync-branding</name>
+    <name>branding</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
