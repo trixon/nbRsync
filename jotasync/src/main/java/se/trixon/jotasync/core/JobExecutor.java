@@ -66,6 +66,7 @@ class JobExecutor extends Thread {
 
     @Override
     public void run() {
+        mJob.setProcessStateProperty(ProcessState.CANCELABLE);
         mLastRun = System.currentTimeMillis();
         String dryRunIndicator = "";
         if (mDryRun) {

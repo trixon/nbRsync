@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,10 @@ package se.trixon.jotasync.core.job;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import se.trixon.jotasync.core.BaseItem;
+import se.trixon.jotasync.core.ProcessState;
 import se.trixon.jotasync.core.TaskManager;
 import se.trixon.jotasync.core.task.Task;
 
@@ -37,6 +40,7 @@ public class Job extends BaseItem {
     private boolean mLogOutput = true;
     @SerializedName("logSeparateErrors")
     private boolean mLogSeparateErrors = true;
+    private transient ObjectProperty<ProcessState> mProcessStateProperty = new SimpleObjectProperty<>(ProcessState.STARTABLE);
     @SerializedName("tasks")
     private ArrayList<String> mTaskIds = new ArrayList<>();
 
@@ -58,6 +62,10 @@ public class Job extends BaseItem {
 
     public int getLogMode() {
         return mLogMode;
+    }
+
+    public ProcessState getProcessState() {
+        return mProcessStateProperty.get();
     }
 
     public ArrayList<String> getTaskIds() {
@@ -88,6 +96,10 @@ public class Job extends BaseItem {
         return mLogSeparateErrors;
     }
 
+    public ObjectProperty<ProcessState> processStateProperty() {
+        return mProcessStateProperty;
+    }
+
     public void setLogErrors(boolean logErrors) {
         mLogErrors = logErrors;
     }
@@ -102,6 +114,10 @@ public class Job extends BaseItem {
 
     public void setLogSeparateErrors(boolean logSeparateErrors) {
         mLogSeparateErrors = logSeparateErrors;
+    }
+
+    public void setProcessStateProperty(ProcessState processState) {
+        mProcessStateProperty.set(processState);
     }
 
     public void setTaskIds(ArrayList<String> taskIds) {

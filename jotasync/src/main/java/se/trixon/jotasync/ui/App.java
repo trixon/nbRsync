@@ -56,6 +56,7 @@ import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.ExecutorManager;
 import se.trixon.jotasync.core.JobManager;
 import se.trixon.jotasync.core.Rsync;
+import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.ui.editor.EditorPane;
 
 /**
@@ -322,9 +323,22 @@ public class App extends Application {
         }, Jota.GSC_EDITOR);
 
         mJota.getGlobalState().addListener(gsce -> {
-            LogTab tab = new LogTab(gsce.getValue());
-            mTabPane.getTabs().add(tab);
-            mTabPane.getSelectionModel().select(tab);
+            Job job = gsce.getValue();
+            LogTab logTab = null;
+            for (var tab : mTabPane.getTabs()) {
+                if (tab instanceof LogTab lt) {
+                    if (job == lt.getJob()) {
+                        logTab = lt;
+                        break;
+                    }
+                }
+            }
+
+            if (logTab == null) {
+                logTab = new LogTab(job);
+                mTabPane.getTabs().add(logTab);
+            }
+            mTabPane.getSelectionModel().select(logTab);
         }, Jota.GSC_JOB_STARTED);
 
         mOptions.getPreferences()
