@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>se.trixon.jotasync</groupId>
-        <artifactId>jotasync-parent</artifactId>
+        <artifactId>parent</artifactId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.dlsc.gemsfx</groupId>
             <artifactId>gemsfx</artifactId>
-            <version>1.63.0</version>
+            <version>1.64.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.openjfx</groupId>

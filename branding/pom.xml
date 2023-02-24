@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>se.trixon.jotasync</groupId>
-        <artifactId>jotasync-parent</artifactId>
+        <artifactId>parent</artifactId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

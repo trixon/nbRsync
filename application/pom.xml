@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>se.trixon.jotasync</groupId>
-        <artifactId>jotasync-parent</artifactId>
+        <artifactId>parent</artifactId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -24,12 +24,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jotasync-branding</artifactId>
+            <artifactId>branding</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jotasync</artifactId>
+            <artifactId>main</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
