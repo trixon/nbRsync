@@ -42,7 +42,7 @@ import se.trixon.jotasync.ui.editor.BaseEditor;
  *
  * @author Patrik Karlström
  */
-class JobExecutor extends Thread {
+public class JobExecutor extends Thread {
 
     private Process mCurrentProcess;
     private boolean mDryRun;
@@ -55,6 +55,7 @@ class JobExecutor extends Thread {
     private final StringBuffer mOutBuffer;
     private boolean mTaskFailed;
     private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
+    private ProcessCallbacks mProcessCallbacks;
 
     public JobExecutor(Job job, boolean dryRun) {
         mJob = job;
@@ -136,6 +137,10 @@ class JobExecutor extends Thread {
         ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
     }
 
+    public void setProcessCallbacks(ProcessCallbacks processCallbacks) {
+        mProcessCallbacks = processCallbacks;
+    }
+
     public void stopJob() {
         mCurrentProcess.destroy();
         interrupt();
@@ -154,6 +159,7 @@ class JobExecutor extends Thread {
     }
 
     private String getRsyncErrorCode(int exitValue) {
+//        var bundle = NbBundle.getBundle("ExitValues");
         ResourceBundle bundle = SystemHelper.getBundle(getClass(), "ExitValues");
         String key = String.valueOf(exitValue);
 
@@ -245,9 +251,11 @@ class JobExecutor extends Thread {
 
     private boolean runTask(Task task) throws InterruptedException {
         String dryRunIndicator = "";
+
         if (mDryRun || task.isDryRun()) {
             dryRunIndicator = String.format(" (%s)", Dict.DRY_RUN.toString());
         }
+
         appendHistoryFile(getHistoryLine(task.getId(), Dict.STARTED.toString(), dryRunIndicator));
 
         String s = String.format("%s %s: %s='%s'", Jota.nowToDateTime(), Dict.START.toString(), Dict.TASK.toString(), task.getName());
@@ -290,18 +298,14 @@ class JobExecutor extends Thread {
     }
 
     private boolean runTaskStep(ExecuteItem executeItem, String key) throws InterruptedException {
-//        var command = executeItem.getCommand();
-//        if (executeItem.isEnabled() && StringUtils.isNotEmpty(command)) {
-//            run(command, executeItem.isHaltOnError(), mBundle.getString(key));
-//        }
-//    }
-//    private boolean runTaskStep(String command, boolean stopOnError, String description) throws InterruptedException {
         boolean doNextStep = false;
 
         try {
-            if (run(executeItem.getCommand(), executeItem.isHaltOnError(), mBundle.getString(key))) {
-            } else {
-                mTaskFailed = true;
+            var command = executeItem.getCommand();
+            if (executeItem.isEnabled() && StringUtils.isNotEmpty(command)) {
+                if (!run(command, executeItem.isHaltOnError(), mBundle.getString(key))) {
+                    mTaskFailed = true;
+                }
             }
             doNextStep = true;
         } catch (IOException | ExecutionFailedException ex) {
@@ -313,7 +317,7 @@ class JobExecutor extends Thread {
     }
 
     private void runTasks() throws InterruptedException {
-        for (Task task : mJob.getTasks()) {
+        for (var task : mJob.getTasks()) {
             if (!runTask(task)) {
                 break;
             }
@@ -321,14 +325,8 @@ class JobExecutor extends Thread {
     }
 
     private synchronized void send(ProcessEvent processEvent, String line) {
-        System.out.println(processEvent + ": " + line);
-//        mServer.getClientCallbacks().stream().forEach((clientCallback) -> {
-//            try {
-//                clientCallback.onProcessEvent(processEvent, mJob, null, line);
-//            } catch (RemoteException ex) {
-//                // nvm Logger.getLogger(JobExecutor.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        });
+//        System.out.println(processEvent + ": " + line);
+        mProcessCallbacks.onProcessEvent(processEvent, mJob, null, line);
     }
 
     private void updateJobStatus(int exitCode) {

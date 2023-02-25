@@ -135,11 +135,13 @@ public class LauncherListView extends LauncherViewBase {
         protected void updateItem(Job job, boolean empty) {
             super.updateItem(job, empty);
 
-            if (job == null || empty) {
-                clearContent();
-            } else {
-                addContent(job);
-            }
+            FxHelper.runLater(() -> {
+                if (job == null || empty) {
+                    clearContent();
+                } else {
+                    addContent(job);
+                }
+            });
         }
 
         private void addContent(Job job) {

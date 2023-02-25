@@ -54,7 +54,6 @@ import se.trixon.almond.util.fx.dialogs.about.AboutPane;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.ExecutorManager;
-import se.trixon.jotasync.core.JobManager;
 import se.trixon.jotasync.core.Rsync;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.ui.editor.EditorPane;
@@ -105,7 +104,7 @@ public class App extends Application {
 
         FxHelper.runLaterDelayed(50, () -> {
             try {
-                ExecutorManager.getInstance().start(JobManager.getInstance().getItems().get(0), true);
+                //ExecutorManager.getInstance().start(JobManager.getInstance().getItems().get(0), true);
             } catch (Exception e) {
             }
 
@@ -336,6 +335,8 @@ public class App extends Application {
 
             if (logTab == null) {
                 logTab = new LogTab(job);
+                var jobExecutor = ExecutorManager.getInstance().getJobExecutors().get(job.getId());
+                jobExecutor.setProcessCallbacks(logTab);
                 mTabPane.getTabs().add(logTab);
             }
             mTabPane.getSelectionModel().select(logTab);

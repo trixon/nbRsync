@@ -16,7 +16,6 @@
 package se.trixon.jotasync.ui;
 
 import java.util.List;
-import java.util.Random;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ProgressBar;
@@ -27,7 +26,6 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.controlsfx.control.textfield.TextFields;
@@ -36,14 +34,17 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.ExecutorManager;
+import se.trixon.jotasync.core.ProcessCallbacks;
+import se.trixon.jotasync.core.ProcessEvent;
 import se.trixon.jotasync.core.ProcessState;
 import se.trixon.jotasync.core.job.Job;
+import se.trixon.jotasync.core.task.Task;
 
 /**
  *
  * @author Patrik Karlström
  */
-public class LogTab extends BaseTab {
+public class LogTab extends BaseTab implements ProcessCallbacks {
 
     private final BorderPane mBorderPane = new BorderPane();
     private Action mCancelAction;
@@ -72,6 +73,16 @@ public class LogTab extends BaseTab {
 
     public Job getJob() {
         return mJob;
+    }
+
+    @Override
+    public void onProcessEvent(ProcessEvent processEvent, Job job, Task task, Object object) {
+        FxHelper.runLater(() -> {
+            mLogListView.getItems().add(object.toString());
+            if (processEvent == ProcessEvent.FINISHED) {
+                mJob.setProcessStateProperty(ProcessState.STARTABLE);
+            }
+        });
     }
 
     @Override
@@ -122,12 +133,6 @@ public class LogTab extends BaseTab {
                 new Tab(Dict.Dialog.ERRORS.toString(), mErrorsListView),
                 new Tab(Dict.DELETIONS.toString(), mDeletionsListView)
         );
-
-        for (int i = 0; i < 1000; i++) {
-            mLogListView.getItems().add(RandomStringUtils.randomAlphanumeric(new Random().nextInt(10, 80)));
-            mErrorsListView.getItems().add(RandomStringUtils.randomAlphanumeric(new Random().nextInt(10, 80)));
-            mDeletionsListView.getItems().add(RandomStringUtils.randomAlphanumeric(new Random().nextInt(10, 80)));
-        }
 
         setContent(mBorderPane);
         setText(mJob.getName());
