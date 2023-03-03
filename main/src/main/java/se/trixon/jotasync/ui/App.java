@@ -79,7 +79,6 @@ public class App extends Application {
     private Action mQuitAction;
     private Action mRestartAction;
     private Stage mStage;
-    private final StatusBar mStatusBar = new StatusBar();
     private TabPane mTabPane;
 
     /**
@@ -171,8 +170,11 @@ public class App extends Application {
         menubar.getMenus().get(1).getItems().addAll(mLauncher0RadioMenuItem, mLauncher1RadioMenuItem);
         updateLauncherMode();
 
+        var statusBar = new StatusBar();
+        Jota.setStatusBar(statusBar);
+
         root.setTop(menubar);
-        root.setBottom(mStatusBar);
+        root.setBottom(statusBar);
 
         var scene = new Scene(root);
         FxHelper.applyFontScale(scene);
@@ -323,11 +325,14 @@ public class App extends Application {
 
         mJota.getGlobalState().addListener(gsce -> {
             Job job = gsce.getValue();
+            var jobExecutor = ExecutorManager.getInstance().getJobExecutors().get(job.getId());
             LogTab logTab = null;
+
             for (var tab : mTabPane.getTabs()) {
                 if (tab instanceof LogTab lt) {
-                    if (job == lt.getJob()) {
+                    if (job.getId().equals(lt.getJob().getId())) {
                         logTab = lt;
+                        logTab.clear();
                         break;
                     }
                 }
@@ -335,10 +340,10 @@ public class App extends Application {
 
             if (logTab == null) {
                 logTab = new LogTab(job);
-                var jobExecutor = ExecutorManager.getInstance().getJobExecutors().get(job.getId());
-                jobExecutor.setProcessCallbacks(logTab);
                 mTabPane.getTabs().add(logTab);
             }
+
+            jobExecutor.setProcessCallbacks(logTab);
             mTabPane.getSelectionModel().select(logTab);
         }, Jota.GSC_JOB_STARTED);
 

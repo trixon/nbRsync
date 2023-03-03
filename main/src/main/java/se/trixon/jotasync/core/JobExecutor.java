@@ -44,18 +44,19 @@ import se.trixon.jotasync.ui.editor.BaseEditor;
  */
 public class JobExecutor extends Thread {
 
+    private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
+
     private Process mCurrentProcess;
     private boolean mDryRun;
     private final StringBuffer mErrBuffer;
     private final Job mJob;
-    private final StorageManager mStorageManager = StorageManager.getInstance();
     private long mLastRun;
     private int mNumOfFailedTasks;
     private Options mOptions = Options.getInstance();
     private final StringBuffer mOutBuffer;
-    private boolean mTaskFailed;
-    private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
     private ProcessCallbacks mProcessCallbacks;
+    private final StorageManager mStorageManager = StorageManager.getInstance();
+    private boolean mTaskFailed;
 
     public JobExecutor(Job job, boolean dryRun) {
         mJob = job;
@@ -115,13 +116,7 @@ public class JobExecutor extends Thread {
             appendHistoryFile(getHistoryLine(mJob.getId(), Dict.CANCELED.toString(), dryRunIndicator));
             updateJobStatus(99);
             writelogs();
-//            mServer.getClientCallbacks().stream().forEach((clientCallback) -> {
-//                try {
-//                    clientCallback.onProcessEvent(ProcessEvent.CANCELED, mJob, null, null);
-//                } catch (RemoteException ex1) {
-//                    // nvm Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex1);
-//                }
-//            });
+            mProcessCallbacks.onProcessEvent(ProcessEvent.CANCELED, mJob, null, null);
         } catch (IOException ex) {
             writelogs();
             Exceptions.printStackTrace(ex);

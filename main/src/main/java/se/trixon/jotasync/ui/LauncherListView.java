@@ -106,11 +106,13 @@ public class LauncherListView extends LauncherViewBase {
         });
 
         mListView.getSelectionModel().selectedItemProperty().addListener((p, o, job) -> {
-            if (job != null) {
-                mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
-            } else {
-                displaySystemInformation();
-            }
+            FxHelper.runLater(() -> {
+                if (job != null) {
+                    mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
+                } else {
+                    displaySystemInformation();
+                }
+            });
         });
     }
 

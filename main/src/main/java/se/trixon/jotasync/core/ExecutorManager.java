@@ -92,6 +92,13 @@ public class ExecutorManager {
         }
     }
 
+    public void stop(Job job) {
+        var executor = mJobExecutors.get(job.getId());
+        if (executor != null) {
+            executor.stopJob();
+        }
+    }
+
     public void start(Job job, boolean dryRun) {
         var jobExecutor = new JobExecutor(job, dryRun);
         mJobExecutors.put(job.getId(), jobExecutor);

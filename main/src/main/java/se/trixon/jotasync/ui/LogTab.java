@@ -19,24 +19,24 @@ import java.util.List;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
-import org.controlsfx.control.textfield.TextFields;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.jotasync.Jota;
+import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.ExecutorManager;
 import se.trixon.jotasync.core.ProcessCallbacks;
 import se.trixon.jotasync.core.ProcessEvent;
 import se.trixon.jotasync.core.ProcessState;
+import se.trixon.jotasync.core.Progress;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.task.Task;
 
@@ -49,19 +49,22 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
     private final BorderPane mBorderPane = new BorderPane();
     private Action mCancelAction;
     private ButtonBase mCancelButton;
-    private final LogListView mDeletionsListView = new LogListView();
+    private final LogSubTab mDeletionsTab = new LogSubTab(Dict.DELETIONS.toString());
     private Action mEditAction;
-    private final LogListView mErrorsListView = new LogListView();
+    private final LogSubTab mErrorsTab = new LogSubTab(Dict.Dialog.ERRORS.toString());
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final Job mJob;
     private final Jota mJota = Jota.getInstance();
-    private final LogListView mLogListView = new LogListView();
-    private final ProgressBar mProgressBar = new ProgressBar(0.75);
+    private boolean mLastLineWasBlank;
+    private boolean mLastRowWasProgress;
+    private final LogSubTab mLogTab = new LogSubTab(Dict.LOG.toString());
+    private final Options mOptions = Options.getInstance();
+    private final Progress mProgress = new Progress();
+    private final ProgressBar mProgressBar = new ProgressBar();
     private Action mSaveAction;
     private Action mStartAction;
     private ButtonBase mStartButton;
     private final TabPane mTabPane = new TabPane();
-    private final TextField mTextField = TextFields.createClearableTextField();
     private ToolBar mToolBar;
 
     public LogTab(Job job) {
@@ -71,16 +74,98 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
         updateNightMode();
     }
 
+    public void clear() {
+        mProgressBar.setProgress(-1);
+        mLogTab.clear();
+        mErrorsTab.clear();
+        mDeletionsTab.clear();
+        mTabPane.getTabs().removeAll(mErrorsTab, mDeletionsTab);
+    }
+
     public Job getJob() {
         return mJob;
     }
 
+    synchronized public void log(ProcessEvent processEvent, String string) {
+        String line = string + "\n";
+//mOptions.
+        var lp = mLogTab;
+        var splitDelete = true;//mOptions.isSplitDeletions()
+        var splitErrors = true;//mOptions.isSplitErrors()
+        if (splitDelete && StringUtils.startsWith(line, "deleting ")) {
+            lp = mDeletionsTab;
+            if (!mTabPane.getTabs().contains(lp)) {
+                mTabPane.getTabs().add(lp);
+            }
+        } else if (splitErrors && (StringUtils.startsWith(line, "rsync: ") || StringUtils.startsWith(line, "rsync error: "))) {
+            lp = mErrorsTab;
+            if (!mTabPane.getTabs().contains(lp)) {
+                mTabPane.getTabs().add(lp);
+            }
+        }
+
+        if (mProgress.parse(line)) {
+//            mProgressBar.setIndeterminate(false);
+//            mProgressBar.setStringPainted(true);
+
+            mProgressBar.setProgress(mProgress.getPercentage());
+//            mProgressBar.setString(mProgress.toString());
+            System.out.println(mProgress.toString());
+            Jota.getStatusBar().setProgress(mProgress.getPercentage());
+            Jota.getStatusBar().setText(mProgress.toString());
+            mLastRowWasProgress = true;
+        } else {
+            if (mLastRowWasProgress && mLastLineWasBlank) {
+                try {
+                    int size = lp.getText().length();
+//                    lp.getTextArea().replaceRange(null, size - 1, size);
+                } catch (IllegalArgumentException e) {
+                }
+            }
+            lp.add(line);
+            mLastLineWasBlank = StringUtils.isBlank(line);
+            mLastRowWasProgress = false;
+        }
+    }
+
     @Override
-    public void onProcessEvent(ProcessEvent processEvent, Job job, Task task, Object object) {
+    public void onProcessEvent(ProcessEvent processEvent, Job job, Task task, String string) {
         FxHelper.runLater(() -> {
-            mLogListView.getItems().add(object.toString());
-            if (processEvent == ProcessEvent.FINISHED) {
-                mJob.setProcessStateProperty(ProcessState.STARTABLE);
+            switch (processEvent) {
+                case STARTED:
+                    start();
+                    mTabPane.getSelectionModel().select(mLogTab);
+                    //updateTitle(job, "b"); //TODO Make tab text bold for running jobs
+                    break;
+
+                case OUT:
+                case ERR:
+                    log(processEvent, string);
+                    break;
+
+                case CANCELED:
+                    log(ProcessEvent.OUT, String.format("\n\n%s", Dict.JOB_INTERRUPTED.toString()));
+                    mJob.setProcessStateProperty(ProcessState.STARTABLE);
+                    //updateTitle(job, "i");
+                    break;
+
+                case FAILED:
+                    log(ProcessEvent.OUT, String.format("\n\n%s", Dict.JOB_FAILED.toString()));
+                    //updateTitle(job, "strike");
+                    break;
+
+                case FINISHED:
+                    if (string != null) {
+                        log(ProcessEvent.OUT, string);
+                    }
+                    //updateTitle(job, "normal");
+                    mJob.setProcessStateProperty(ProcessState.STARTABLE);
+                    mProgressBar.setProgress(1.0);
+
+                    break;
+
+                default:
+                    break;
             }
         });
     }
@@ -95,7 +180,7 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
 
     private void createUI() {
         mCancelAction = new Action(Dict.CANCEL.toString(), actionEvent -> {
-            mJob.setProcessStateProperty(ProcessState.STARTABLE);
+            mExecutorManager.stop(mJob);
         });
 
         mEditAction = new Action(Dict.EDIT.toString(), actionEvent -> {
@@ -120,7 +205,7 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
         FxHelper.undecorateButtons(mToolBar.getItems().stream());
         FxHelper.slimToolBar(mToolBar);
 
-        var box = new HBox(mToolBar, mTextField, mProgressBar);
+        var box = new HBox(mToolBar, mProgressBar);
         box.setAlignment(Pos.CENTER);
         HBox.setHgrow(mProgressBar, Priority.ALWAYS);
 
@@ -128,11 +213,7 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
         mBorderPane.setCenter(mTabPane);
 
         mTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        mTabPane.getTabs().addAll(
-                new Tab(Dict.LOG.toString(), mLogListView),
-                new Tab(Dict.Dialog.ERRORS.toString(), mErrorsListView),
-                new Tab(Dict.DELETIONS.toString(), mDeletionsListView)
-        );
+        mTabPane.getTabs().setAll(mLogTab);
 
         setContent(mBorderPane);
         setText(mJob.getName());
@@ -157,15 +238,26 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
 
                 switch (n) {
                     case CANCELABLE ->
-                        mToolBar.getItems().add(0, mCancelButton);
-                    case CLOSEABLE ->
+                        start();
+                    case CLOSEABLE -> {
                         System.out.println(n);
-                    case STARTABLE ->
+                        mProgressBar.setProgress(1.0);
+                    }
+
+                    case STARTABLE -> {
+                        mProgressBar.setProgress(1.0);
                         mToolBar.getItems().add(0, mStartButton);
+                    }
                     default ->
                         throw new AssertionError();
                 }
             });
         });
     }
+
+    private void start() {
+        mToolBar.getItems().add(0, mCancelButton);
+        clear();
+    }
+
 }

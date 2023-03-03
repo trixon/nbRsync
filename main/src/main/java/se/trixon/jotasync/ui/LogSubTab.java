@@ -19,6 +19,7 @@ import java.util.List;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Tab;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import se.trixon.almond.util.Dict;
@@ -28,20 +29,36 @@ import se.trixon.almond.util.SystemHelper;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class LogListView extends ListView<String> {
+public class LogSubTab extends Tab {
 
-    public LogListView() {
+    private final ListView<String> mListView = new ListView<>();
+
+    public LogSubTab(String string) {
+        super(string);
+        setContent(mListView);
+    }
+
+    public void clear() {
+        mListView.getItems().clear();
+    }
+
+    public void add(String string) {
+        mListView.getItems().add(string);
+//        mListView.scrollTo(mListView.getItems().size());
+    }
+
+    public LogSubTab() {
         createMenu();
-        getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        mListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
     private void createMenu() {
         var copySelectionAction = new Action(Dict.COPY_SELECTION.toString(), actionEvent -> {
-            copy(getSelectionModel().getSelectedItems());
+            copy(mListView.getSelectionModel().getSelectedItems());
         });
 
         var copyAllAction = new Action(Dict.COPY_ALL.toString(), actionEvent -> {
-            copy(getItems());
+            copy(mListView.getItems());
         });
 
         var actions = List.of(copySelectionAction, copyAllAction);

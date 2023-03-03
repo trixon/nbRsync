@@ -24,6 +24,6 @@ import se.trixon.jotasync.core.task.Task;
  */
 public interface ProcessCallbacks {
 
-    void onProcessEvent(ProcessEvent processEvent, Job job, Task task, Object object);
+    void onProcessEvent(ProcessEvent processEvent, Job job, Task task, String string);
 
 }

@@ -19,6 +19,7 @@ import com.dlsc.gemsfx.util.SessionManager;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javafx.stage.Stage;
+import org.controlsfx.control.StatusBar;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.util.ExecutionFlow;
 import se.trixon.almond.util.GlobalState;
@@ -34,6 +35,7 @@ public class Jota {
     public static final String GSC_EDITOR = "key.editor";
     public static final String GSC_JOB_STARTED = "key.job.started";
     private static final int ICON_SIZE_TOOLBAR = 32;
+    private static StatusBar mStatusBar;
     private static Stage sStage;
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
@@ -72,6 +74,10 @@ public class Jota {
         sStage = stage;
     }
 
+    public static void setStatusBar(StatusBar statusBar) {
+        mStatusBar = statusBar;
+    }
+
     private Jota() {
     }
 
@@ -85,6 +91,10 @@ public class Jota {
 
     public SessionManager getSessionManager() {
         return mSessionManager;
+    }
+
+    public static StatusBar getStatusBar() {
+        return mStatusBar;
     }
 
     private static class Holder {

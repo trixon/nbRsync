@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,7 @@
  */
 package se.trixon.jotasync.ui.editor;
 
+import java.io.File;
 import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -60,6 +61,7 @@ public class TaskEditor extends BaseEditor<Task> {
         super(TaskManager.getInstance());
         createUI();
         initValidation();
+        initListeners();
     }
 
     @Override
@@ -82,6 +84,9 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunExcludeSection.load(item.getExcludeSection().getExternalFile());
         loadArgRsync(item.getOptionSection().getOptions());
         loadArgExcludes(item.getExcludeSection().getOptions());
+
+//        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
+        mDirForceSourceSlashCheckBox.setSelected(StringUtils.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
         super.load(item, saveNode);
         mItem = item;
     }
@@ -215,6 +220,19 @@ public class TaskEditor extends BaseEditor<Task> {
                 createArgExcludeTab(),
                 createNoteTab()
         );
+    }
+
+    private void initListeners() {
+        mDirForceSourceSlashCheckBox.selectedProperty().addListener((p, o, n) -> {
+            var path = mDirSourceFileChooser.getPathAsString();
+            if (n) {
+                if (!StringUtils.endsWith(path, File.separator)) {
+                    mDirSourceFileChooser.setPath(path + File.separator);
+                }
+            } else {
+                mDirSourceFileChooser.setPath(StringUtils.removeEnd(path, File.separator));
+            }
+        });
     }
 
     private void initValidation() {
