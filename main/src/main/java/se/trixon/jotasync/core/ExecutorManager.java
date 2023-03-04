@@ -17,6 +17,7 @@ package se.trixon.jotasync.core;
 
 import java.util.HashMap;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.web.WebView;
@@ -56,7 +57,7 @@ public class ExecutorManager {
         var name = Options.getInstance().isNightMode() ? "darkWeb.css" : "lightWeb.css";
         mWebView.getEngine().setUserStyleSheetLocation(App.class.getResource(name).toExternalForm());
 
-        var stage = mJota.getStage();
+        var stage = Jota.getStage();
         var alert = new Alert(Alert.AlertType.NONE);
         alert.initOwner(stage);
         alert.setGraphic(null);
@@ -70,8 +71,11 @@ public class ExecutorManager {
         if (jobValidator.isValid()) {
             var runButtonType = new ButtonType(Dict.RUN.toString(), ButtonBar.ButtonData.OK_DONE);
             var dryRunButtonType = new ButtonType(Dict.DRY_RUN.toString(), ButtonBar.ButtonData.NEXT_FORWARD);
-
             alert.getButtonTypes().setAll(runButtonType, dryRunButtonType, ButtonType.CANCEL);
+            var runButton = (Button) alert.getDialogPane().lookupButton(runButtonType);
+            var dryRunButton = (Button) alert.getDialogPane().lookupButton(dryRunButtonType);
+            runButton.setDefaultButton(false);
+            dryRunButton.setDefaultButton(true);
             alert.setTitle(Dict.RUN.toString());
 
             mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
@@ -88,14 +92,7 @@ public class ExecutorManager {
             alert.setTitle(Dict.Dialog.ERROR_VALIDATION.toString());
             mWebView.getEngine().loadContent(jobValidator.getSummaryAsHtml());
 
-            var result = alert.showAndWait();
-        }
-    }
-
-    public void stop(Job job) {
-        var executor = mJobExecutors.get(job.getId());
-        if (executor != null) {
-            executor.stopJob();
+            alert.showAndWait();
         }
     }
 
@@ -104,6 +101,13 @@ public class ExecutorManager {
         mJobExecutors.put(job.getId(), jobExecutor);
         mJota.getGlobalState().put(Jota.GSC_JOB_STARTED, job);
         jobExecutor.start();
+    }
+
+    public void stop(Job job) {
+        var executor = mJobExecutors.get(job.getId());
+        if (executor != null) {
+            executor.stopJob();
+        }
     }
 
     private static class Holder {
