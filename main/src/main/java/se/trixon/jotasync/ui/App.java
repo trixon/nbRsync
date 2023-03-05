@@ -100,14 +100,6 @@ public class App extends Application {
         FxHelper.removeSceneInitFlicker(mStage);
         initListeners();
         mStage.show();
-
-        FxHelper.runLaterDelayed(50, () -> {
-            try {
-                //ExecutorManager.getInstance().start(JobManager.getInstance().getItems().get(0), true);
-            } catch (Exception e) {
-            }
-
-        });
     }
 
     @Override

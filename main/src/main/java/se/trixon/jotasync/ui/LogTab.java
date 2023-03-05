@@ -33,6 +33,8 @@ import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.ExecutorManager;
+import se.trixon.jotasync.core.Monitor;
+import se.trixon.jotasync.core.MonitorItem;
 import se.trixon.jotasync.core.ProcessCallbacks;
 import se.trixon.jotasync.core.ProcessEvent;
 import se.trixon.jotasync.core.ProcessState;
@@ -49,37 +51,38 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
     private final BorderPane mBorderPane = new BorderPane();
     private Action mCancelAction;
     private ButtonBase mCancelButton;
-    private final LogSubTab mDeletionsTab = new LogSubTab(Dict.DELETIONS.toString());
+    private final MonitorItem mDelMonitorItem = new MonitorItem(Dict.DELETIONS.toString());
     private Action mEditAction;
-    private final LogSubTab mErrorsTab = new LogSubTab(Dict.Dialog.ERRORS.toString());
+    private final MonitorItem mErrMonitorItem = new MonitorItem(Dict.Dialog.ERRORS.toString());
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final Job mJob;
     private final Jota mJota = Jota.getInstance();
     private boolean mLastLineWasBlank;
     private boolean mLastRowWasProgress;
-    private final LogSubTab mLogTab = new LogSubTab(Dict.LOG.toString());
+    private final Monitor mMonitor;
     private final Options mOptions = Options.getInstance();
     private final Progress mProgress = new Progress();
     private final ProgressBar mProgressBar = new ProgressBar();
     private Action mSaveAction;
     private Action mStartAction;
     private ButtonBase mStartButton;
+    private final MonitorItem mStdMonitorItem = new MonitorItem(Dict.LOG.toString());
     private final TabPane mTabPane = new TabPane();
     private ToolBar mToolBar;
 
     public LogTab(Job job) {
         mJob = job;
         createUI();
+        mMonitor = new Monitor(mDelMonitorItem, mErrMonitorItem, mStdMonitorItem);
         initListeners();
         updateNightMode();
+        mMonitor.start();
     }
 
     public void clear() {
         mProgressBar.setProgress(-1);
-        mLogTab.clear();
-        mErrorsTab.clear();
-        mDeletionsTab.clear();
-        mTabPane.getTabs().removeAll(mErrorsTab, mDeletionsTab);
+        mMonitor.clear();
+        mTabPane.getTabs().removeAll(mErrMonitorItem.getTab(), mDelMonitorItem.getTab());
     }
 
     public Job getJob() {
@@ -89,22 +92,24 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
     synchronized public void log(ProcessEvent processEvent, String string) {
         String line = string + "\n";
 //mOptions.
-        var lp = mLogTab;
+        var lp = mStdMonitorItem.getTab();
         var splitDelete = true;//mOptions.isSplitDeletions()
         var splitErrors = true;//mOptions.isSplitErrors()
         if (splitDelete && StringUtils.startsWith(line, "deleting ")) {
-            lp = mDeletionsTab;
+            lp = mDelMonitorItem.getTab();
             if (!mTabPane.getTabs().contains(lp)) {
-                mTabPane.getTabs().add(lp);
+                var elp = lp;
+//                FxHelper.runLater(() -> mTabPane.getTabs().add(elp));
             }
         } else if (splitErrors && (StringUtils.startsWith(line, "rsync: ") || StringUtils.startsWith(line, "rsync error: "))) {
-            lp = mErrorsTab;
+            lp = mErrMonitorItem.getTab();
             if (!mTabPane.getTabs().contains(lp)) {
-                mTabPane.getTabs().add(lp);
+                var elp = lp;
+//                FxHelper.runLater(() -> mTabPane.getTabs().add(elp));
             }
         }
 
-        if (mProgress.parse(line)) {
+        if (mProgress.parse(line)) {//is line a percent progress indicator?
 //            mProgressBar.setIndeterminate(false);
 //            mProgressBar.setStringPainted(true);
 
@@ -122,7 +127,8 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
                 } catch (IllegalArgumentException e) {
                 }
             }
-            lp.add(line);
+            //lp.add(line);
+            mMonitor.add(line);
             mLastLineWasBlank = StringUtils.isBlank(line);
             mLastRowWasProgress = false;
         }
@@ -130,44 +136,45 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
 
     @Override
     public void onProcessEvent(ProcessEvent processEvent, Job job, Task task, String string) {
-        FxHelper.runLater(() -> {
-            switch (processEvent) {
-                case STARTED:
-                    start();
-                    mTabPane.getSelectionModel().select(mLogTab);
-                    //updateTitle(job, "b"); //TODO Make tab text bold for running jobs
-                    break;
+//        FxHelper.runLater(() -> {
+        switch (processEvent) {
+            case STARTED:
+                start();
+                mMonitor.start();
+                mTabPane.getSelectionModel().select(0);
+                //updateTitle(job, "b"); //TODO Make tab text bold for running jobs
+                break;
 
-                case OUT:
-                case ERR:
-                    log(processEvent, string);
-                    break;
+            case OUT:
+            case ERR:
+                log(processEvent, string);
+                break;
 
-                case CANCELED:
-                    log(ProcessEvent.OUT, String.format("\n\n%s", Dict.JOB_INTERRUPTED.toString()));
-                    mJob.setProcessStateProperty(ProcessState.STARTABLE);
-                    //updateTitle(job, "i");
-                    break;
+            case CANCELED:
+                log(ProcessEvent.OUT, String.format("\n\n%s", Dict.JOB_INTERRUPTED.toString()));
+                mJob.setProcessStateProperty(ProcessState.STARTABLE);
+                //updateTitle(job, "i");
+                break;
 
-                case FAILED:
-                    log(ProcessEvent.OUT, String.format("\n\n%s", Dict.JOB_FAILED.toString()));
-                    //updateTitle(job, "strike");
-                    break;
+            case FAILED:
+                log(ProcessEvent.OUT, String.format("\n\n%s", Dict.JOB_FAILED.toString()));
+                //updateTitle(job, "strike");
+                break;
 
-                case FINISHED:
-                    if (string != null) {
-                        log(ProcessEvent.OUT, string);
-                    }
-                    //updateTitle(job, "normal");
-                    mJob.setProcessStateProperty(ProcessState.STARTABLE);
-                    mProgressBar.setProgress(1.0);
+            case FINISHED:
+                if (string != null) {
+                    log(ProcessEvent.OUT, string);
+                }
+                //updateTitle(job, "normal");
+                mJob.setProcessStateProperty(ProcessState.STARTABLE);
+                FxHelper.runLater(() -> mProgressBar.setProgress(1.0));
+                mMonitor.stop();
+                break;
 
-                    break;
-
-                default:
-                    break;
-            }
-        });
+            default:
+                break;
+        }
+//        });
     }
 
     @Override
@@ -213,7 +220,7 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
         mBorderPane.setCenter(mTabPane);
 
         mTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        mTabPane.getTabs().setAll(mLogTab);
+        mTabPane.getTabs().setAll(mStdMonitorItem.getTab(), mErrMonitorItem.getTab(), mDelMonitorItem.getTab());
 
         setContent(mBorderPane);
         setText(mJob.getName());
@@ -239,6 +246,7 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
                 switch (n) {
                     case CANCELABLE ->
                         start();
+
                     case CLOSEABLE -> {
                         System.out.println(n);
                         mProgressBar.setProgress(1.0);
@@ -248,6 +256,7 @@ public class LogTab extends BaseTab implements ProcessCallbacks {
                         mProgressBar.setProgress(1.0);
                         mToolBar.getItems().add(0, mStartButton);
                     }
+
                     default ->
                         throw new AssertionError();
                 }
