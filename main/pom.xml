@@ -34,8 +34,12 @@
     </build>
 
     <dependencies>
-        <!--NetBeans-->
         <!-- NetBeans -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-annotations-common</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-libs-flatlaf</artifactId>
@@ -141,6 +145,11 @@
         <dependency>
             <groupId>se.trixon.almond</groupId>
             <artifactId>almond-nbp-core</artifactId>
+            <version>${almond.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>se.trixon.almond</groupId>
+            <artifactId>almond-nbp</artifactId>
             <version>${almond.version}</version>
         </dependency>
 

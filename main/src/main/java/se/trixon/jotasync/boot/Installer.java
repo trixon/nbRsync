@@ -23,7 +23,6 @@ import se.trixon.almond.util.SystemHelper;
 import se.trixon.jotasync.core.StorageManager;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.task.Task;
-import se.trixon.jotasync.ui.App;
 
 /**
  *
@@ -45,7 +44,7 @@ public class Installer extends ModuleInstall {
         //Give ArgsProcessor a chance to disable GUI
         SystemHelper.runLaterDelayed(100, () -> {
             if (GUI) {
-                App.main(null);
+                //App.main(null);
             }
         });
     }
