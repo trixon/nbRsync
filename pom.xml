@@ -99,6 +99,17 @@
             </plugin>
         </plugins>
     </build>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.netbeans.cluster</groupId>
+                <artifactId>platform</artifactId>
+                <version>${netbeans.version}</version>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <modules>
         <module>branding</module>
