@@ -44,7 +44,7 @@ public class Installer extends ModuleInstall {
         //Give ArgsProcessor a chance to disable GUI
         SystemHelper.runLaterDelayed(100, () -> {
             if (GUI) {
-                //App.main(null);
+//                App.main(null);
             }
         });
     }

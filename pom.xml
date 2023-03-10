@@ -99,7 +99,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -107,6 +107,33 @@
                 <artifactId>platform</artifactId>
                 <version>${netbeans.version}</version>
                 <type>pom</type>
+            </dependency>
+            
+            <!-- Trixon -->
+            <dependency>
+                <groupId>se.trixon.almond</groupId>
+                <artifactId>almond-util</artifactId>
+                <version>${almond.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>se.trixon.almond</groupId>
+                <artifactId>almond-nbp-core</artifactId>
+                <version>${almond.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>se.trixon.almond</groupId>
+                <artifactId>almond-nbp</artifactId>
+                <version>${almond.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>se.trixon.almond</groupId>
+                <artifactId>almond-nbp-actions</artifactId>
+                <version>${almond.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>se.trixon.almond</groupId>
+                <artifactId>almond-nbp-actions-osx</artifactId>
+                <version>${almond.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

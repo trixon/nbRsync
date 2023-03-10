@@ -301,6 +301,17 @@
             <artifactId>main</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- Trixon -->
+        <dependency>
+            <groupId>se.trixon.almond</groupId>
+            <artifactId>almond-nbp-actions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>se.trixon.almond</groupId>
+            <artifactId>almond-nbp-actions-osx</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

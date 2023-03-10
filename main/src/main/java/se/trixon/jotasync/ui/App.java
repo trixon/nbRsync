@@ -39,7 +39,6 @@ import org.controlsfx.control.StatusBar;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionGroup;
 import org.controlsfx.control.action.ActionUtils;
-import org.openide.LifecycleManager;
 import org.openide.util.NbBundle;
 import se.trixon.almond.nbp.core.ModuleHelper;
 import se.trixon.almond.util.CircularInt;
@@ -104,7 +103,7 @@ public class App extends Application {
 
     @Override
     public void stop() throws Exception {
-        LifecycleManager.getDefault().exit();
+        //LifecycleManager.getDefault().exit();
     }
 
     private void createUI() {
@@ -260,9 +259,9 @@ public class App extends Application {
         //restart
         mRestartAction = new Action(Dict.RESTART.toString(), actionEvent -> {
             SystemHelper.runLaterDelayed(0, () -> {
-                var lifecycleManager = LifecycleManager.getDefault();
-                lifecycleManager.markForRestart();
-                lifecycleManager.exit();
+//                var lifecycleManager = LifecycleManager.getDefault();
+//                lifecycleManager.markForRestart();
+//                lifecycleManager.exit();
             });
         });
         mRestartAction.setAccelerator(new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN, KeyCodeCombination.SHIFT_DOWN));

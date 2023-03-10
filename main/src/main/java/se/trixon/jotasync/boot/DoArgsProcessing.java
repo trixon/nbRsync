@@ -62,7 +62,7 @@ public class DoArgsProcessing implements ArgsProcessor {
     @Messages("DoArgsProcessing.version.desc=print the version information and exit")
     public boolean mVersionOption;
     private final ResourceBundle mBundle = NbBundle.getBundle(DoArgsProcessing.class);
-    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
+//    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
 
     {
         Installer.GUI = false;
@@ -108,7 +108,7 @@ public class DoArgsProcessing implements ArgsProcessor {
     private void startJob(String jobName) {
         var job = JobManager.getInstance().getByName(jobName);
         if (job != null) {
-            mExecutorManager.start(job, false);
+            ExecutorManager.getInstance().start(job, false);
         } else {
             System.out.println("JOB NOT FOUND " + jobName);
         }
