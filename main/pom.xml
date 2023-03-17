@@ -125,12 +125,21 @@
             <artifactId>org-netbeans-modules-sendopts</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-extexecution-base</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-extexecution</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <!--Trixon-->
         <dependency>
             <groupId>se.trixon.almond</groupId>
             <artifactId>almond-util</artifactId>
-            <version>${almond.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.oshi</groupId>
@@ -145,12 +154,10 @@
         <dependency>
             <groupId>se.trixon.almond</groupId>
             <artifactId>almond-nbp-core</artifactId>
-            <version>${almond.version}</version>
         </dependency>
         <dependency>
             <groupId>se.trixon.almond</groupId>
             <artifactId>almond-nbp</artifactId>
-            <version>${almond.version}</version>
         </dependency>
 
         <!--Other-->

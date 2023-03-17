@@ -19,7 +19,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.windows.IOContainer;
 import org.openide.windows.OnShowing;
+import org.openide.windows.WindowManager;
 import se.trixon.almond.util.SystemHelper;
 
 /**
@@ -27,7 +29,7 @@ import se.trixon.almond.util.SystemHelper;
  * @author Patrik Karlström
  */
 @OnShowing
-public class DoOnShowing implements Runnable{
+public class DoOnShowing implements Runnable {
 
     @Override
     public void run() {
@@ -38,6 +40,20 @@ public class DoOnShowing implements Runnable{
                 Exceptions.printStackTrace(ex);
             }
         });
+
+        var container = IOContainer.getDefault();
+        container.open();
+
+        var windowManager = WindowManager.getDefault();
+        var outputMode = windowManager.findMode("output");
+        var editorMode = windowManager.findMode("editor");
+
+        for (var tc : windowManager.getOpenedTopComponents(outputMode)) {
+            editorMode.dockInto(tc);
+        }
+
+        for (var tc : windowManager.getOpenedTopComponents(editorMode)) {
+            tc.setIcon(null);
+        }
     }
-    
 }

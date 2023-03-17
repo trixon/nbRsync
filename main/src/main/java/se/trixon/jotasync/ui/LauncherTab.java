@@ -15,10 +15,8 @@
  */
 package se.trixon.jotasync.ui;
 
-import javafx.application.Platform;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.jotasync.Jota;
-import se.trixon.jotasync.Options;
 
 /**
  *
@@ -26,39 +24,14 @@ import se.trixon.jotasync.Options;
  */
 public class LauncherTab extends BaseTab {
 
-    private LauncherButtonView mLauncherButtonView;
-    private LauncherListView mLauncherListView;
-    private final Options mOptions = Options.getInstance();
-
     public LauncherTab() {
-        createUI();
-
-        mOptions.getPreferences().addPreferenceChangeListener(pce -> {
-            if (pce.getKey().equalsIgnoreCase(Options.KEY_LAUNCHER_MODE)) {
-                Platform.runLater(() -> updateLauncherMode());
-            }
-        });
-
-        updateLauncherMode();
+        setClosable(false);
         updateNightMode();
+        setContent(new LauncherPane());
     }
 
     @Override
     public void updateNightMode() {
         setGraphic(MaterialIcon._Action.HOME.getImageView(Jota.getIconSizeTab()));
-    }
-
-    private void createUI() {
-        setClosable(false);
-        mLauncherButtonView = new LauncherButtonView();
-        mLauncherListView = new LauncherListView();
-    }
-
-    private void updateLauncherMode() {
-        if (mOptions.getInt(Options.KEY_LAUNCHER_MODE, Options.DEFAULT_LAUNCHER_MODE) == 0) {
-            setContent(mLauncherListView.getNode());
-        } else {
-            setContent(mLauncherButtonView.getNode());
-        }
     }
 }
