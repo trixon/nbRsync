@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,6 @@ public class OptionsPane extends VBox {
 
     public static void displayOptions() {
         var alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.initOwner(sJota.getStage());
 
         alert.setTitle(Dict.OPTIONS.toString());
         alert.setGraphic(null);
@@ -57,7 +56,7 @@ public class OptionsPane extends VBox {
         dialogPane.setPrefWidth(FxHelper.getUIScaled(400));
         FxHelper.removeSceneInitFlicker(dialogPane);
 
-        FxHelper.showAndWait(alert, sJota.getStage());
+        FxHelper.showAndWait(alert, null);
         optionsPane.save();
     }
 

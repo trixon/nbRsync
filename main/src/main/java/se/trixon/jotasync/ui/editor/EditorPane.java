@@ -23,10 +23,6 @@ import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -99,10 +95,9 @@ public class EditorPane extends HBox {
 
     public EditorPane() {
         createUI();
-    }
-
-    public EditorPane(Job job) {
-        mJob = job;
+        mJota.getGlobalState().addListener(gsce -> {
+            load(gsce.getValue());
+        }, Jota.GSC_EDITOR);
     }
 
     public BaseItemPane getJobPane() {
@@ -141,11 +136,12 @@ public class EditorPane extends HBox {
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {
 
+        private List<Action> mActions;
+
         private final ListView<T> mListView = new ListView<>();
         private final BaseManager mManager;
         private final String mTitleP;
         private final String mTitleS;
-        private List<Action> mActions;
 
         public BaseItemPane(BaseManager manager) {
             mManager = manager;
@@ -155,27 +151,27 @@ public class EditorPane extends HBox {
             createUI();
         }
 
-        public ListView<T> getListView() {
-            return mListView;
-        }
-
         public List<Action> getActions() {
             return mActions;
         }
 
+        public ListView<T> getListView() {
+            return mListView;
+        }
+
         private boolean confirm(String title, String header, String content, String buttonText) {
-            var stage = mJota.getStage();
-            var alert = new Alert(AlertType.CONFIRMATION);
-            alert.initOwner(stage);
-            alert.setTitle(title);
-            alert.setHeaderText(header);
-            alert.setContentText(content);
-            var confirmButtonType = new ButtonType(buttonText, ButtonData.OK_DONE);
-            alert.getButtonTypes().setAll(ButtonType.CANCEL, confirmButtonType);
+            var d = new DialogDescriptor(
+                    "%s\n%s".formatted(header, content),
+                    title,
+                    true,
+                    new Object[]{Dict.CANCEL.toString(), buttonText},
+                    buttonText,
+                    0,
+                    null,
+                    null
+            );
 
-            var result = alert.showAndWait();
-
-            return result.get() == confirmButtonType;
+            return buttonText == DialogDisplayer.getDefault().notify(d);
         }
 
         private Tooltip createTooltip(String string, boolean singular) {

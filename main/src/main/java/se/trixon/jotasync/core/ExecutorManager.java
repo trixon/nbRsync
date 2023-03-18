@@ -56,9 +56,7 @@ public class ExecutorManager {
         var name = Options.getInstance().isNightMode() ? "darkWeb.css" : "lightWeb.css";
         mWebView.getEngine().setUserStyleSheetLocation(SummaryBuilder.class.getResource(name).toExternalForm());
 
-        var stage = Jota.getStage();
         var alert = new Alert(Alert.AlertType.NONE);
-        alert.initOwner(stage);
         alert.setGraphic(null);
         alert.setHeaderText(null);
         alert.setResizable(true);

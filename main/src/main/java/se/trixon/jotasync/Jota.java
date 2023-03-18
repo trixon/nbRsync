@@ -20,16 +20,17 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import javafx.stage.Stage;
 import org.controlsfx.control.StatusBar;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.ExecutionFlow;
 import se.trixon.almond.util.GlobalState;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.core.Rsync;
 import se.trixon.jotasync.ui.LauncherTab;
 
@@ -43,7 +44,6 @@ public class Jota {
     public static final String GSC_JOB_STARTED = "key.job.started";
     private static final int ICON_SIZE_TOOLBAR = 32;
     private static StatusBar mStatusBar;
-    private static Stage sStage;
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
     private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(LauncherTab.class).node("sessionManager"));
@@ -83,10 +83,6 @@ public class Jota {
         return Holder.INSTANCE;
     }
 
-    public static Stage getStage() {
-        return sStage;
-    }
-
     public static StatusBar getStatusBar() {
         return mStatusBar;
     }
@@ -100,8 +96,8 @@ public class Jota {
         return millisToDateTime(System.currentTimeMillis());
     }
 
-    public static void setStage(Stage stage) {
-        sStage = stage;
+    public static void openOutput() {
+        SwingHelper.runLater(() -> IOContainer.getDefault().open());
     }
 
     public static void setStatusBar(StatusBar statusBar) {

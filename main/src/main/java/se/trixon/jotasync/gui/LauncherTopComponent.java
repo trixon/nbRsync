@@ -34,7 +34,7 @@ import se.trixon.jotasync.ui.LauncherPane;
 @TopComponent.Description(
         preferredID = "LauncherTopComponent",
         //iconBase="SET/PATH/TO/ICON/HERE",
-        persistenceType = TopComponent.PERSISTENCE_NEVER
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED
 )
 @TopComponent.Registration(mode = "explorer", openAtStartup = true)
 @ActionID(category = "Window", id = "se.trixon.jotasync.gui.LauncherTopComponent")

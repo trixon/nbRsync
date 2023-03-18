@@ -78,20 +78,19 @@ public class LauncherListView extends LauncherViewBase {
 
     private void initListeners() {
         mListView.getSelectionModel().selectedItemProperty().addListener((p, o, job) -> {
-            FxHelper.runLater(() -> {
-                if (job != null) {
-                    var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
-                    try {
-                        io.getOut().reset();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    io.getOut().append(mSummaryBuilder.getHtml(job));
-                    io.getOut().close();
-                } else {
-                    Jota.displaySystemInformation();
+            Jota.openOutput();
+            if (job != null) {
+                var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
+                try {
+                    io.getOut().reset();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
+                io.getOut().append(mSummaryBuilder.getHtml(job));
+                io.getOut().close();
+            } else {
+                Jota.displaySystemInformation();
+            }
         });
     }
 
@@ -139,14 +138,9 @@ public class LauncherListView extends LauncherViewBase {
                 mJota.getGlobalState().put(Jota.GSC_EDITOR, job);
             });
 
-            var editorAction = new Action(Dict.EDITOR.toString(), actionEvent -> {
-                mJota.getGlobalState().put(Jota.GSC_EDITOR, null);
-            });
-
             var actions = Arrays.asList(
                     runAction,
-                    editAction,
-                    editorAction
+                    editAction
             );
 
             var contextMenu = ActionUtils.createContextMenu(actions);

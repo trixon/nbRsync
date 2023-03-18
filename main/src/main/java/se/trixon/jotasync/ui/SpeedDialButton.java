@@ -43,7 +43,6 @@ public class SpeedDialButton {
     private final Button mButton = new Button();
     private final Label mDescLabel = new Label();
     private MenuItem mEditMenuItem;
-    private MenuItem mEditorMenuItem;
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final int mIndex;
     private Job mJob;
@@ -102,18 +101,13 @@ public class SpeedDialButton {
             mJota.getGlobalState().put(Jota.GSC_EDITOR, mJob);
         });
 
-        mEditorMenuItem = new MenuItem(Dict.EDITOR.toString());
-        mEditorMenuItem.setOnAction(actionEvent -> {
-            mJota.getGlobalState().put(Jota.GSC_EDITOR, null);
-        });
-
         mResetMenuItem = new MenuItem(Dict.RESET.toString());
         mResetMenuItem.setOnAction(actionEvent -> {
             mPreferences.remove(getKey());
             load();
         });
 
-        contextMenu.getItems().addAll(mEditMenuItem, mEditorMenuItem, mResetMenuItem);
+        contextMenu.getItems().addAll(mEditMenuItem, mResetMenuItem);
 
         if (mJobManager.hasItems()) {
             contextMenu.getItems().add(new SeparatorMenuItem());
@@ -133,7 +127,6 @@ public class SpeedDialButton {
         });
 
         mResetMenuItem.disableProperty().bind(mButton.disableProperty());
-        mEditorMenuItem.disableProperty().bind(mButton.disableProperty());
         mEditMenuItem.disableProperty().bind(mButton.disableProperty());
     }
 

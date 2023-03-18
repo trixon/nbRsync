@@ -62,9 +62,6 @@ public class DoOnShowing implements Runnable {
         }
 
         Jota.displaySystemInformation();
-//        mJota.getGlobalState().addListener(gsce -> {
-//            EditorPane.displayEditor(gsce.getValue());
-//        }, Jota.GSC_EDITOR);
 //
 //        mJota.getGlobalState().addListener(gsce -> {
 //            Job job = gsce.getValue();
