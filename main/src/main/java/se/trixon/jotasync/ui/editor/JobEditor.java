@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 package se.trixon.jotasync.ui.editor;
 
 import java.util.ArrayList;
-import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -27,6 +26,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
+import org.openide.DialogDescriptor;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
@@ -61,7 +61,7 @@ public class JobEditor extends BaseEditor<Job> {
     }
 
     @Override
-    public void load(Job item, Node saveNode) {
+    public void load(Job item, DialogDescriptor dialogDescriptor) {
         if (item == null) {
             item = new Job();
         }
@@ -82,7 +82,7 @@ public class JobEditor extends BaseEditor<Job> {
         mListSelectionView.getSourceItems().removeAll(tasks);
         mListSelectionView.getTargetItems().setAll(tasks);
 
-        super.load(item, saveNode);
+        super.load(item, dialogDescriptor);
         mItem = item;
     }
 

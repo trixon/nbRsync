@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
@@ -36,12 +38,17 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javax.swing.SwingUtilities;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import se.trixon.almond.nbp.fx.FxDialogPanel;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.BaseItem;
 import se.trixon.jotasync.core.BaseManager;
@@ -59,39 +66,43 @@ import se.trixon.jotasync.core.task.Task;
 public class EditorPane extends HBox {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
+    private Job mJob;
     private final JobManager mJobManager = JobManager.getInstance();
     private BaseItemPane mJobPane;
     private final Jota mJota = Jota.getInstance();
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private BaseItemPane mTaskPane;
 
-    public static void displayEditor(Job job) {
-        var alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.initOwner(Jota.getStage());
+    public static void displayEditorXX(Job job) {
+//        SwingUtilities.invokeLater(() -> {
+//            var editorPane = new EditorPane(job);
+//            var d = new DialogDescriptor(
+//                    editorPane,
+//                    Dict.EDITOR.toString(),
+//                    true,
+//                    new Object[]{Dict.CLOSE.toString()},
+//                    Dict.CLOSE.toString(),
+//                    0,
+//                    null,
+//                    null
+//            );
+//
+//            editorPane.setNotifyDescriptor(d);
+//            editorPane.initFx(() -> {
+//                editorPane.load(job);
+//            });
+//
+//            editorPane.setPreferredSize(SwingHelper.getUIScaledDim(800, 600));
+//            DialogDisplayer.getDefault().notify(d);
+//        });
+    }
 
-        alert.setTitle(Dict.EDITOR.toString());
-        alert.setGraphic(null);
-        alert.setHeaderText(null);
-        alert.setResizable(true);
-        alert.getButtonTypes().setAll(ButtonType.CLOSE);
-
-        var editorPane = new EditorPane(job);
-        var dialogPane = alert.getDialogPane();
-
-        dialogPane.setContent(editorPane);
-        dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
-        dialogPane.setPrefWidth(FxHelper.getUIScaled(700));
-        FxHelper.removeSceneInitFlicker(dialogPane);
-
-        FxHelper.showAndWait(alert, Jota.getStage());
+    public EditorPane() {
+        createUI();
     }
 
     public EditorPane(Job job) {
-        createUI();
-        initListeners();
-        if (job != null) {
-            load(job);
-        }
+        mJob = job;
     }
 
     public BaseItemPane getJobPane() {
@@ -116,9 +127,6 @@ public class EditorPane extends HBox {
 
         mTaskPane.getListView().setCellFactory(listView -> new ItemListCellRenderer<>() {
         });
-    }
-
-    private void initListeners() {
     }
 
     private void load(Job job) {
@@ -246,31 +254,35 @@ public class EditorPane extends HBox {
         }
 
         private void edit(T item) {
-            var stage = mJota.getStage();
-            var alert = new Alert(Alert.AlertType.NONE);
-            alert.initOwner(stage);
-            alert.setTitle(item == null ? Dict.ADD.toString() : Dict.EDIT.toString());
+            var title = item == null ? Dict.ADD.toString() : Dict.EDIT.toString();
 
-            var saveButtonType = new ButtonType(Dict.SAVE.toString(), ButtonData.OK_DONE);
-            alert.getButtonTypes().setAll(saveButtonType, ButtonType.CANCEL);
-            alert.setGraphic(null);
-            alert.setHeaderText(null);
-            alert.setResizable(true);
-
-            var dialogPane = alert.getDialogPane();
             var editor = mManager.getEditor();
-            editor.load(item, dialogPane.lookupButton(saveButtonType));
-            dialogPane.setContent(editor);
-            dialogPane.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(660));
-            dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
+            editor.setPadding(FxHelper.getUIScaledInsets(8, 8, 0, 8));
+            var dialogPanel = new FxDialogPanel() {
+                @Override
+                protected void fxConstructor() {
+                    setScene(new Scene(editor));
+                }
+            };
+            dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 600));
 
-            var result = alert.showAndWait();
+            SwingUtilities.invokeLater(() -> {
+                editor.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(660));
+                var d = new DialogDescriptor(dialogPanel, title);
+                d.setValid(false);
+                dialogPanel.setNotifyDescriptor(d);
+                dialogPanel.initFx(() -> {
+                    editor.load(item, d);
+                });
 
-            if (result.get() == saveButtonType) {
-                var editedItem = editor.save();
-                mListView.getSelectionModel().select((T) mManager.getById(editedItem.getId()));
-                mListView.requestFocus();
-            }
+                if (DialogDescriptor.OK_OPTION == DialogDisplayer.getDefault().notify(d)) {
+                    Platform.runLater(() -> {
+                        var editedItem = editor.save();
+                        mListView.getSelectionModel().select((T) mManager.getById(editedItem.getId()));
+                        mListView.requestFocus();
+                    });
+                }
+            });
         }
 
         private T getSelected() {

@@ -30,7 +30,7 @@ import se.trixon.almond.util.PomInfo;
 import se.trixon.jotasync.core.ExecutorManager;
 import se.trixon.jotasync.core.JobManager;
 import se.trixon.jotasync.core.StorageManager;
-import se.trixon.jotasync.ui.App;
+import se.trixon.jotasync.ui.SummaryBuilder;
 
 /**
  *
@@ -87,7 +87,7 @@ public class DoArgsProcessing implements ArgsProcessor {
     }
 
     private void displayVersion() {
-        var pomInfo = new PomInfo(App.class, "se.trixon.jotasync", "jotasync");
+        var pomInfo = new PomInfo(SummaryBuilder.class, "se.trixon.jotasync", "jotasync");
         System.out.println(mBundle.getString("DoArgsProcessing.version").formatted(pomInfo.getVersion()));
     }
 

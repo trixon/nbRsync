@@ -27,7 +27,6 @@ import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.job.JobValidator;
-import se.trixon.jotasync.ui.App;
 import se.trixon.jotasync.ui.SummaryBuilder;
 
 /**
@@ -55,7 +54,7 @@ public class ExecutorManager {
     public void requestStart(Job job) {
         var jobValidator = new JobValidator(job);
         var name = Options.getInstance().isNightMode() ? "darkWeb.css" : "lightWeb.css";
-        mWebView.getEngine().setUserStyleSheetLocation(App.class.getResource(name).toExternalForm());
+        mWebView.getEngine().setUserStyleSheetLocation(SummaryBuilder.class.getResource(name).toExternalForm());
 
         var stage = Jota.getStage();
         var alert = new Alert(Alert.AlertType.NONE);

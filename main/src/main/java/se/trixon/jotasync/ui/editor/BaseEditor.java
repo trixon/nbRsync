@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,6 @@ package se.trixon.jotasync.ui.editor;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import javafx.application.Platform;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -30,6 +29,7 @@ import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
+import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
@@ -51,7 +51,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     private T mItem;
     private final TextField mNameTextField = new TextField();
     private final TextArea mNoteTextArea = new TextArea();
-    private Node mSaveNode;
+    private DialogDescriptor mDialogDescriptor;
     private final TabPane mTabPane = new TabPane();
 
     public BaseEditor(BaseManager<T> manager) {
@@ -68,9 +68,9 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         return mTabPane;
     }
 
-    public void load(T item, Node saveNode) {
+    public void load(T item, DialogDescriptor dialogDescriptor) {
         mItem = item;
-        mSaveNode = saveNode;
+        mDialogDescriptor = dialogDescriptor;
         mNameTextField.setText(item.getName());
         mDescTextField.setText(item.getDescription());
         mNoteTextArea.setText(item.getNote());
@@ -113,7 +113,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
 
     private void initValidation() {
         mValidationSupport.validationResultProperty().addListener((p, o, n) -> {
-            mSaveNode.setDisable(mValidationSupport.isInvalid());
+            mDialogDescriptor.setValid(!mValidationSupport.isInvalid());
         });
 
         mValidationSupport.initInitialDecoration();

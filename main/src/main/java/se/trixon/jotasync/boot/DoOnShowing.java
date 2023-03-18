@@ -22,7 +22,9 @@ import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OnShowing;
 import org.openide.windows.WindowManager;
+import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.util.SystemHelper;
+import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.Jota;
 
 /**
@@ -31,6 +33,8 @@ import se.trixon.jotasync.Jota;
  */
 @OnShowing
 public class DoOnShowing implements Runnable {
+
+    private final Jota mJota = Jota.getInstance();
 
     @Override
     public void run() {
@@ -58,5 +62,37 @@ public class DoOnShowing implements Runnable {
         }
 
         Jota.displaySystemInformation();
+//        mJota.getGlobalState().addListener(gsce -> {
+//            EditorPane.displayEditor(gsce.getValue());
+//        }, Jota.GSC_EDITOR);
+//
+//        mJota.getGlobalState().addListener(gsce -> {
+//            Job job = gsce.getValue();
+//            var jobExecutor = ExecutorManager.getInstance().getJobExecutors().get(job.getId());
+//            LogTab logTab = null;
+//
+//            for (var tab : mTabPane.getTabs()) {
+//                if (tab instanceof LogTab lt) {
+//                    if (job.getId().equals(lt.getJob().getId())) {
+//                        logTab = lt;
+//                        logTab.clear();
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            if (logTab == null) {
+//                logTab = new LogTab(job);
+//                mTabPane.getTabs().add(logTab);
+//            }
+//
+//            jobExecutor.setProcessCallbacks(logTab);
+//            mTabPane.getSelectionModel().select(logTab);
+//        }, Jota.GSC_JOB_STARTED);
+        SwingHelper.runLaterDelayed(500, () -> {
+            //Pre-load but don't display
+            Almond.getTopComponent("EditorTopComponent");
+        });
+
     }
 }

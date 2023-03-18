@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
@@ -28,6 +27,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.Validator;
+import org.openide.DialogDescriptor;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPane;
@@ -65,7 +65,7 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     @Override
-    public void load(Task item, Node saveNode) {
+    public void load(Task item, DialogDescriptor dialogDescriptor) {
         if (item == null) {
             item = new Task();
         }
@@ -87,7 +87,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
 //        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
         mDirForceSourceSlashCheckBox.setSelected(StringUtils.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
-        super.load(item, saveNode);
+        super.load(item, dialogDescriptor);
         mItem = item;
     }
 
