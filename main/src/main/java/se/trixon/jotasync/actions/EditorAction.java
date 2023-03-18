@@ -19,28 +19,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.awt.Actions;
 import org.openide.util.NbBundle.Messages;
-import se.trixon.almond.nbp.dialogs.NbMessage;
-import se.trixon.jotasync.core.Rsync;
 
 @ActionID(
-        category = "Help",
-        id = "se.trixon.jotasync.actions.AboutRsyncAction"
+        category = "Tools",
+        id = "se.trixon.jotasync.actions.EditorAction"
 )
 @ActionRegistration(
-        displayName = "#CTL_AboutRsyncAction"
+        displayName = "#CTL_EditorAction"
 )
-@ActionReference(path = "Menu/Help", position = 1000)
-@Messages("CTL_AboutRsyncAction=About rsync")
-public final class AboutRsyncAction implements ActionListener {
+@ActionReferences({
+    @ActionReference(path = "Menu/Tools", position = 100),
+    @ActionReference(path = "Shortcuts", name = "D-J")
+})
+@Messages("CTL_EditorAction=Job editor")
+public final class EditorAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        NbMessage.information(
-                Actions.cutAmpersand(Bundle.CTL_AboutRsyncAction()),
-                Rsync.getInfo()
-        );
+        System.out.println(e);
     }
 }

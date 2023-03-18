@@ -17,6 +17,9 @@ package se.trixon.jotasync.core;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import se.trixon.almond.util.Dict;
@@ -29,16 +32,26 @@ import se.trixon.jotasync.Options;
 public class Rsync {
 
     public static String getInfo() {
-        var command = Options.getInstance().getRsyncPath();
-        var processBuilder = new ProcessBuilder(new String[]{command});
+        Callable<String> callable = () -> {
+            var command = Options.getInstance().getRsyncPath();
+            var processBuilder = new ProcessBuilder(new String[]{command});
+
+            try {
+                var process = processBuilder.start();
+                var result = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+                process.waitFor();
+                return StringUtils.substringBefore(result, "rsync comes with");
+            } catch (IOException | InterruptedException ex) {
+                return Dict.COMMAND_NOT_FOUND_S.toString().formatted(command);
+            }
+        };
 
         try {
-            var process = processBuilder.start();
-            var result = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-            process.waitFor();
-            return StringUtils.substringBefore(result, "rsync comes with");
-        } catch (IOException | InterruptedException ex) {
-            return Dict.COMMAND_NOT_FOUND_S.toString().formatted(command);
+            var futureTask = new FutureTask<String>(callable);
+            new Thread(futureTask).start();
+            return futureTask.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            return ex.getMessage();
         }
     }
 }

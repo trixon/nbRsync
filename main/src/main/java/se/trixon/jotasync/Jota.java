@@ -16,14 +16,21 @@
 package se.trixon.jotasync;
 
 import com.dlsc.gemsfx.util.SessionManager;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import javafx.stage.Stage;
 import org.controlsfx.control.StatusBar;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.windows.IOProvider;
+import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.ExecutionFlow;
 import se.trixon.almond.util.GlobalState;
+import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.jotasync.core.Rsync;
 import se.trixon.jotasync.ui.LauncherTab;
 
 /**
@@ -40,6 +47,25 @@ public class Jota {
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
     private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(LauncherTab.class).node("sessionManager"));
+
+    public static void displaySystemInformation() {
+        String s = "%s\n%s\n%s\n\n%s".formatted(
+                Dict.SYSTEM.toString().toUpperCase(Locale.ENGLISH),
+                SystemHelper.getSystemInfo(),
+                "RSYNC",
+                Rsync.getInfo()
+        );
+
+        var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
+        try {
+            io.getOut().reset();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        io.getOut().println(s);
+        io.getOut().close();
+    }
 
     public static int getIconSizeTab() {
         return (int) FxHelper.getUIScaled(ICON_SIZE_TOOLBAR * 1.5);
@@ -59,6 +85,10 @@ public class Jota {
 
     public static Stage getStage() {
         return sStage;
+    }
+
+    public static StatusBar getStatusBar() {
+        return mStatusBar;
     }
 
     public static String millisToDateTime(long timestamp) {
@@ -91,10 +121,6 @@ public class Jota {
 
     public SessionManager getSessionManager() {
         return mSessionManager;
-    }
-
-    public static StatusBar getStatusBar() {
-        return mStatusBar;
     }
 
     private static class Holder {

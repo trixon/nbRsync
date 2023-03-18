@@ -23,6 +23,7 @@ import org.openide.windows.IOContainer;
 import org.openide.windows.OnShowing;
 import org.openide.windows.WindowManager;
 import se.trixon.almond.util.SystemHelper;
+import se.trixon.jotasync.Jota;
 
 /**
  *
@@ -55,5 +56,7 @@ public class DoOnShowing implements Runnable {
         for (var tc : windowManager.getOpenedTopComponents(editorMode)) {
             tc.setIcon(null);
         }
+
+        Jota.displaySystemInformation();
     }
 }

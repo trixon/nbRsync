@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 pata.
+ * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,14 +45,12 @@ import se.trixon.jotasync.ui.LauncherPane;
 )
 @Messages({
     "CTL_LauncherAction=Launcher",
-    "CTL_LauncherTopComponent=Launcher Window",
-    "HINT_LauncherTopComponent=This is a Launcher window"
+    "CTL_LauncherTopComponent=Launcher"
 })
 public final class LauncherTopComponent extends FxTopComponent {
 
     public LauncherTopComponent() {
         setName(Bundle.CTL_LauncherTopComponent());
-        setToolTipText(Bundle.HINT_LauncherTopComponent());
         putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
         putClientProperty(TopComponent.PROP_DRAGGING_DISABLED, Boolean.TRUE);
         putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);

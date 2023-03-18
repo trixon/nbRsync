@@ -19,28 +19,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.awt.Actions;
 import org.openide.util.NbBundle.Messages;
-import se.trixon.almond.nbp.dialogs.NbMessage;
-import se.trixon.jotasync.core.Rsync;
+import se.trixon.jotasync.Options;
 
 @ActionID(
-        category = "Help",
-        id = "se.trixon.jotasync.actions.AboutRsyncAction"
+        category = "View",
+        id = "se.trixon.jotasync.actions.LauncherModeListAction"
 )
 @ActionRegistration(
-        displayName = "#CTL_AboutRsyncAction"
+        displayName = "#CTL_LauncherModeListAction"
 )
-@ActionReference(path = "Menu/Help", position = 1000)
-@Messages("CTL_AboutRsyncAction=About rsync")
-public final class AboutRsyncAction implements ActionListener {
+@ActionReferences({
+    @ActionReference(path = "Menu/View", position = 200),
+    @ActionReference(path = "Shortcuts", name = "D-1")
+})
+@Messages("CTL_LauncherModeListAction=List")
+public final class LauncherModeListAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        NbMessage.information(
-                Actions.cutAmpersand(Bundle.CTL_AboutRsyncAction()),
-                Rsync.getInfo()
-        );
+        Options.getInstance().put(Options.KEY_LAUNCHER_MODE, 0);
     }
+
 }
