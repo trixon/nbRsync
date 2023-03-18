@@ -16,15 +16,13 @@
 package se.trixon.jotasync.core;
 
 import java.util.HashMap;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.web.WebView;
+import javax.swing.SwingUtilities;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import se.trixon.almond.util.Dict;
-import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.swing.SwingHelper;
+import se.trixon.almond.util.swing.dialogs.HtmlPanel;
 import se.trixon.jotasync.Jota;
-import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.job.JobValidator;
 import se.trixon.jotasync.ui.SummaryBuilder;
@@ -38,7 +36,6 @@ public class ExecutorManager {
     private final HashMap<String, JobExecutor> mJobExecutors = new HashMap<>();
     private final Jota mJota = Jota.getInstance();
     private final SummaryBuilder mSummaryBuilder = new SummaryBuilder();
-    private final WebView mWebView = new WebView();
 
     public static ExecutorManager getInstance() {
         return Holder.INSTANCE;
@@ -53,43 +50,38 @@ public class ExecutorManager {
 
     public void requestStart(Job job) {
         var jobValidator = new JobValidator(job);
-        var name = Options.getInstance().isNightMode() ? "darkWeb.css" : "lightWeb.css";
-        mWebView.getEngine().setUserStyleSheetLocation(SummaryBuilder.class.getResource(name).toExternalForm());
+        var htmlPanel = new HtmlPanel();
+        var d = new DialogDescriptor(
+                htmlPanel,
+                Dict.RUN.toString(),
+                true,
+                new Object[]{Dict.CANCEL.toString(), Dict.RUN.toString(), Dict.DRY_RUN.toString()},
+                Dict.DRY_RUN.toString(),
+                0,
+                null,
+                null
+        );
 
-        var alert = new Alert(Alert.AlertType.NONE);
-        alert.setGraphic(null);
-        alert.setHeaderText(null);
-        alert.setResizable(true);
-        var dialogPane = alert.getDialogPane();
-        dialogPane.setContent(mWebView);
-        dialogPane.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(660));
-        dialogPane.getChildren().remove(0);//Remove graphics container in order to remove the spacing
+        SwingUtilities.invokeLater(() -> {
+            htmlPanel.setPreferredSize(SwingHelper.getUIScaledDim(600, 660));
+        });
 
         if (jobValidator.isValid()) {
-            var runButtonType = new ButtonType(Dict.RUN.toString(), ButtonBar.ButtonData.OK_DONE);
-            var dryRunButtonType = new ButtonType(Dict.DRY_RUN.toString(), ButtonBar.ButtonData.NEXT_FORWARD);
-            alert.getButtonTypes().setAll(runButtonType, dryRunButtonType, ButtonType.CANCEL);
-            var runButton = (Button) alert.getDialogPane().lookupButton(runButtonType);
-            var dryRunButton = (Button) alert.getDialogPane().lookupButton(dryRunButtonType);
-            runButton.setDefaultButton(false);
-            dryRunButton.setDefaultButton(true);
-            alert.setTitle(Dict.RUN.toString());
+            htmlPanel.setHtml(mSummaryBuilder.getHtml(job));
 
-            mWebView.getEngine().loadContent(mSummaryBuilder.getHtml(job));
+            var result = DialogDisplayer.getDefault().notify(d);
 
-            var result = alert.showAndWait();
-
-            if (result.get() == runButtonType) {
+            if (result == Dict.RUN.toString()) {
                 start(job, false);
-            } else if (result.get() == dryRunButtonType) {
+            } else if (result == Dict.DRY_RUN.toString()) {
                 start(job, true);
             }
         } else {
-            alert.getButtonTypes().setAll(ButtonType.CLOSE);
-            alert.setTitle(Dict.Dialog.ERROR_VALIDATION.toString());
-            mWebView.getEngine().loadContent(jobValidator.getSummaryAsHtml());
-
-            alert.showAndWait();
+            d.setTitle(Dict.Dialog.ERROR_VALIDATION.toString());
+            d.setClosingOptions(new String[]{Dict.CLOSE.toString()});
+            d.setOptions(new String[]{Dict.CLOSE.toString()});
+            htmlPanel.setHtml(jobValidator.getSummaryAsHtml());
+            DialogDisplayer.getDefault().notify(d);
         }
     }
 
