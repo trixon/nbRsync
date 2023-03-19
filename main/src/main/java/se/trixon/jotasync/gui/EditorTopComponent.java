@@ -1,5 +1,5 @@
-/*
- * Copyright 2023 pata.
+/* 
+ * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import se.trixon.jotasync.ui.editor.EditorPane;
         //iconBase="SET/PATH/TO/ICON/HERE",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "editor", openAtStartup = false)
+@TopComponent.Registration(mode = "properties", openAtStartup = false)
 @ActionID(category = "Tools", id = "se.trixon.jotasync.gui.EditorTopComponent")
 @ActionReferences({
     @ActionReference(path = "Menu/Tools", position = 100),
