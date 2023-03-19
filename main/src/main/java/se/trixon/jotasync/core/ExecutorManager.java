@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
 package se.trixon.jotasync.core;
 
 import java.util.HashMap;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -51,12 +52,13 @@ public class ExecutorManager {
     public void requestStart(Job job) {
         var jobValidator = new JobValidator(job);
         var htmlPanel = new HtmlPanel();
+        var dryRunButton = new JButton(Dict.DRY_RUN.toString());
         var d = new DialogDescriptor(
                 htmlPanel,
                 Dict.RUN.toString(),
                 true,
-                new Object[]{Dict.CANCEL.toString(), Dict.RUN.toString(), Dict.DRY_RUN.toString()},
-                Dict.DRY_RUN.toString(),
+                new Object[]{Dict.CANCEL.toString(), Dict.RUN.toString(), dryRunButton},
+                dryRunButton,
                 0,
                 null,
                 null
@@ -68,12 +70,12 @@ public class ExecutorManager {
 
         if (jobValidator.isValid()) {
             htmlPanel.setHtml(mSummaryBuilder.getHtml(job));
-
+            SwingHelper.runLaterDelayed(100, () -> dryRunButton.requestFocus());
             var result = DialogDisplayer.getDefault().notify(d);
 
             if (result == Dict.RUN.toString()) {
                 start(job, false);
-            } else if (result == Dict.DRY_RUN.toString()) {
+            } else if (result == dryRunButton) {
                 start(job, true);
             }
         } else {
@@ -88,15 +90,7 @@ public class ExecutorManager {
     public void start(Job job, boolean dryRun) {
         var jobExecutor = new JobExecutor(job, dryRun);
         mJobExecutors.put(job.getId(), jobExecutor);
-        mJota.getGlobalState().put(Jota.GSC_JOB_STARTED, job);
-        jobExecutor.start();
-    }
-
-    public void stop(Job job) {
-        var executor = mJobExecutors.get(job.getId());
-        if (executor != null) {
-            executor.stopJob();
-        }
+        jobExecutor.execute();
     }
 
     private static class Holder {

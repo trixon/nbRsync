@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,9 @@
  */
 package se.trixon.jotasync.ui;
 
-import com.dlsc.gemsfx.util.SessionManager;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 import se.trixon.jotasync.Options;
-import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.JobManager;
 
 /**
@@ -31,7 +29,6 @@ public abstract class LauncherViewBase {
     protected final Font mDefaultFont = Font.getDefault();
     protected final JobManager mJobManager = JobManager.getInstance();
     protected final Options mOptions = Options.getInstance();
-    protected final SessionManager mSessionManager = Jota.getInstance().getSessionManager();
     protected SummaryBuilder mSummaryBuilder;
 
     public LauncherViewBase() {

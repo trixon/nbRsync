@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,12 @@
  */
 package se.trixon.jotasync;
 
-import com.dlsc.gemsfx.util.SessionManager;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import org.controlsfx.control.StatusBar;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import se.trixon.almond.util.Dict;
@@ -32,7 +30,6 @@ import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.core.Rsync;
-import se.trixon.jotasync.ui.LauncherTab;
 
 /**
  *
@@ -41,12 +38,10 @@ import se.trixon.jotasync.ui.LauncherTab;
 public class Jota {
 
     public static final String GSC_EDITOR = "key.editor";
-    public static final String GSC_JOB_STARTED = "key.job.started";
     private static final int ICON_SIZE_TOOLBAR = 32;
     private static StatusBar mStatusBar;
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
-    private final SessionManager mSessionManager = new SessionManager(NbPreferences.forModule(LauncherTab.class).node("sessionManager"));
 
     public static void displaySystemInformation() {
         String s = "%s\n%s\n%s\n\n%s".formatted(
@@ -113,10 +108,6 @@ public class Jota {
 
     public GlobalState getGlobalState() {
         return mGlobalState;
-    }
-
-    public SessionManager getSessionManager() {
-        return mSessionManager;
     }
 
     private static class Holder {
