@@ -48,7 +48,7 @@ import se.trixon.jotasync.ui.editor.BaseEditor;
 public class JobExecutor {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
-    private Process mCurrentProcess;
+//    private Process mCurrentProcess;
     private boolean mDryRun;
     private String mDryRunIndicator = "";
     private final InputOutput mInputOutput;
@@ -75,12 +75,7 @@ public class JobExecutor {
         }
     }
 
-    public Integer execute() {
-        mLastRun = System.currentTimeMillis();
-
-        appendHistoryFile(getHistoryLine(mJob.getId(), Dict.STARTED.toString(), mDryRunIndicator));
-        String s = String.format("%s %s: '%s'='%s'", Jota.nowToDateTime(), Dict.START.toString(), Dict.JOB.toString(), mJob.getName());
-        mInputOutput.getOut().println(s);
+    public Integer executeX() {
 
         var arg = "--dry-run --archive --delete --verbose --human-readable -P --update --exclude=**/lost+found*/ /home /mnt/atlas/backup/fedora/";
 //        var arg = "--version";
@@ -117,12 +112,14 @@ public class JobExecutor {
         return -1;
     }
 
-    private void xec() {
-    }
-
     public void run() {
+        mLastRun = System.currentTimeMillis();
+
+        appendHistoryFile(getHistoryLine(mJob.getId(), Dict.STARTED.toString(), mDryRunIndicator));
+        String s = String.format("%s %s: '%s'='%s'", Jota.nowToDateTime(), Dict.START.toString(), Dict.JOB.toString(), mJob.getName());
+        mInputOutput.getOut().println(s);
+
         var jobExecuteSection = mJob.getExecuteSection();
-        String s;
         try {
             // run before first task
             run(jobExecuteSection.getBefore(), "JobEditor.runBefore");
@@ -143,8 +140,6 @@ public class JobExecutor {
             // run after last task
             run(jobExecuteSection.getAfter(), "JobEditor.runAfter");
 
-            Thread.sleep(500);
-
             appendHistoryFile(getHistoryLine(mJob.getId(), Dict.DONE.toString(), mDryRunIndicator));
             s = String.format("%s %s: %s", Jota.nowToDateTime(), Dict.DONE.toString(), Dict.JOB.toString());
             mInputOutput.getOut().println(s);
@@ -152,11 +147,9 @@ public class JobExecutor {
             writelogs();
             mInputOutput.getOut().println(String.format(Dict.JOB_FINISHED.toString(), mJob.getName()));
         } catch (InterruptedException ex) {
-            mCurrentProcess.destroy();
             appendHistoryFile(getHistoryLine(mJob.getId(), Dict.CANCELED.toString(), mDryRunIndicator));
             updateJobStatus(99);
             writelogs();
-            //mProcessCallbacks.onProcessEvent(ProcessEvent.CANCELED, mJob, null, null);
         } catch (IOException ex) {
             writelogs();
             Exceptions.printStackTrace(ex);
@@ -192,7 +185,7 @@ public class JobExecutor {
         return bundle.containsKey(key) ? bundle.getString(key) : String.format((Dict.SYSTEM_CODE.toString()), key);
     }
 
-    private boolean run(String command, boolean stopOnError, String description) throws IOException, InterruptedException, ExecutionFailedException {
+    private boolean run(String command, boolean stopOnError, String description) {
         String s = String.format("%s %s: '%s'='%s'", Jota.nowToDateTime(), Dict.START.toString(), description, command);
         mInputOutput.getOut().println(s);
         boolean success = false;
@@ -200,12 +193,10 @@ public class JobExecutor {
         if (new File(command).isFile()) {
             var commandLine = new ArrayList<String>();
             commandLine.add(command);
-            runProcess(commandLine);
-
-            Thread.sleep(100);
+            var result = runProcess(commandLine);
 
             String status;
-            if (mCurrentProcess.exitValue() == 0) {
+            if (result == 0) {
                 status = Dict.DONE.toString();
                 success = true;
             } else {
@@ -214,14 +205,16 @@ public class JobExecutor {
             s = String.format("%s %s: '%s'", Jota.nowToDateTime(), status, description);
             mInputOutput.getOut().println(s);
 
-            if (stopOnError && mCurrentProcess.exitValue() != 0) {
-                String string = String.format("%s: exitValue=%d", Dict.FAILED.toString(), mCurrentProcess.exitValue());
-                throw new ExecutionFailedException(string);
+            if (stopOnError && result != 0) {
+                s = String.format("%s: exitValue=%d", Dict.FAILED.toString(), result);
+                mInputOutput.getErr().println(s);
+//                throw new ExecutionFailedException(string);
             }
         } else {
             s = String.format("%s: %s", Dict.Dialog.TITLE_FILE_NOT_FOUND.toString(), command);
             if (stopOnError) {
-                throw new ExecutionFailedException(s);
+//                throw new ExecutionFailedException(s);
+                success = false;
             } else {
                 mInputOutput.getErr().println(s);
             }
@@ -237,36 +230,51 @@ public class JobExecutor {
         }
     }
 
-    private void runProcess(List<String> command) throws IOException, InterruptedException {
-        var processBuilder = new ProcessBuilder(command);
-        mCurrentProcess = processBuilder.start();
-
-//        new ProcessLogThread(mCurrentProcess.getInputStream(), ProcessEvent.OUT).start();
-//        new ProcessLogThread(mCurrentProcess.getErrorStream(), ProcessEvent.ERR).start();
-        mCurrentProcess.waitFor();
-    }
-
-    private int runRsync(Task task) throws InterruptedException {
-        try {
-            var command = new ArrayList<String>();
-            command.add(mOptions.getRsyncPath());
-            if (mDryRun) {
-                command.add("--dry-run");
-            }
-            command.addAll(task.getCommand());
-            String s = String.format("%s %s: rsync\n\n%s\n", Jota.nowToDateTime(), Dict.START.toString(), StringUtils.join(command, " "));
-            mInputOutput.getOut().println(s);
-
-            runProcess(command);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return 9999;
+    private int runProcess(List<String> command) {
+        var processBuilder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        processBuilder.setExecutable(mOptions.getRsyncPath());
+        processBuilder.setArguments(command);
+        processBuilder.setExecutable(command.get(0));
+        if (command.size() > 1) {
+            processBuilder.setArguments(command.subList(1, command.size() - 1));
         }
 
-        return mCurrentProcess.exitValue();
+        var descriptor = new ExecutionDescriptor()
+                .frontWindow(true)
+                .inputOutput(mInputOutput)
+                .noReset(true)
+                .showProgress(true);
+
+        var service = ExecutionService.newService(
+                processBuilder,
+                descriptor,
+                mJob.getName());
+
+        var task = service.run();
+
+        try {
+            return task.get();
+        } catch (InterruptedException | ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return -1;
     }
 
-    private boolean runTask(Task task) throws InterruptedException {
+    private int runRsync(Task task) {
+        var command = new ArrayList<String>();
+        command.add(mOptions.getRsyncPath());
+        if (mDryRun) {
+            command.add("--dry-run");
+        }
+        command.addAll(task.getCommand());
+        String s = String.format("%s %s: rsync\n\n%s\n", Jota.nowToDateTime(), Dict.START.toString(), StringUtils.join(command, " "));
+        mInputOutput.getOut().println(s);
+
+        return runProcess(command);
+    }
+
+    private boolean runTask(Task task) {
         if (mDryRun || task.isDryRun()) {
             mDryRunIndicator = String.format(" (%s)", Dict.DRY_RUN.toString());
         }
@@ -311,21 +319,21 @@ public class JobExecutor {
         return doNextTask;
     }
 
-    private boolean runTaskStep(ExecuteItem executeItem, String key) throws InterruptedException {
+    private boolean runTaskStep(ExecuteItem executeItem, String key) {
         boolean doNextStep = false;
 
-        try {
-            var command = executeItem.getCommand();
-            if (executeItem.isEnabled() && StringUtils.isNotEmpty(command)) {
-                if (!run(command, executeItem.isHaltOnError(), mBundle.getString(key))) {
-                    mTaskFailed = true;
-                }
+//        try {
+        var command = executeItem.getCommand();
+        if (executeItem.isEnabled() && StringUtils.isNotEmpty(command)) {
+            if (!run(command, executeItem.isHaltOnError(), mBundle.getString(key))) {
+                mTaskFailed = true;
             }
-            doNextStep = true;
-        } catch (IOException | ExecutionFailedException ex) {
-            mTaskFailed = true;
-            Exceptions.printStackTrace(ex);
         }
+        doNextStep = true;
+//        } catch (IOException | ExecutionFailedException ex) {
+//            mTaskFailed = true;
+//            Exceptions.printStackTrace(ex);
+//        }
 
         return doNextStep;
     }
@@ -390,6 +398,9 @@ public class JobExecutor {
         } catch (IOException ex) {
             Xlog.timedErr(ex.getLocalizedMessage());
         }
+    }
+
+    private void xec() {
     }
 
     class ExecutionFailedException extends Exception {

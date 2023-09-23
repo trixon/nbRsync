@@ -90,7 +90,7 @@ public class ExecutorManager {
     public void start(Job job, boolean dryRun) {
         var jobExecutor = new JobExecutor(job, dryRun);
         mJobExecutors.put(job.getId(), jobExecutor);
-        jobExecutor.execute();
+        jobExecutor.run();
     }
 
     private static class Holder {
