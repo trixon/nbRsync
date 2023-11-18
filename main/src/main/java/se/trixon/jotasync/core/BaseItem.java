@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +19,13 @@ import com.google.gson.annotations.SerializedName;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
+import se.trixon.almond.util.fx.control.editable_list.EditableListItem;
 
 /**
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public abstract class BaseItem implements Comparable<BaseItem> {
+public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem {
 
     @SerializedName("description")
     protected String mDescription = "";
@@ -96,6 +97,7 @@ public abstract class BaseItem implements Comparable<BaseItem> {
         return status;
     }
 
+    @Override
     public String getName() {
         return mName;
     }
