@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -170,8 +170,8 @@ public class LauncherListView extends LauncherViewBase {
         }
 
         private void createUI() {
-            String fontFamily = mDefaultFont.getFamily();
-            double fontSize = mDefaultFont.getSize();
+            var fontFamily = mDefaultFont.getFamily();
+            var fontSize = FxHelper.getScaledFontSize();
 
             mNameLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.4));
             mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));

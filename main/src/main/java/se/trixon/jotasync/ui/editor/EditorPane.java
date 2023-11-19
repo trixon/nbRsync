@@ -43,8 +43,8 @@ import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.BaseItem;
 import se.trixon.jotasync.core.BaseManager;
 import se.trixon.jotasync.core.JobManager;
-import static se.trixon.jotasync.core.Storage.GSON;
 import se.trixon.jotasync.core.StorageManager;
+import static se.trixon.jotasync.core.StorageManager.GSON;
 import se.trixon.jotasync.core.TaskManager;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.task.Task;
@@ -226,7 +226,7 @@ public class EditorPane extends HBox {
 
         private void createUI() {
             var fontFamily = mDefaultFont.getFamily();
-            var fontSize = mDefaultFont.getSize();
+            var fontSize = FxHelper.getScaledFontSize();
 
             mNameLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.4));
             mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));

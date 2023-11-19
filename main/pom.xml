@@ -188,17 +188,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>de.jangassen</groupId>
-            <artifactId>nsmenufx</artifactId>
-            <version>3.1.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>1.7.36</version>

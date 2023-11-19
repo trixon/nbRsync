@@ -323,6 +323,7 @@
                     <finalName>jotasync-${project.version}</finalName>
                     <etcConfFile>src/main/resources/jotasync.conf</etcConfFile>
                     <verifyRuntime>true</verifyRuntime>
+                    <!--<additionalArguments>&#045;&#045;fontsize 16</additionalArguments>-->
                     <!--<additionalArguments>&#045;&#045;list</additionalArguments>-->
                     <!--<additionalArguments>&#045;&#045;version</additionalArguments>-->
                     <!--<additionalArguments>-J-Xmx2048m</additionalArguments>-->

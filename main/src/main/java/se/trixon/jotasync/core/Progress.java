@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@ public class Progress {
     private double mPercentage;
     private String mSize;
     private String mSpeed;
+    private int mStep;
     private boolean mValid;
 
     public Progress() {
@@ -48,20 +49,25 @@ public class Progress {
         return mSpeed;
     }
 
+    public int getStep() {
+        return mStep;
+    }
+
     public boolean isValid() {
         return mValid;
     }
 
     public boolean parse(String line) {
         mValid = false;
-        String[] elements = StringUtils.split(line);
+        var elements = StringUtils.split(line);
 
         if (elements.length >= 4
                 && elements[1].contains("%")
                 && elements[2].contains("/")
                 && elements[3].contains(":")) {
             mSize = elements[0];
-            mPercentage = Integer.parseInt(elements[1].replace("%", "")) / 100.0;
+            mStep = Integer.parseInt(elements[1].replace("%", ""));
+            mPercentage = mStep / 100.0;
             mSpeed = elements[2];
             mEta = elements[3];
 

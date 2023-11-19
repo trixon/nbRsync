@@ -17,6 +17,8 @@ package se.trixon.jotasync;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import org.controlsfx.control.StatusBar;
@@ -40,6 +42,7 @@ public class Jota {
     public static final String GSC_EDITOR = "key.editor";
     private static final int ICON_SIZE_TOOLBAR = 32;
     private static StatusBar mStatusBar;
+    private static DateTimeFormatter sDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
 
@@ -93,6 +96,10 @@ public class Jota {
 
     public static void openOutput() {
         SwingHelper.runLater(() -> IOContainer.getDefault().open());
+    }
+
+    public static String prependTimestamp(String s) {
+        return "%s %s".formatted(LocalDateTime.now().format(sDateTimeFormatter), s);
     }
 
     public static void setStatusBar(StatusBar statusBar) {

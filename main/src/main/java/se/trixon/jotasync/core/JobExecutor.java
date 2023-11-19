@@ -19,14 +19,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.progress.ProgressHandle;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
@@ -35,6 +39,7 @@ import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.FileHelper;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.Xlog;
+import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.job.Job;
@@ -48,14 +53,17 @@ import se.trixon.jotasync.ui.editor.BaseEditor;
 public class JobExecutor {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
-//    private Process mCurrentProcess;
     private boolean mDryRun;
     private String mDryRunIndicator = "";
+    private Thread mExecutorThread;
+    private boolean mIndeterminate = true;
     private final InputOutput mInputOutput;
+    private boolean mInterrupted;
     private final Job mJob;
     private long mLastRun;
     private int mNumOfFailedTasks;
     private Options mOptions = Options.getInstance();
+    private ProgressHandle mProgressHandle;
     private final StorageManager mStorageManager = StorageManager.getInstance();
     private boolean mTaskFailed;
 
@@ -75,94 +83,71 @@ public class JobExecutor {
         }
     }
 
-    public Integer executeX() {
-
-        var arg = "--dry-run --archive --delete --verbose --human-readable -P --update --exclude=**/lost+found*/ /home /mnt/atlas/backup/fedora/";
-//        var arg = "--version";
-        var args = Arrays.asList(StringUtils.splitPreserveAllTokens(arg));
-        var processBuilder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
-        processBuilder.setExecutable(mOptions.getRsyncPath());
-        processBuilder.setArguments(args);
-
-        var descriptor = new ExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(true)
-                .inputOutput(mInputOutput)
-                .noReset(true)
-                .preExecution(() -> {
-                    mInputOutput.getErr().println("PRE");
-                })
-                .postExecution((Integer t) -> {
-                    mInputOutput.getErr().println("PPOST " + t);
-                })
-                .showProgress(true);
-
-        var service = ExecutionService.newService(
-                processBuilder,
-                descriptor,
-                mJob.getName());
-
-        var task = service.run();
-
-        try {
-            return task.get();
-        } catch (InterruptedException | ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return -1;
-    }
-
     public void run() {
+        var allowToCancel = (Cancellable) () -> {
+            mExecutorThread.interrupt();
+            var s = NbBundle.getMessage(JobExecutor.class, "jobCancelled").formatted(mJob.getName());
+            mInputOutput.getErr().println(Jota.prependTimestamp(s));
+            mInterrupted = true;
+            mProgressHandle.finish();
+            ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
+            jobEnded(Dict.CANCELED.toString(), 99);
+
+            return true;
+        };
+
+        mInterrupted = false;
         mLastRun = System.currentTimeMillis();
+        mProgressHandle = ProgressHandle.createHandle(mJob.getName(), allowToCancel);
+        mProgressHandle.start();
+        mProgressHandle.switchToIndeterminate();
 
-        appendHistoryFile(getHistoryLine(mJob.getId(), Dict.STARTED.toString(), mDryRunIndicator));
-        String s = String.format("%s %s: '%s'='%s'", Jota.nowToDateTime(), Dict.START.toString(), Dict.JOB.toString(), mJob.getName());
-        mInputOutput.getOut().println(s);
+        mExecutorThread = new Thread(() -> {
+            appendHistoryFile(getHistoryLine(mJob.getId(), Dict.STARTED.toString(), mDryRunIndicator));
+            mInputOutput.getOut().println(getLogLine(Dict.START.toString(), mJob.getName()));
 
-        var jobExecuteSection = mJob.getExecuteSection();
-        try {
-            // run before first task
-            run(jobExecuteSection.getBefore(), "JobEditor.runBefore");
+            var jobExecuteSection = mJob.getExecuteSection();
+            try {
+                // run before first task
+                run(jobExecuteSection.getBefore(), "JobEditor.runBefore");
 
-            runTasks();
+                runTasks();
 
-            if (mNumOfFailedTasks == 0) {
-                // run after last task - if all ok
-                run(jobExecuteSection.getAfterOk(), "JobEditor.runAfterOk");
-            } else {
-                s = String.format(Dict.TASKS_FAILED.toString(), mNumOfFailedTasks);
-                mInputOutput.getErr().println(s);
+                if (!mJob.getTasks().isEmpty()) {
+                    if (mNumOfFailedTasks == 0) {
+                        // run after last task - if all ok
+                        run(jobExecuteSection.getAfterOk(), "JobEditor.runAfterOk");
+                    } else {
+                        var s = String.format(Dict.TASKS_FAILED.toString(), mNumOfFailedTasks);
+                        mInputOutput.getErr().println(s);
 
-                // run after last task - if any failed
-                run(jobExecuteSection.getAfterFail(), "JobEditor.runAfterFail");
+                        // run after last task - if any failed
+                        run(jobExecuteSection.getAfterFail(), "JobEditor.runAfterFail");
+                    }
+                }
+
+                // run after last task
+                run(jobExecuteSection.getAfter(), "JobEditor.runAfter");
+
+                if (!mInterrupted) {
+                    mInputOutput.getOut().println(getLogLine(Dict.DONE.toString(), mJob.getName()));
+                    jobEnded(Dict.DONE.toString(), 0);
+                }
+            } catch (InterruptedException ex) {
+                jobEnded(Dict.CANCELED.toString(), 99);
+            } catch (IOException ex) {
+                writelogs();
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionFailedException ex) {
+                jobEnded(Dict.FAILED.toString(), 1);
+                mInputOutput.getErr().println(String.format("\n\n%s", Dict.JOB_FAILED.toString()));
             }
 
-            // run after last task
-            run(jobExecuteSection.getAfter(), "JobEditor.runAfter");
+            mProgressHandle.finish();
+            ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
+        }, "JobExecutor");
 
-            appendHistoryFile(getHistoryLine(mJob.getId(), Dict.DONE.toString(), mDryRunIndicator));
-            s = String.format("%s %s: %s", Jota.nowToDateTime(), Dict.DONE.toString(), Dict.JOB.toString());
-            mInputOutput.getOut().println(s);
-            updateJobStatus(0);
-            writelogs();
-            mInputOutput.getOut().println(String.format(Dict.JOB_FINISHED.toString(), mJob.getName()));
-        } catch (InterruptedException ex) {
-            appendHistoryFile(getHistoryLine(mJob.getId(), Dict.CANCELED.toString(), mDryRunIndicator));
-            updateJobStatus(99);
-            writelogs();
-        } catch (IOException ex) {
-            writelogs();
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionFailedException ex) {
-            //Logger.getLogger(JobExecutor.class.getName()).log(Level.SEVERE, null, ex);
-            //send(ProcessEvent.OUT, "before failed and will not continue");
-            appendHistoryFile(getHistoryLine(mJob.getId(), Dict.FAILED.toString(), mDryRunIndicator));
-            updateJobStatus(1);
-            writelogs();
-            mInputOutput.getErr().println(String.format("\n\n%s", Dict.JOB_FAILED.toString()));
-        }
-
-        ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
+        mExecutorThread.start();
     }
 
     private void appendHistoryFile(String string) {
@@ -178,16 +163,25 @@ public class JobExecutor {
     }
 
     private String getRsyncErrorCode(int exitValue) {
-//        var bundle = NbBundle.getBundle("ExitValues");
-        ResourceBundle bundle = SystemHelper.getBundle(getClass(), "ExitValues");
-        String key = String.valueOf(exitValue);
+        var bundle = SystemHelper.getBundle(getClass(), "ExitValues");
+        var key = String.valueOf(exitValue);
 
-        return bundle.containsKey(key) ? bundle.getString(key) : String.format((Dict.SYSTEM_CODE.toString()), key);
+        return bundle.containsKey(key) ? bundle.getString(key) : Dict.SYSTEM_CODE.toString().formatted(key);
+    }
+
+    private void jobEnded(String type, int status) {
+        appendHistoryFile(getHistoryLine(mJob.getId(), type, mDryRunIndicator));
+        updateJobStatus(status);
+        writelogs();
+    }
+
+    private String getLogLine(String header, String text) {
+        return Jota.prependTimestamp("%s '%s'".formatted(header.toUpperCase(Locale.ROOT), text));
     }
 
     private boolean run(String command, boolean stopOnError, String description) {
-        String s = String.format("%s %s: '%s'='%s'", Jota.nowToDateTime(), Dict.START.toString(), description, command);
-        mInputOutput.getOut().println(s);
+        mInputOutput.getOut().println(getLogLine(Dict.START.toString(), description));
+        mInputOutput.getOut().println(Jota.prependTimestamp(command));
         boolean success = false;
 
         if (new File(command).isFile()) {
@@ -197,21 +191,23 @@ public class JobExecutor {
 
             String status;
             if (result == 0) {
-                status = Dict.DONE.toString();
+                status = Dict.DONE.toUpper();
                 success = true;
             } else {
-                status = Dict.Dialog.ERROR.toString();
+                status = Dict.Dialog.ERROR.toUpper();
             }
-            s = String.format("%s %s: '%s'", Jota.nowToDateTime(), status, description);
-            mInputOutput.getOut().println(s);
+
+            if (!mInterrupted) {
+                mInputOutput.getOut().println(getLogLine(status, description));
+            }
 
             if (stopOnError && result != 0) {
-                s = String.format("%s: exitValue=%d", Dict.FAILED.toString(), result);
+                var s = String.format("%s: exitValue=%d", Dict.FAILED.toString(), result);
                 mInputOutput.getErr().println(s);
 //                throw new ExecutionFailedException(string);
             }
         } else {
-            s = String.format("%s: %s", Dict.Dialog.TITLE_FILE_NOT_FOUND.toString(), command);
+            var s = String.format("%s: %s", Dict.Dialog.TITLE_FILE_NOT_FOUND.toString(), command);
             if (stopOnError) {
 //                throw new ExecutionFailedException(s);
                 success = false;
@@ -225,25 +221,67 @@ public class JobExecutor {
 
     private void run(ExecuteItem executeItem, String key) throws IOException, InterruptedException, ExecutionFailedException {
         var command = executeItem.getCommand();
-        if (executeItem.isEnabled() && StringUtils.isNotEmpty(command)) {
+        if (!mInterrupted && executeItem.isEnabled() && StringUtils.isNotEmpty(command)) {
             run(command, executeItem.isHaltOnError(), mBundle.getString(key));
         }
     }
 
     private int runProcess(List<String> command) {
-        var processBuilder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
-        processBuilder.setExecutable(mOptions.getRsyncPath());
-        processBuilder.setArguments(command);
-        processBuilder.setExecutable(command.get(0));
-        if (command.size() > 1) {
-            processBuilder.setArguments(command.subList(1, command.size() - 1));
+        if (mInterrupted) {
+            return -1;
         }
+
+        mProgressHandle.switchToIndeterminate();
+        mIndeterminate = true;
+
+        var processBuilder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        processBuilder.setExecutable(command.getFirst());
+        if (command.size() > 1) {
+            processBuilder.setArguments(command.subList(1, command.size()));
+        }
+
+        var outLineConvertorFactory = new ExecutionDescriptor.LineConvertorFactory() {
+            private String mPrevLine;
+            private final Progress mProgress = new Progress();
+
+            @Override
+            public LineConvertor newLineConvertor() {
+                return (LineConvertor) line -> {
+                    var lines = new ArrayList<ConvertedLine>();
+                    if (StringUtils.isBlank(line)) {
+                        //
+                        lines.add(ConvertedLine.forText(line, null));
+                    } else if (mProgress.parse(line)) {
+                        if (mIndeterminate) {
+                            mIndeterminate = false;
+                            mProgressHandle.switchToDeterminate(100);
+                        }
+                        mProgressHandle.progress(mProgress.getStep());
+                        mProgressHandle.progress(mPrevLine + " " + mProgress.toString());
+                    } else {
+                        lines.add(ConvertedLine.forText(line, null));
+                        mPrevLine = line;
+                    }
+
+                    return lines;
+                };
+            }
+        };
 
         var descriptor = new ExecutionDescriptor()
                 .frontWindow(true)
                 .inputOutput(mInputOutput)
                 .noReset(true)
-                .showProgress(true);
+                .errLineBased(true)
+                .outLineBased(true)
+                .outConvertorFactory(outLineConvertorFactory)
+                .preExecution(() -> {
+                    //mInputOutput.getErr().println("PRE");
+                })
+                .postExecution(exitCode -> {
+                    //mInputOutput.getErr().println("POST exitCode=" + exitCode);
+                })
+                .showProgress(false);
 
         var service = ExecutionService.newService(
                 processBuilder,
@@ -253,8 +291,16 @@ public class JobExecutor {
         var task = service.run();
 
         try {
-            return task.get();
-        } catch (InterruptedException | ExecutionException ex) {
+            var returnCode = task.get();
+
+            return returnCode;
+        } catch (InterruptedException ex) {
+            mInterrupted = true;
+            task.cancel(true);
+        } catch (ExecutionException ex) {
+            mInterrupted = true;
+            task.cancel(true);
+            mInputOutput.getErr().println(ex);
             Exceptions.printStackTrace(ex);
         }
 
@@ -268,13 +314,16 @@ public class JobExecutor {
             command.add("--dry-run");
         }
         command.addAll(task.getCommand());
-        String s = String.format("%s %s: rsync\n\n%s\n", Jota.nowToDateTime(), Dict.START.toString(), StringUtils.join(command, " "));
+        var s = String.format("%s %s: rsync\n\n%s\n", Jota.nowToDateTime(), Dict.START.toString(), StringUtils.join(command, " "));
         mInputOutput.getOut().println(s);
 
         return runProcess(command);
     }
 
     private boolean runTask(Task task) {
+        if (mInterrupted) {
+            return false;
+        }
         if (mDryRun || task.isDryRun()) {
             mDryRunIndicator = String.format(" (%s)", Dict.DRY_RUN.toString());
         }
@@ -339,6 +388,9 @@ public class JobExecutor {
     }
 
     private void runTasks() throws InterruptedException {
+        if (mInterrupted) {
+            return;
+        }
         for (var task : mJob.getTasks()) {
             if (!runTask(task)) {
                 break;
@@ -350,8 +402,7 @@ public class JobExecutor {
         var job = mStorageManager.getJobManager().getById(mJob.getId());
         job.setLastRun(mLastRun);
         job.setLastRunExitCode(exitCode);
-
-        StorageManager.save();
+        FxHelper.runLater(() -> StorageManager.save());
     }
 
     private void writelogs() {
@@ -398,9 +449,6 @@ public class JobExecutor {
         } catch (IOException ex) {
             Xlog.timedErr(ex.getLocalizedMessage());
         }
-    }
-
-    private void xec() {
     }
 
     class ExecutionFailedException extends Exception {
