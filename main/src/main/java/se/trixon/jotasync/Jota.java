@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Locale;
 import org.controlsfx.control.StatusBar;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
@@ -42,27 +41,25 @@ public class Jota {
     public static final String GSC_EDITOR = "key.editor";
     private static final int ICON_SIZE_TOOLBAR = 32;
     private static StatusBar mStatusBar;
-    private static DateTimeFormatter sDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
+    private static final DateTimeFormatter sDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
     private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
 
     public static void displaySystemInformation() {
-        String s = "%s\n%s\n%s\n\n%s".formatted(
-                Dict.SYSTEM.toString().toUpperCase(Locale.ENGLISH),
-                SystemHelper.getSystemInfo(),
-                "RSYNC",
-                Rsync.getInfo()
-        );
-
         var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
-        try {
-            io.getOut().reset();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        try (var out = io.getOut()) {
+            try {
+                out.reset();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
 
-        io.getOut().println(s);
-        io.getOut().close();
+            out.println(Dict.SYSTEM.toUpper());
+            out.println(SystemHelper.getSystemInfo());
+            out.println("RSYNC");
+            out.println();
+            out.println(Rsync.getInfo());
+        }
     }
 
     public static int getIconSizeTab() {

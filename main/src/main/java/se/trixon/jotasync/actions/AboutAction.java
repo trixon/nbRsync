@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
 import se.trixon.almond.nbp.core.ModuleHelper;
 import se.trixon.almond.nbp.dialogs.NbAbout;
+import se.trixon.almond.util.PomInfo;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.swing.AboutModel;
 import se.trixon.jotasync.Jota;
@@ -33,9 +34,11 @@ public final class AboutAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        var pomInfo = new PomInfo(Jota.class, "se.trixon.jotasync", "main");
         var c = SummaryBuilder.class;
         var aboutModel = new AboutModel(SystemHelper.getBundle(c, "about"), SystemHelper.getResourceAsImageIcon(c, "logo.png"));
         aboutModel.setAppDate(ModuleHelper.getBuildTime(Jota.class));
+        aboutModel.setAppVersion(pomInfo.getVersion());
 
         new NbAbout(aboutModel).display();
     }
