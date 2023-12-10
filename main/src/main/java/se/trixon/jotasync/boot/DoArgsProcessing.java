@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,6 @@ import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Env;
-import org.openide.LifecycleManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -83,7 +82,7 @@ public class DoArgsProcessing implements ArgsProcessor {
             startJob(mStartOption);
         }
 
-        LifecycleManager.getDefault().exit();
+//        LifecycleManager.getDefault().exit();
     }
 
     private void displayVersion() {
