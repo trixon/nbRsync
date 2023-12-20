@@ -131,7 +131,7 @@ public class LauncherListView extends LauncherViewBase {
             mLastLabel.setText(lastRun);
 
             var runAction = new Action(Dict.RUN.toString(), actionEvent -> {
-                mExecutorManager.requestStart(job);
+                FxHelper.runLaterDelayed(100, () -> mExecutorManager.requestStart(job));
             });
 
             var editAction = new Action("%s %s".formatted(Dict.EDIT.toString(), job.getName()), actionEvent -> {

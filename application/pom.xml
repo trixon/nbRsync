@@ -159,7 +159,7 @@
                 <configuration>
                     <finalName>jotasync-${project.version}</finalName>
                     <etcConfFile>src/main/resources/jotasync.conf</etcConfFile>
-                    <verifyRuntime>warn</verifyRuntime>
+                    <!--<verifyRuntime>warn</verifyRuntime>-->
                     <!--<additionalArguments>&#045;&#045;fontsize 16</additionalArguments>-->
                     <!--<additionalArguments>&#045;&#045;list</additionalArguments>-->
                     <!--<additionalArguments>&#045;&#045;version</additionalArguments>-->

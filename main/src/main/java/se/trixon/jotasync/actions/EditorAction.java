@@ -19,15 +19,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javafx.scene.Scene;
 import javax.swing.SwingUtilities;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.nbp.fx.FxDialogPanel;
+import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.swing.SwingHelper;
+import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.ui.editor.EditorPane;
 
 @ActionID(
@@ -44,20 +46,44 @@ import se.trixon.jotasync.ui.editor.EditorPane;
 @Messages("CTL_EditorAction=Editor")
 public final class EditorAction implements ActionListener {
 
+    private final EditorPane mEditorPane = new EditorPane();
+    private NotifyDescriptor mNotifyDescriptor;
+
+    public EditorAction() {
+        initDialog();
+
+        Jota.getInstance().getGlobalState().addListener(gsce -> {
+            mEditorPane.load(gsce.getValue());
+            actionPerformed(null);
+        }, Jota.GSC_EDITOR);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        SwingUtilities.invokeLater(() -> {
+            DialogDisplayer.getDefault().notify(mNotifyDescriptor);
+        });
+
+    }
+
+    private void initDialog() {
         var dialogPanel = new FxDialogPanel() {
             @Override
             protected void fxConstructor() {
-                setScene(new Scene(new EditorPane()));
+                setScene(new Scene(mEditorPane));
             }
         };
-        dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 600));
-        SwingUtilities.invokeLater(() -> {
-            var d = new DialogDescriptor(dialogPanel, Bundle.CTL_EditorAction());
-            dialogPanel.initFx();
-            DialogDisplayer.getDefault().notify(d);
-        });
 
+        dialogPanel.initFx();
+        dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 600));
+
+        mNotifyDescriptor = new NotifyDescriptor(
+                dialogPanel,
+                Bundle.CTL_EditorAction(),
+                NotifyDescriptor.PLAIN_MESSAGE,
+                NotifyDescriptor.PLAIN_MESSAGE,
+                new String[]{Dict.CLOSE.toString()},
+                Dict.CLOSE.toString()
+        );
     }
 }

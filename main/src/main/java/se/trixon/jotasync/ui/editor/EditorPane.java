@@ -56,18 +56,13 @@ import se.trixon.jotasync.core.task.Task;
 public class EditorPane extends HBox {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
-    private Job mJob;
     private final JobManager mJobManager = JobManager.getInstance();
     private BaseItemPane mJobPane;
-    private final Jota mJota = Jota.getInstance();
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private BaseItemPane mTaskPane;
 
     public EditorPane() {
         createUI();
-        mJota.getGlobalState().addListener(gsce -> {
-            load(gsce.getValue());
-        }, Jota.GSC_EDITOR);
     }
 
     public BaseItemPane getJobPane() {
@@ -78,21 +73,24 @@ public class EditorPane extends HBox {
         return mTaskPane;
     }
 
-    private void createUI() {
-        mJobPane = new BaseItemPane<Job>(mJobManager) {
-        };
-        mTaskPane = new BaseItemPane<Task>(mTaskManager) {
-        };
-        getChildren().setAll(mJobPane, mTaskPane);
-        HBox.setHgrow(mJobPane, Priority.ALWAYS);
-        HBox.setHgrow(mTaskPane, Priority.ALWAYS);
-    }
-
-    private void load(Job job) {
+    public void load(Job job) {
         FxHelper.runLaterDelayed(10, () -> {
             mJobPane.select(job);
             mJobPane.edit(job);
         });
+    }
+
+    private void createUI() {
+        mJobPane = new BaseItemPane<Job>(mJobManager) {
+        };
+        mJobPane.getEditableList().getTitleLabel().setText(Dict.JOBS.toString());
+        mTaskPane = new BaseItemPane<Task>(mTaskManager) {
+        };
+        mTaskPane.getEditableList().getTitleLabel().setText(Dict.TASKS.toString());
+
+        getChildren().setAll(mJobPane, mTaskPane);
+        HBox.setHgrow(mJobPane, Priority.ALWAYS);
+        HBox.setHgrow(mTaskPane, Priority.ALWAYS);
     }
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {
@@ -105,8 +103,13 @@ public class EditorPane extends HBox {
             createUI();
         }
 
+        public EditableList<T> getEditableList() {
+            return mEditableList;
+        }
+
         private void createUI() {
             mEditableList = new NbEditableList.Builder<T>()
+                    .setTitle("-")
                     .setIconSize(Jota.getIconSizeToolBar())
                     .setItemSingular(mManager.getLabelSingular())
                     .setItemPlural(mManager.getLabelPlural())

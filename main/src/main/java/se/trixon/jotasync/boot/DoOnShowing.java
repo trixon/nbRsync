@@ -26,6 +26,7 @@ import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.Jota;
+import se.trixon.jotasync.actions.EditorAction;
 
 /**
  *
@@ -89,7 +90,8 @@ public class DoOnShowing implements Runnable {
         SwingHelper.runLaterDelayed(500, () -> {
             //Pre-load but don't display
             Almond.getTopComponent("EditorTopComponent");
+            //Init global state listener
+            EditorAction action = new EditorAction();
         });
-
     }
 }
