@@ -4,7 +4,7 @@
     <parent>
         <groupId>se.trixon.jotasync</groupId>
         <artifactId>parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>main</artifactId>
@@ -143,45 +143,6 @@
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
             <version>11.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.dlsc.gemsfx</groupId>
-            <artifactId>gemsfx</artifactId>
-            <version>1.90.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.kordamp.ikonli</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <!--                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
-                </exclusion>-->
-                <!--                <exclusion>
-                    <groupId>org.controlsfx</groupId>
-                    <artifactId>controlsfx</artifactId>
-                </exclusion>-->
-                <exclusion>
-                    <groupId>javax.measure</groupId>
-                    <artifactId>unit-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.dlsc.pickerfx</groupId>
-                    <artifactId>pickerfx</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-validator</groupId>
-                    <artifactId>commons-validator</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.dlsc.unitfx</groupId>
-                    <artifactId>unitfx</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
