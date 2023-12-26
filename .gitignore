@@ -25,6 +25,8 @@ hs_err_pid*
 /branding/target/
 /application/target/
 /jotasync/target/
+!/branding/src/main/nbm-branding/core/core.jar/
 !/branding/src/main/nbm-branding/modules/org-netbeans-core-windows.jar/
 !/branding/src/main/nbm-branding/modules/org-netbeans-core.jar/
+!/branding/src/main/nbm-branding/modules/org-netbeans-swing-plaf.jar/
 /main/target/
