@@ -25,12 +25,14 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.Validator;
 import org.openide.DialogDescriptor;
+import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.almond.util.fx.control.FileChooserPane;
+import se.trixon.almond.util.fx.control.FileChooserPaneSwingFx;
 import se.trixon.jotasync.core.TaskManager;
 import se.trixon.jotasync.core.task.Task;
 import se.trixon.jotasync.ui.editor.task.ArgBase;
@@ -46,9 +48,9 @@ public class TaskEditor extends BaseEditor<Task> {
 
     private DualListPane<ArgExclude> mArgExcludeDualListPane;
     private DualListPane<ArgRsync> mArgRsyncDualListPane;
-    private FileChooserPane mDirDestFileChooser;
+    private FileChooserPaneSwingFx mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
-    private FileChooserPane mDirSourceFileChooser;
+    private FileChooserPaneSwingFx mDirSourceFileChooser;
     private Task mItem;
     private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
@@ -160,12 +162,10 @@ public class TaskEditor extends BaseEditor<Task> {
         var sourceTitle = Dict.SOURCE.toString();
         var destTitle = Dict.DESTINATION.toString();
         var selectionMode = SelectionMode.SINGLE;
-        var objectMode = FileChooserPane.ObjectMode.FILE;
 
-        mDirSourceFileChooser = new FileChooserPane(sourceTitle, sourceTitle, objectMode, selectionMode);
-        mDirDestFileChooser = new FileChooserPane(destTitle, destTitle, objectMode, selectionMode);
+        mDirSourceFileChooser = new FileChooserPaneSwingFx(sourceTitle, sourceTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY, selectionMode);
+        mDirDestFileChooser = new FileChooserPaneSwingFx(destTitle, destTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY, selectionMode);
         mDirForceSourceSlashCheckBox = new CheckBox(mBundle.getString("TaskEditor.forceSourceSlash"));
-
         var button = new Button(mBundle.getString("TaskEditor.swapSourceDest"));
         button.setOnAction(actionEvent -> {
             var source = mDirSourceFileChooser.getPathAsString();

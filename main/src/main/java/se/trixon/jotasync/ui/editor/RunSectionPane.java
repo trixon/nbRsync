@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +19,12 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
+import javax.swing.JFileChooser;
 import org.openide.util.NbBundle;
+import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.almond.util.fx.control.FileChooserPane;
+import se.trixon.almond.util.fx.control.FileChooserPaneSwingFx;
 import se.trixon.jotasync.core.ExecuteItem;
 
 /**
@@ -32,14 +34,12 @@ import se.trixon.jotasync.core.ExecuteItem;
 public class RunSectionPane extends VBox {
 
     private final CheckBox mCheckBox;
-    private final FileChooserPane mFileChooser;
+    private final FileChooserPaneSwingFx mFileChooser;
 
     public RunSectionPane(String header, boolean useCheckBox, boolean addSeparator) {
         super(FxHelper.getUIScaled(8));
-        java.lang.String dialogTitle = NbBundle.getMessage(BaseEditor.class, "JobEditor.selectFileToRun");
-        javafx.scene.control.SelectionMode selectionMode = SelectionMode.SINGLE;
-        se.trixon.almond.util.fx.control.FileChooserPane.ObjectMode objectMode = FileChooserPane.ObjectMode.FILE;
-        mFileChooser = new FileChooserPane(dialogTitle, objectMode, selectionMode, header);
+        var dialogTitle = NbBundle.getMessage(BaseEditor.class, "JobEditor.selectFileToRun");
+        mFileChooser = new FileChooserPaneSwingFx(dialogTitle, Almond.getFrame(), JFileChooser.FILES_ONLY, SelectionMode.SINGLE, header);
         mCheckBox = new CheckBox(Dict.STOP_ON_ERROR.toString());
         mCheckBox.disableProperty().bind(mFileChooser.getCheckBox().selectedProperty().not());
         getChildren().setAll(mFileChooser);
