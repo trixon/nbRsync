@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,10 +20,8 @@ import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.awt.Actions;
 import org.openide.util.NbBundle.Messages;
-import se.trixon.almond.nbp.dialogs.NbMessage;
-import se.trixon.jotasync.core.Rsync;
+import se.trixon.jotasync.Jota;
 
 @ActionID(
         category = "Help",
@@ -38,9 +36,6 @@ public final class AboutRsyncAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        NbMessage.information(
-                Actions.cutAmpersand(Bundle.CTL_AboutRsyncAction()),
-                Rsync.getInfo()
-        );
+        Jota.displaySystemInformation();
     }
 }

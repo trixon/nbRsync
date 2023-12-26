@@ -15,7 +15,6 @@
  */
 package se.trixon.jotasync.ui;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -30,8 +29,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
-import org.openide.util.Exceptions;
-import org.openide.windows.IOProvider;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
@@ -77,21 +74,6 @@ public class LauncherListView extends LauncherViewBase {
     }
 
     private void initListeners() {
-        mListView.getSelectionModel().selectedItemProperty().addListener((p, o, job) -> {
-            Jota.openOutput();
-            if (job != null) {
-                var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
-                try {
-                    io.getOut().reset();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                io.getOut().append(mSummaryBuilder.getHtml(job));
-                io.getOut().close();
-            } else {
-                Jota.displaySystemInformation();
-            }
-        });
     }
 
     class JobListCell extends ListCell<Job> {

@@ -47,6 +47,7 @@ public class Jota {
 
     public static void displaySystemInformation() {
         var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
+        io.select();
         try (var out = io.getOut()) {
             try {
                 out.reset();

@@ -71,6 +71,7 @@ public class JobExecutor {
         mJob = job;
         mDryRun = dryRun;
         mInputOutput = IOProvider.getDefault().getIO(mJob.getName(), false);
+        mInputOutput.select();
 
         if (mDryRun) {
             mDryRunIndicator = String.format(" (%s)", Dict.DRY_RUN.toString());
