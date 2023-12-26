@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,11 +48,10 @@ public class Job extends BaseItem {
         mExecuteSection = new JobExecuteSection();
     }
 
-    public Job(String id, String name, String description, String comment) {
+    public Job(String id, String name, String description) {
         mId = id;
         mName = name;
         mDescription = description;
-        mNote = comment;
         mExecuteSection = new JobExecuteSection();
     }
 

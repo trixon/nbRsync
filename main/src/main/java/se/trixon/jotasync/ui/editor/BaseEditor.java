@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +19,8 @@ import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -50,7 +48,6 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     private final TextField mDescTextField = new TextField();
     private T mItem;
     private final TextField mNameTextField = new TextField();
-    private final TextArea mNoteTextArea = new TextArea();
     private DialogDescriptor mDialogDescriptor;
     private final TabPane mTabPane = new TabPane();
 
@@ -58,10 +55,6 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         mManager = manager;
         createUI();
         initValidation();
-    }
-
-    public Tab createNoteTab() {
-        return new Tab(Dict.NOTE.toString(), mNoteTextArea);
     }
 
     public TabPane getTabPane() {
@@ -73,13 +66,11 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         mDialogDescriptor = dialogDescriptor;
         mNameTextField.setText(item.getName());
         mDescTextField.setText(item.getDescription());
-        mNoteTextArea.setText(item.getNote());
     }
 
     public T save() {
         mItem.setName(mNameTextField.getText());
         mItem.setDescription(mDescTextField.getText());
-        mItem.setNote(mNoteTextArea.getText());
 
         StorageManager.save();
 
@@ -99,15 +90,13 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
                 nameLabel,
                 mNameTextField,
                 descLabel,
-                mDescTextField,
-                mNoteTextArea
+                mDescTextField
         );
 
         setTop(vbox);
         setCenter(mTabPane);
 
         mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        mNoteTextArea.setPrefHeight(68);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), descLabel, mTabPane);
     }
 

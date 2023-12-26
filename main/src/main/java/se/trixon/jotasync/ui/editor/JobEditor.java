@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -191,8 +191,7 @@ public class JobEditor extends BaseEditor<Job> {
         getTabPane().getTabs().addAll(
                 createTaskTab(),
                 createRunTab(),
-                createLogTab(),
-                createNoteTab()
+                createLogTab()
         );
     }
 
