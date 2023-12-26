@@ -23,7 +23,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
@@ -86,14 +86,11 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     private void createUI() {
         var nameLabel = new Label(Dict.NAME.toString());
         var descLabel = new Label(Dict.DESCRIPTION.toString());
-        var vbox = new VBox(
-                nameLabel,
-                mNameTextField,
-                descLabel,
-                mDescTextField
-        );
-
-        setTop(vbox);
+        var gp = new GridPane(FxHelper.getUIScaled(8), 0);
+        gp.addColumn(0, nameLabel, mNameTextField);
+        gp.addColumn(1, descLabel, mDescTextField);
+        FxHelper.autoSizeColumn(gp, 2);
+        setTop(gp);
         setCenter(mTabPane);
 
         mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
@@ -124,7 +121,6 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
                     Validator.createEmptyValidator(textRequired),
                     Validator.createPredicateValidator(uniqueNamePredicate, textUnique)
             ));
-            mValidationSupport.registerValidator(mDescTextField, true, Validator.createEmptyValidator(textRequired));
         });
     }
 }
