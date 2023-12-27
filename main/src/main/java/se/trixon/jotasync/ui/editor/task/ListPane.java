@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,9 +29,9 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.TextFields;
+import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.jotasync.Jota;
 
 /**
@@ -148,11 +148,14 @@ public class ListPane<T extends ArgBase> {
         }
 
         private void createUI() {
-            String fontFamily = mDefaultFont.getFamily();
-            double fontSize = mDefaultFont.getSize();
-            mDescLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.0));
-            mArgLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.0));
+            var fontSize = FxHelper.getScaledFontSize();
+            var fontStyle = "-fx-font-size: %.0fpx; -fx-font-weight: %s;";
+
+            mDescLabel.setStyle(fontStyle.formatted(fontSize * 1.0, "bold"));
+            mArgLabel.setStyle(fontStyle.formatted(fontSize * 1.0, "normal"));
+
             mRoot = new VBox(mDescLabel, mArgLabel);
+
             mRoot.setAlignment(Pos.CENTER_LEFT);
         }
     }
