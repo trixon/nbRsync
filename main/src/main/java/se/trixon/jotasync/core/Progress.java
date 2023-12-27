@@ -79,6 +79,7 @@ public class Progress {
 
     @Override
     public String toString() {
-        return String.format("%s   %s   %s", mSize, mSpeed, mEta);
+        return new StringBuilder().append(mSize).append("   ").append(mSpeed).append("   ").append(mEta).toString();
+//        return String.format("%s   %s   %s", mSize, mSpeed, mEta);
     }
 }

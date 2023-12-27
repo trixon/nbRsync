@@ -30,6 +30,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.progress.ProgressHandle;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -64,6 +65,7 @@ public class JobExecutor {
     private int mNumOfFailedTasks;
     private Options mOptions = Options.getInstance();
     private ProgressHandle mProgressHandle;
+    private final StatusDisplayer mStatusDisplayer = StatusDisplayer.getDefault();
     private final StorageManager mStorageManager = StorageManager.getInstance();
     private boolean mTaskFailed;
 
@@ -163,6 +165,10 @@ public class JobExecutor {
         return String.format("%s %s %s%s\n", id, Jota.nowToDateTime(), status, dryRunIndicator);
     }
 
+    private String getLogLine(String header, String text) {
+        return Jota.prependTimestamp("%s '%s'".formatted(header.toUpperCase(Locale.ROOT), text));
+    }
+
     private String getRsyncErrorCode(int exitValue) {
         var bundle = SystemHelper.getBundle(getClass(), "ExitValues");
         var key = String.valueOf(exitValue);
@@ -174,10 +180,7 @@ public class JobExecutor {
         appendHistoryFile(getHistoryLine(mJob.getId(), type, mDryRunIndicator));
         updateJobStatus(status);
         writelogs();
-    }
-
-    private String getLogLine(String header, String text) {
-        return Jota.prependTimestamp("%s '%s'".formatted(header.toUpperCase(Locale.ROOT), text));
+        mStatusDisplayer.setStatusText(type);
     }
 
     private boolean run(String command, boolean stopOnError, String description) {
@@ -249,19 +252,32 @@ public class JobExecutor {
             public LineConvertor newLineConvertor() {
                 return (LineConvertor) line -> {
                     var lines = new ArrayList<ConvertedLine>();
-                    if (StringUtils.isBlank(line)) {
-                        //
-                        lines.add(ConvertedLine.forText(line, null));
-                    } else if (mProgress.parse(line)) {
-                        if (mIndeterminate) {
-                            mIndeterminate = false;
-                            mProgressHandle.switchToDeterminate(100);
+
+                    try {
+                        if (StringUtils.isBlank(line)) {
+                            lines.add(ConvertedLine.forText("", null));
+                        } else if (StringUtils.startsWith(line, "*deleting   ") || StringUtils.startsWith(line, "deleting ")) {
+                            mInputOutput.getErr().println(line);
+                        } else if (mProgress.parse(line)) {
+                            if (mIndeterminate) {
+                                mIndeterminate = false;
+                                mProgressHandle.switchToDeterminate(100);
+                            }
+                            mProgressHandle.progress(mProgress.getStep());
+                            var currentProgressString = new StringBuilder(mPrevLine).append(" ").append(mProgress.toString()).toString();
+                            mProgressHandle.progress(currentProgressString);
+                            mStatusDisplayer.setStatusText(currentProgressString);
+                        } else {
+                            lines.add(ConvertedLine.forText(line, null));
+                            mPrevLine = line;
                         }
-                        mProgressHandle.progress(mProgress.getStep());
-                        mProgressHandle.progress(mPrevLine + " " + mProgress.toString());
-                    } else {
-                        lines.add(ConvertedLine.forText(line, null));
-                        mPrevLine = line;
+                    } catch (Exception e) {
+                        lines.add(ConvertedLine.forText(e.toString(), null));
+                    }
+
+                    if (StringUtils.contains(line, "(xfr#")) {
+                        mProgressHandle.switchToIndeterminate();
+                        mIndeterminate = true;
                     }
 
                     return lines;

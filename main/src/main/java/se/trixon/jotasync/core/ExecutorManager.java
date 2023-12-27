@@ -23,7 +23,6 @@ import org.openide.DialogDisplayer;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.almond.util.swing.dialogs.HtmlPanel;
-import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.job.JobValidator;
 import se.trixon.jotasync.ui.SummaryBuilder;
@@ -35,7 +34,6 @@ import se.trixon.jotasync.ui.SummaryBuilder;
 public class ExecutorManager {
 
     private final HashMap<String, JobExecutor> mJobExecutors = new HashMap<>();
-    private final Jota mJota = Jota.getInstance();
     private final SummaryBuilder mSummaryBuilder = new SummaryBuilder();
 
     public static ExecutorManager getInstance() {
