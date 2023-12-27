@@ -15,6 +15,7 @@
  */
 package se.trixon.jotasync.core;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -34,6 +35,9 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.FoldHandle;
+import org.openide.windows.IOColorLines;
+import org.openide.windows.IOFolding;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import se.trixon.almond.util.Dict;
@@ -54,6 +58,7 @@ import se.trixon.jotasync.ui.editor.BaseEditor;
 public class JobExecutor {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
+    private long mCurrentStartTime;
     private boolean mDryRun;
     private String mDryRunIndicator = "";
     private Thread mExecutorThread;
@@ -62,6 +67,8 @@ public class JobExecutor {
     private boolean mInterrupted;
     private final Job mJob;
     private long mLastRun;
+    private FoldHandle mMainFoldHandle;
+    private final boolean mNightMode = Options.getInstance().isNightMode();
     private int mNumOfFailedTasks;
     private Options mOptions = Options.getInstance();
     private ProgressHandle mProgressHandle;
@@ -94,7 +101,7 @@ public class JobExecutor {
             mInterrupted = true;
             mProgressHandle.finish();
             ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
-            jobEnded(Dict.CANCELED.toString(), 99);
+            jobEnded(Dict.CANCELED.toString(), 99, Color.ORANGE);
 
             return true;
         };
@@ -107,7 +114,15 @@ public class JobExecutor {
 
         mExecutorThread = new Thread(() -> {
             appendHistoryFile(getHistoryLine(mJob.getId(), Dict.STARTED.toString(), mDryRunIndicator));
-            mInputOutput.getOut().println(getLogLine(Dict.START.toString(), mJob.getName()));
+            printSectionHeader(Color.BLUE, Dict.START.toString(), Dict.JOB.toLower(), mJob.getName());
+            mMainFoldHandle = IOFolding.startFold(mInputOutput, true);
+            if (!mJob.getTasks().isEmpty()) {
+                mInputOutput.getOut().println(Dict.TASKS.toString());
+                for (var task : mJob.getTasks()) {
+                    mInputOutput.getOut().println(" - %s".formatted(task.getName()));
+                }
+            }
+            mInputOutput.getOut().println();
 
             var jobExecuteSection = mJob.getExecuteSection();
             try {
@@ -134,15 +149,15 @@ public class JobExecutor {
 
                 if (!mInterrupted) {
                     mInputOutput.getOut().println(getLogLine(Dict.DONE.toString(), mJob.getName()));
-                    jobEnded(Dict.DONE.toString(), 0);
+                    jobEnded(Dict.DONE.toString(), 0, Color.GREEN);
                 }
             } catch (InterruptedException ex) {
-                jobEnded(Dict.CANCELED.toString(), 99);
+                jobEnded(Dict.CANCELED.toString(), 99, Color.ORANGE);
             } catch (IOException ex) {
                 writelogs();
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionFailedException ex) {
-                jobEnded(Dict.FAILED.toString(), 1);
+                jobEnded(Dict.FAILED.toString(), 1, Color.RED);
                 mInputOutput.getErr().println(String.format("\n\n%s", Dict.JOB_FAILED.toString()));
             }
 
@@ -176,15 +191,47 @@ public class JobExecutor {
         return bundle.containsKey(key) ? bundle.getString(key) : Dict.SYSTEM_CODE.toString().formatted(key);
     }
 
-    private void jobEnded(String type, int status) {
+    private void jobEnded(String type, int status, Color color) {
+        mMainFoldHandle.finish();
         appendHistoryFile(getHistoryLine(mJob.getId(), type, mDryRunIndicator));
         updateJobStatus(status);
         writelogs();
         mStatusDisplayer.setStatusText(type);
+        try {
+            final int width = 80;
+            mInputOutput.getOut().println("-".repeat(width));
+            IOColorLines.println(mInputOutput, type.toUpperCase(Locale.ROOT), color);
+            mInputOutput.getOut().println("-".repeat(width));
+            mInputOutput.getOut().println("Total time:\t1");
+            mInputOutput.getOut().println("Finished at:\t2");
+            mInputOutput.getOut().println("-".repeat(width));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void printSectionHeader(Color color, String action, String type, String id) {
+        if (mNightMode) {
+            if (color == Color.BLUE) {
+                color = Color.CYAN;
+            }
+        }
+
+        mCurrentStartTime = System.currentTimeMillis();
+        var text = "-----  %s %s %s '%s'   ".formatted(Jota.nowToDateTime(), action, type, id);
+        final int width = 80;
+        var paddedText = StringUtils.rightPad(text, width, '-');
+        try {
+            IOColorLines.println(mInputOutput, "-".repeat(width), color);
+            IOColorLines.println(mInputOutput, paddedText, color);
+            IOColorLines.println(mInputOutput, "-".repeat(width), color);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private boolean run(String command, boolean stopOnError, String description) {
-        mInputOutput.getOut().println(getLogLine(Dict.START.toString(), description));
+        printSectionHeader(Color.BLUE, Dict.START.toString(), Dict.EXTERNAL_FILE.toLower(), description);
         mInputOutput.getOut().println(Jota.prependTimestamp(command));
         boolean success = false;
 
@@ -331,7 +378,7 @@ public class JobExecutor {
             command.add("--dry-run");
         }
         command.addAll(task.getCommand());
-        var s = String.format("%s %s: rsync\n\n%s\n", Jota.nowToDateTime(), Dict.START.toString(), StringUtils.join(command, " "));
+        var s = String.format("%s\n", StringUtils.join(command, " "));
         mInputOutput.getOut().println(s);
 
         return runProcess(command);
@@ -341,19 +388,21 @@ public class JobExecutor {
         if (mInterrupted) {
             return false;
         }
+
         if (mDryRun || task.isDryRun()) {
             mDryRunIndicator = String.format(" (%s)", Dict.DRY_RUN.toString());
         }
 
         appendHistoryFile(getHistoryLine(task.getId(), Dict.STARTED.toString(), mDryRunIndicator));
 
-        String s = String.format("%s %s: %s='%s'", Jota.nowToDateTime(), Dict.START.toString(), Dict.TASK.toString(), task.getName());
-        mInputOutput.getOut().println(s);
+        printSectionHeader(Color.BLUE, Dict.START.toString(), Dict.TASK.toLower(), task.getName());
+        var foldHandle = mMainFoldHandle.startFold(true);
+
         mTaskFailed = false;
         var taskExecuteSection = task.getExecuteSection();
 
         boolean doNextStep = runTaskStep(taskExecuteSection.getBefore(), "TaskEditor.runBefore");
-
+        String s;
         if (doNextStep) {
             int exitValue = runRsync(task);
             boolean rsyncSuccess = exitValue == 0;
@@ -379,6 +428,7 @@ public class JobExecutor {
 
         s = String.format("%s %s: %s", Jota.nowToDateTime(), Dict.DONE.toString(), Dict.TASK.toString());
         mInputOutput.getOut().println(s);
+        foldHandle.finish();
 
         boolean doNextTask = !(mTaskFailed && taskExecuteSection.isJobHaltOnError());
 
@@ -408,6 +458,7 @@ public class JobExecutor {
         if (mInterrupted) {
             return;
         }
+
         for (var task : mJob.getTasks()) {
             if (!runTask(task)) {
                 break;

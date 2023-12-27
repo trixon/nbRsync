@@ -24,6 +24,7 @@ import se.trixon.almond.nbp.dialogs.NbOptionalDialog;
 import se.trixon.almond.util.PrefsHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
+import se.trixon.jotasync.Options;
 
 /**
  *
@@ -49,6 +50,7 @@ public class DoOnStart implements Runnable {
                 MaterialIcon.setDefaultColor(color);
                 se.trixon.almond.util.icons.material.swing.MaterialIcon.setDefaultColor(FxHelper.colorToColor(color));
             }
+            Options.getInstance().setNightMode(nightMode);
 
             preferences = NbPreferences.root().node("org/netbeans/swing/laf/flatlaf");
             PrefsHelper.putIfAbsent(preferences, "accentColor", "#880088");
