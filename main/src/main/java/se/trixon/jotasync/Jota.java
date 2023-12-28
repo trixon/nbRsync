@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import org.controlsfx.control.StatusBar;
 import org.openide.util.Exceptions;
+import org.openide.windows.IOColorLines;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import se.trixon.almond.util.Dict;
@@ -49,17 +50,12 @@ public class Jota {
         var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
         io.select();
         try (var out = io.getOut()) {
-            try {
-                out.reset();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            out.println(Dict.SYSTEM.toUpper());
-            out.println(SystemHelper.getSystemInfo());
-            out.println("RSYNC");
+            out.reset();
+            IOColorLines.println(io, SystemHelper.getSystemInfo(), Colors.alert());
             out.println();
-            out.println(Rsync.getInfo());
+            IOColorLines.println(io, Rsync.getInfo(), Colors.alert());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
