@@ -46,7 +46,6 @@ public class StorageManager {
 
     private final File mHistoryFile;
     private final JobManager mJobManager = JobManager.getInstance();
-    private final File mLogFile;
     private final File mProfilesBackupFile;
     private final File mProfilesFile;
     private Storage mStorage = new Storage();
@@ -71,7 +70,6 @@ public class StorageManager {
         mProfilesFile = new File(mUserDirectory, "profiles.json");
         mProfilesBackupFile = new File(mUserDirectory, "profiles.bak");
         mHistoryFile = new File(mUserDirectory, "var/history");
-        mLogFile = new File(mUserDirectory, "var/rsync.log");
     }
 
     public int getFileFormatVersion() {
@@ -84,10 +82,6 @@ public class StorageManager {
 
     public JobManager getJobManager() {
         return mJobManager;
-    }
-
-    public File getLogFile() {
-        return mLogFile;
     }
 
     public File getProfilesFile() {

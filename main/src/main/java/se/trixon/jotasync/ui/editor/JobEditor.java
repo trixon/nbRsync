@@ -16,13 +16,9 @@
 package se.trixon.jotasync.ui.editor;
 
 import java.util.ArrayList;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
@@ -43,13 +39,6 @@ public class JobEditor extends BaseEditor<Job> {
 
     private Job mItem;
     private ListSelectionView<Task> mListSelectionView;
-    private RadioButton mLogAppendRadioButton;
-    private CheckBox mLogErrorsCheckBox;
-    private CheckBox mLogOutputCheckBox;
-    private RadioButton mLogReplaceRadioButton;
-    private CheckBox mLogSeparateCheckBox;
-    private final ToggleGroup mLogToggleGroup = new ToggleGroup();
-    private RadioButton mLogUniqueRadioButton;
     private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
     private RunSectionPane mRunAfterSection;
@@ -72,12 +61,6 @@ public class JobEditor extends BaseEditor<Job> {
         mRunAfterOkSection.load(execute.getAfterOk());
         mRunAfterSection.load(execute.getAfter());
 
-        mLogOutputCheckBox.setSelected(item.isLogOutput());
-        mLogErrorsCheckBox.setSelected(item.isLogErrors());
-        mLogSeparateCheckBox.setSelected(item.isLogSeparateErrors());
-
-        mLogToggleGroup.selectToggle(mLogToggleGroup.getToggles().get(item.getLogMode()));
-
         var tasks = item.getTasks();
         mListSelectionView.getSourceItems().removeAll(tasks);
         mListSelectionView.getTargetItems().setAll(tasks);
@@ -97,43 +80,12 @@ public class JobEditor extends BaseEditor<Job> {
         save(execute.getAfterOk(), mRunAfterOkSection);
         save(execute.getAfter(), mRunAfterSection);
 
-        mItem.setLogOutput(mLogOutputCheckBox.isSelected());
-        mItem.setLogErrors(mLogErrorsCheckBox.isSelected());
-        mItem.setLogSeparateErrors(mLogSeparateCheckBox.isSelected());
-
-        mItem.setLogMode(mLogToggleGroup.getToggles().indexOf(mLogToggleGroup.getSelectedToggle()));
-
         var taskIds = mListSelectionView.getTargetItems().stream()
                 .map(task -> task.getId())
                 .toList();
         mItem.setTaskIds(new ArrayList<>(taskIds));
 
         return super.save();
-    }
-
-    private Tab createLogTab() {
-        mLogOutputCheckBox = new CheckBox(Dict.LOG_OUTPUT.toString());
-        mLogErrorsCheckBox = new CheckBox(Dict.LOG_ERRORS.toString());
-        mLogSeparateCheckBox = new CheckBox(Dict.LOG_SEPARATE_ERRORS.toString());
-
-        mLogAppendRadioButton = new RadioButton(Dict.APPEND.toString());
-        mLogReplaceRadioButton = new RadioButton(Dict.REPLACE.toString());
-        mLogUniqueRadioButton = new RadioButton(Dict.UNIQUE.toString());
-
-        mLogAppendRadioButton.setToggleGroup(mLogToggleGroup);
-        mLogReplaceRadioButton.setToggleGroup(mLogToggleGroup);
-        mLogUniqueRadioButton.setToggleGroup(mLogToggleGroup);
-
-        var root = new GridPane();
-        root.addColumn(0, mLogOutputCheckBox, mLogErrorsCheckBox, mLogSeparateCheckBox);
-        root.addColumn(1, mLogAppendRadioButton, mLogReplaceRadioButton, mLogUniqueRadioButton);
-        root.setPadding(FxHelper.getUIScaledInsets(16));
-        root.setHgap(FxHelper.getUIScaled(32));
-        root.setVgap(FxHelper.getUIScaled(12));
-
-        var tab = new Tab(Dict.LOGGING.toString(), root);
-
-        return tab;
     }
 
     private Tab createRunTab() {
@@ -190,8 +142,7 @@ public class JobEditor extends BaseEditor<Job> {
     private void createUI() {
         getTabPane().getTabs().addAll(
                 createTaskTab(),
-                createRunTab(),
-                createLogTab()
+                createRunTab()
         );
     }
 

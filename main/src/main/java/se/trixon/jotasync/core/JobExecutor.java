@@ -41,9 +41,7 @@ import org.openide.windows.IOFolding;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import se.trixon.almond.util.Dict;
-import se.trixon.almond.util.FileHelper;
 import se.trixon.almond.util.SystemHelper;
-import se.trixon.almond.util.Xlog;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
@@ -154,7 +152,6 @@ public class JobExecutor {
             } catch (InterruptedException ex) {
                 jobEnded(Dict.CANCELED.toString(), 99, Color.ORANGE);
             } catch (IOException ex) {
-                writelogs();
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionFailedException ex) {
                 jobEnded(Dict.FAILED.toString(), 1, Color.RED);
@@ -195,7 +192,6 @@ public class JobExecutor {
         mMainFoldHandle.finish();
         appendHistoryFile(getHistoryLine(mJob.getId(), type, mDryRunIndicator));
         updateJobStatus(status);
-        writelogs();
         mStatusDisplayer.setStatusText(type);
         try {
             final int width = 80;
@@ -471,52 +467,6 @@ public class JobExecutor {
         job.setLastRun(mLastRun);
         job.setLastRunExitCode(exitCode);
         FxHelper.runLater(() -> StorageManager.save());
-    }
-
-    private void writelogs() {
-        File directory = mStorageManager.getLogFile();
-        String jobName = FileHelper.replaceInvalidChars(mJob.getName());
-        String outFile = String.format("%s.log", jobName);
-        String errFile = String.format("%s.err", jobName);
-
-        int logMode = mJob.getLogMode();
-        if (logMode == 2) {
-            outFile = String.format("%s %s.log", jobName, mJob.getLastRunDateTime("", mLastRun));
-            errFile = String.format("%s %s.err", jobName, mJob.getLastRunDateTime("", mLastRun));
-        }
-
-        boolean append = logMode == 0;
-
-        try {
-            FileUtils.forceMkdir(directory);
-            File file = new File(directory, outFile);
-
-            StringBuilder builder = new StringBuilder();
-            if (mJob.isLogOutput() || mJob.isLogErrors() && !mJob.isLogSeparateErrors()) {
-//                FileUtils.writeStringToFile(file, mOutBuffer.toString(), "utf-8", append);
-                String message = file.getAbsolutePath();
-                Xlog.timedOut(message);
-                builder.append(String.format("%s:%s", SystemHelper.getHostname(), message));
-            }
-
-            if (mJob.isLogErrors() && mJob.isLogSeparateErrors()) {
-                if (builder.length() > 0) {
-                    builder.append("\n");
-                }
-                file = new File(directory, errFile);
-//                FileUtils.writeStringToFile(file, mErrBuffer.toString(), "utf-8", append);
-                String message = file.getAbsolutePath();
-                Xlog.timedOut(message);
-                builder.append(String.format("%s:%s", SystemHelper.getHostname(), message));
-            }
-
-            if (builder.length() > 0) {
-                builder.insert(0, String.format("%s\n", Dict.SAVE_LOG.toString()));
-//                send(ProcessEvent.OUT, builder.toString());
-            }
-        } catch (IOException ex) {
-            Xlog.timedErr(ex.getLocalizedMessage());
-        }
     }
 
     class ExecutionFailedException extends Exception {

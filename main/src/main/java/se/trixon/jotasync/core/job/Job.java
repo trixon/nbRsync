@@ -32,15 +32,7 @@ public class Job extends BaseItem {
 
     @SerializedName("executeSection")
     private final JobExecuteSection mExecuteSection;
-    @SerializedName("logErrors")
-    private boolean mLogErrors = true;
-    @SerializedName("logMode")
-    private int mLogMode = 0;
-    @SerializedName("logOutput")
-    private boolean mLogOutput = true;
-    @SerializedName("logSeparateErrors")
-    private boolean mLogSeparateErrors = true;
-    private transient ObjectProperty<ProcessState> mProcessStateProperty = new SimpleObjectProperty<>(ProcessState.STARTABLE);
+    private final transient ObjectProperty<ProcessState> mProcessStateProperty = new SimpleObjectProperty<>(ProcessState.STARTABLE);
     @SerializedName("tasks")
     private ArrayList<String> mTaskIds = new ArrayList<>();
 
@@ -57,10 +49,6 @@ public class Job extends BaseItem {
 
     public JobExecuteSection getExecuteSection() {
         return mExecuteSection;
-    }
-
-    public int getLogMode() {
-        return mLogMode;
     }
 
     public ProcessState getProcessState() {
@@ -83,36 +71,8 @@ public class Job extends BaseItem {
         return tasks;
     }
 
-    public boolean isLogErrors() {
-        return mLogErrors;
-    }
-
-    public boolean isLogOutput() {
-        return mLogOutput;
-    }
-
-    public boolean isLogSeparateErrors() {
-        return mLogSeparateErrors;
-    }
-
     public ObjectProperty<ProcessState> processStateProperty() {
         return mProcessStateProperty;
-    }
-
-    public void setLogErrors(boolean logErrors) {
-        mLogErrors = logErrors;
-    }
-
-    public void setLogMode(int logMode) {
-        mLogMode = logMode;
-    }
-
-    public void setLogOutput(boolean logOutput) {
-        mLogOutput = logOutput;
-    }
-
-    public void setLogSeparateErrors(boolean logSeparateErrors) {
-        mLogSeparateErrors = logSeparateErrors;
     }
 
     public void setProcessStateProperty(ProcessState processState) {
