@@ -46,16 +46,20 @@ import se.trixon.jotasync.ui.editor.EditorPane;
 @Messages("CTL_EditorAction=Editor")
 public final class EditorAction implements ActionListener {
 
+    private static boolean FIRST_RUN = true;
     private final EditorPane mEditorPane = new EditorPane();
     private NotifyDescriptor mNotifyDescriptor;
 
     public EditorAction() {
         initDialog();
 
-        Jota.getInstance().getGlobalState().addListener(gsce -> {
-            mEditorPane.load(gsce.getValue());
-            actionPerformed(null);
-        }, Jota.GSC_EDITOR);
+        if (FIRST_RUN) {
+            FIRST_RUN = false;
+            Jota.getInstance().getGlobalState().addListener(gsce -> {
+                mEditorPane.load(gsce.getValue());
+                actionPerformed(null);
+            }, Jota.GSC_EDITOR);
+        }
     }
 
     @Override
