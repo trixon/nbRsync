@@ -39,7 +39,6 @@ import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.editable_list.EditableList;
 import se.trixon.almond.util.swing.SwingHelper;
-import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.BaseItem;
 import se.trixon.jotasync.core.BaseManager;
 import se.trixon.jotasync.core.JobManager;
@@ -48,6 +47,7 @@ import static se.trixon.jotasync.core.StorageManager.GSON;
 import se.trixon.jotasync.core.TaskManager;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.task.Task;
+import se.trixon.jotasync.ui.UiHelper;
 
 /**
  *
@@ -110,7 +110,7 @@ public class EditorPane extends HBox {
         private void createUI() {
             mEditableList = new NbEditableList.Builder<T>()
                     .setTitle("-")
-                    .setIconSize(Jota.getIconSizeToolBar())
+                    .setIconSize(UiHelper.getIconSizeToolBar())
                     .setItemSingular(mManager.getLabelSingular())
                     .setItemPlural(mManager.getLabelPlural())
                     .setOnEdit((title, task) -> {

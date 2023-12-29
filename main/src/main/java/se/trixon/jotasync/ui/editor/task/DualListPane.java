@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,7 @@ import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.jotasync.Jota;
+import se.trixon.jotasync.ui.UiHelper;
 
 /**
  *
@@ -67,7 +68,7 @@ public class DualListPane<T extends ArgBase> {
     }
 
     private void createUI() {
-        int iconSize = Jota.getIconSizeToolBarInt();
+        int iconSize = UiHelper.getIconSizeToolBarInt();
         mAvailablePane.setHeader(Dict.AVAILABLE.toString());
         mSelectedPane.setHeader(Dict.SELECTED.toString());
 

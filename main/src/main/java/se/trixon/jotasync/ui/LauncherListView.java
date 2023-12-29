@@ -127,8 +127,8 @@ public class LauncherListView extends LauncherViewBase {
 
             var contextMenu = ActionUtils.createContextMenu(actions);
             contextMenu.setOnShowing(windowEvent -> {
-                runAction.setGraphic(MaterialIcon._Av.PLAY_ARROW.getImageView(Jota.getIconSizeToolBarInt()));
-                editAction.setGraphic(MaterialIcon._Content.CREATE.getImageView(Jota.getIconSizeToolBarInt()));
+                runAction.setGraphic(MaterialIcon._Av.PLAY_ARROW.getImageView(UiHelper.getIconSizeToolBarInt()));
+                editAction.setGraphic(MaterialIcon._Content.CREATE.getImageView(UiHelper.getIconSizeToolBarInt()));
             });
 
             mRoot.setOnMousePressed(mouseEvent -> {

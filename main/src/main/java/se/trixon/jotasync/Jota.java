@@ -20,17 +20,12 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import org.controlsfx.control.StatusBar;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
-import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import se.trixon.almond.util.Dict;
-import se.trixon.almond.util.ExecutionFlow;
 import se.trixon.almond.util.GlobalState;
 import se.trixon.almond.util.SystemHelper;
-import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.core.Rsync;
 
 /**
@@ -40,10 +35,7 @@ import se.trixon.jotasync.core.Rsync;
 public class Jota {
 
     public static final String GSC_EDITOR = "key.editor";
-    private static final int ICON_SIZE_TOOLBAR = 32;
-    private static StatusBar mStatusBar;
     private static final DateTimeFormatter sDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
-    private final ExecutionFlow mExecutionFlow = new ExecutionFlow();
     private final GlobalState mGlobalState = new GlobalState();
 
     public static void displaySystemInformation() {
@@ -59,24 +51,8 @@ public class Jota {
         }
     }
 
-    public static int getIconSizeTab() {
-        return (int) FxHelper.getUIScaled(ICON_SIZE_TOOLBAR * 1.5);
-    }
-
-    public static int getIconSizeToolBar() {
-        return FxHelper.getUIScaled(ICON_SIZE_TOOLBAR);
-    }
-
-    public static int getIconSizeToolBarInt() {
-        return (int) (getIconSizeToolBar() / 1.3);
-    }
-
     public static Jota getInstance() {
         return Holder.INSTANCE;
-    }
-
-    public static StatusBar getStatusBar() {
-        return mStatusBar;
     }
 
     public static String millisToDateTime(long timestamp) {
@@ -88,23 +64,11 @@ public class Jota {
         return millisToDateTime(System.currentTimeMillis());
     }
 
-    public static void openOutput() {
-        SwingHelper.runLater(() -> IOContainer.getDefault().open());
-    }
-
     public static String prependTimestamp(String s) {
         return "%s %s".formatted(LocalDateTime.now().format(sDateTimeFormatter), s);
     }
 
-    public static void setStatusBar(StatusBar statusBar) {
-        mStatusBar = statusBar;
-    }
-
     private Jota() {
-    }
-
-    public ExecutionFlow getExecutionFlow() {
-        return mExecutionFlow;
     }
 
     public GlobalState getGlobalState() {
