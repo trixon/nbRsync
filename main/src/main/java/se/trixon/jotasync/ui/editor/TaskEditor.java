@@ -24,6 +24,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
@@ -142,22 +144,6 @@ public class TaskEditor extends BaseEditor<Task> {
         return tab;
     }
 
-    private Tab createArgRsyncTab() {
-        mArgRsyncDualListPane = new DualListPane<>();
-        mArgRsyncDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0));
-
-        for (var arg : ArgRsync.values()) {
-            arg.setDynamicArg(null);
-            mArgRsyncDualListPane.getAvailablePane().getItems().add(arg);
-        }
-
-        mArgRsyncDualListPane.updateLists();
-
-        var tab = new Tab(Dict.OPTIONS.toString(), mArgRsyncDualListPane.getRoot());
-
-        return tab;
-    }
-
     private Tab createDirsTab() {
         var sourceTitle = Dict.SOURCE.toString();
         var destTitle = Dict.DESTINATION.toString();
@@ -176,11 +162,13 @@ public class TaskEditor extends BaseEditor<Task> {
         var borderPane = new BorderPane(mDirForceSourceSlashCheckBox);
         BorderPane.setAlignment(mDirForceSourceSlashCheckBox, Pos.CENTER_LEFT);
         borderPane.setRight(button);
+        mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
 
         var root = new VBox(FxHelper.getUIScaled(12),
                 mDirSourceFileChooser,
                 mDirDestFileChooser,
-                borderPane
+                borderPane,
+                mRunStopJobOnErrorCheckBox
         );
 
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mDirSourceFileChooser);
@@ -191,24 +179,38 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private Tab createRunTab() {
-        mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, true);
-        mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, true);
-        mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true, true);
-        mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, true);
+        mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, false);
+        mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, false);
+        mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true, false);
+        mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, false);
 
-        mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
+        mArgRsyncDualListPane = new DualListPane<>();
+        mArgRsyncDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0));
 
-        var root = new VBox(FxHelper.getUIScaled(12),
-                mRunBeforeSection,
-                mRunAfterFailSection,
-                mRunAfterOkSection,
-                mRunAfterSection,
-                mRunStopJobOnErrorCheckBox
-        );
+        for (var arg : ArgRsync.values()) {
+            arg.setDynamicArg(null);
+            mArgRsyncDualListPane.getAvailablePane().getItems().add(arg);
+        }
+
+        mArgRsyncDualListPane.updateLists();
 
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeSection);
+        int row = 0;
+        var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
+        gp.add(mRunBeforeSection, 0, row++, GridPane.REMAINING, 1);
+        gp.add(mArgRsyncDualListPane.getRoot(), 0, row++, GridPane.REMAINING, 1);
+        gp.addRow(row++, mRunAfterFailSection, mRunAfterOkSection);
+        gp.add(mRunAfterSection, 0, row++, GridPane.REMAINING, 1);
+        FxHelper.autoSizeColumn(gp, 2);
+        GridPane.setVgrow(mArgRsyncDualListPane.getRoot(), Priority.ALWAYS);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 8, 0), gp);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0),
+                mRunBeforeSection,
+                mRunAfterSection
+        );
 
-        var tab = new Tab(Dict.RUN.toString(), root);
+        var tab = new Tab(Dict.RUN.toString(), gp);
+
         return tab;
     }
 
@@ -216,7 +218,6 @@ public class TaskEditor extends BaseEditor<Task> {
         getTabPane().getTabs().addAll(
                 createDirsTab(),
                 createRunTab(),
-                createArgRsyncTab(),
                 createArgExcludeTab()
         );
     }

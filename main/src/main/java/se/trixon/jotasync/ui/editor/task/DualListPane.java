@@ -69,8 +69,8 @@ public class DualListPane<T extends ArgBase> {
 
     private void createUI() {
         int iconSize = UiHelper.getIconSizeToolBarInt();
-        mAvailablePane.setHeader(Dict.AVAILABLE.toString());
-        mSelectedPane.setHeader(Dict.SELECTED.toString());
+        mAvailablePane.setHeader("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower()));
+        mSelectedPane.setHeader("%s %s".formatted(Dict.SELECTED.toString(), Dict.COMMANDS.toLower()));
 
         var activateAction = new Action(Dict.OPTIONS.toString(), actionEvent -> {
             itemActivate();

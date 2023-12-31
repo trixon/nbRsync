@@ -18,8 +18,8 @@ package se.trixon.jotasync.ui.editor;
 import java.util.ArrayList;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tab;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
 import org.openide.DialogDescriptor;
@@ -88,38 +88,6 @@ public class JobEditor extends BaseEditor<Job> {
         return super.save();
     }
 
-    private Tab createRunTab() {
-        mRunBeforeSection = new RunSectionPane(mBundle.getString("JobEditor.runBefore"), true, true);
-        mRunAfterFailSection = new RunSectionPane(mBundle.getString("JobEditor.runAfterFail"), false, true);
-        mRunAfterOkSection = new RunSectionPane(mBundle.getString("JobEditor.runAfterOk"), false, true);
-        mRunAfterSection = new RunSectionPane(mBundle.getString("JobEditor.runAfter"), false, false);
-
-        var root = new VBox(FxHelper.getUIScaled(12),
-                mRunBeforeSection,
-                mRunAfterFailSection,
-                mRunAfterOkSection,
-                mRunAfterSection
-        );
-
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeSection, mRunAfterFailSection);
-
-        var tab = new Tab(Dict.RUN.toString(), root);
-
-        return tab;
-    }
-
-    private Tab createTaskTab() {
-        mListSelectionView = new ListSelectionView();
-        mListSelectionView.setSourceHeader(new Label(Dict.AVAILABLE.toString()));
-        mListSelectionView.setTargetHeader(new Label(Dict.SELECTED.toString()));
-        mListSelectionView.getSourceItems().addAll(TaskManager.getInstance().getItems());
-        mListSelectionView.getTargetActions().addAll(createTaskTargetActions());
-
-        var tab = new Tab(Dict.TASKS.toString(), mListSelectionView);
-
-        return tab;
-    }
-
     private ListActionView.ListAction[] createTaskTargetActions() {
         int imageSize = FxHelper.getUIScaled(16);
 
@@ -140,10 +108,33 @@ public class JobEditor extends BaseEditor<Job> {
     }
 
     private void createUI() {
-        getTabPane().getTabs().addAll(
-                createTaskTab(),
-                createRunTab()
+        mRunBeforeSection = new RunSectionPane(mBundle.getString("JobEditor.runBefore"), true, false);
+        mRunAfterFailSection = new RunSectionPane(mBundle.getString("JobEditor.runAfterFail"), false, false);
+        mRunAfterOkSection = new RunSectionPane(mBundle.getString("JobEditor.runAfterOk"), false, false);
+        mRunAfterSection = new RunSectionPane(mBundle.getString("JobEditor.runAfter"), false, false);
+
+        mListSelectionView = new ListSelectionView();
+        mListSelectionView.setSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.TASKS.toLower())));
+        mListSelectionView.setTargetHeader(new Label("%s %s".formatted(Dict.SELECTED.toString(), Dict.TASKS.toLower())));
+        mListSelectionView.getSourceItems().addAll(TaskManager.getInstance().getItems());
+        mListSelectionView.getTargetActions().addAll(createTaskTargetActions());
+
+        int row = 0;
+        var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
+        gp.add(mRunBeforeSection, 0, row++, GridPane.REMAINING, 1);
+        gp.add(mListSelectionView, 0, row++, GridPane.REMAINING, 1);
+        gp.addRow(row++, mRunAfterFailSection, mRunAfterOkSection);
+        gp.add(mRunAfterSection, 0, row++, GridPane.REMAINING, 1);
+        FxHelper.autoSizeColumn(gp, 2);
+        GridPane.setVgrow(mListSelectionView, Priority.ALWAYS);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 8, 0), gp);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0),
+                mRunBeforeSection,
+                mListSelectionView,
+                mRunAfterSection
         );
+
+        setCenter(gp);
     }
 
     private void moveSelectedTasksDown(ListView<Task> listView) {
@@ -187,5 +178,4 @@ public class JobEditor extends BaseEditor<Job> {
             }
         }
     }
-
 }
