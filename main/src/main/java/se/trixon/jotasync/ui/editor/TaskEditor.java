@@ -26,7 +26,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.Validator;
@@ -144,40 +143,6 @@ public class TaskEditor extends BaseEditor<Task> {
         return tab;
     }
 
-    private Tab createDirsTab() {
-        var sourceTitle = Dict.SOURCE.toString();
-        var destTitle = Dict.DESTINATION.toString();
-        var selectionMode = SelectionMode.SINGLE;
-
-        mDirSourceFileChooser = new FileChooserPaneSwingFx(sourceTitle, sourceTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY, selectionMode);
-        mDirDestFileChooser = new FileChooserPaneSwingFx(destTitle, destTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY, selectionMode);
-        mDirForceSourceSlashCheckBox = new CheckBox(mBundle.getString("TaskEditor.forceSourceSlash"));
-        var button = new Button(mBundle.getString("TaskEditor.swapSourceDest"));
-        button.setOnAction(actionEvent -> {
-            var source = mDirSourceFileChooser.getPathAsString();
-            mDirSourceFileChooser.setPath(mDirDestFileChooser.getPathAsString());
-            mDirDestFileChooser.setPath(source);
-        });
-
-        var borderPane = new BorderPane(mDirForceSourceSlashCheckBox);
-        BorderPane.setAlignment(mDirForceSourceSlashCheckBox, Pos.CENTER_LEFT);
-        borderPane.setRight(button);
-        mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
-
-        var root = new VBox(FxHelper.getUIScaled(12),
-                mDirSourceFileChooser,
-                mDirDestFileChooser,
-                borderPane,
-                mRunStopJobOnErrorCheckBox
-        );
-
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mDirSourceFileChooser);
-
-        var tab = new Tab(Dict.DIRECTORIES.toString(), root);
-
-        return tab;
-    }
-
     private Tab createRunTab() {
         mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, false);
         mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, false);
@@ -197,6 +162,8 @@ public class TaskEditor extends BaseEditor<Task> {
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeSection);
         int row = 0;
         var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
+        mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
+        gp.add(mRunStopJobOnErrorCheckBox, 0, row++, GridPane.REMAINING, 1);
         gp.add(mRunBeforeSection, 0, row++, GridPane.REMAINING, 1);
         gp.add(mArgRsyncDualListPane.getRoot(), 0, row++, GridPane.REMAINING, 1);
         gp.addRow(row++, mRunAfterFailSection, mRunAfterOkSection);
@@ -215,11 +182,46 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private void createUI() {
+        var sourceTitle = Dict.SOURCE.toString();
+        var destTitle = Dict.DESTINATION.toString();
+        var selectionMode = SelectionMode.SINGLE;
+
+        mDirSourceFileChooser = new FileChooserPaneSwingFx(sourceTitle, sourceTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY, selectionMode);
+        mDirDestFileChooser = new FileChooserPaneSwingFx(destTitle, destTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY, selectionMode);
+        getGridPane().addRow(2, mDirSourceFileChooser, mDirDestFileChooser);
+        mDirForceSourceSlashCheckBox = new CheckBox(mBundle.getString("TaskEditor.forceSourceSlash"));
+
+        var button = new Button(mBundle.getString("TaskEditor.swapSourceDest"));
+        button.setOnAction(actionEvent -> {
+            var oldSource = mDirSourceFileChooser.getPathAsString();
+            var oldDest = mDirDestFileChooser.getPathAsString();
+            if (mDirForceSourceSlashCheckBox.isSelected()) {
+                oldDest = StringUtils.appendIfMissing(oldDest, "/");
+            } else {
+                oldDest = StringUtils.removeEnd(oldDest, "/");
+            }
+            mDirSourceFileChooser.setPath(oldDest);
+            mDirDestFileChooser.setPath(oldSource);
+        });
+
+        var leftRightBorderPane = new BorderPane(mDirForceSourceSlashCheckBox);
+        BorderPane.setAlignment(mDirForceSourceSlashCheckBox, Pos.CENTER_LEFT);
+        leftRightBorderPane.setRight(button);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0),
+                mDirSourceFileChooser,
+                mDirDestFileChooser,
+                leftRightBorderPane
+        );
+
+        var borderPane = new BorderPane(getTabPane());
+        borderPane.setTop(leftRightBorderPane);
+
         getTabPane().getTabs().addAll(
-                createDirsTab(),
                 createRunTab(),
                 createArgExcludeTab()
         );
+
+        setCenter(borderPane);
     }
 
     private void initListeners() {

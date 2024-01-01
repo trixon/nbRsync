@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ import java.util.List;
 public class OptionSection extends TaskSection {
 
     @SerializedName("options")
-    private String mOptions = "";
+    private String mOptions = "--archive --itemize-changes --verbose --human-readable -P --update";
 
     @Override
     public List<String> getCommand() {

@@ -149,14 +149,14 @@ public class EditorPane extends HBox {
 
         private void edit(String title, T item) {
             var editor = mManager.getEditor();
-            editor.setPadding(FxHelper.getUIScaledInsets(8, 8, 0, 8));
+            editor.setPadding(FxHelper.getUIScaledInsets(2, 8, 0, 8));
             var dialogPanel = new FxDialogPanel() {
                 @Override
                 protected void fxConstructor() {
                     setScene(new Scene(editor));
                 }
             };
-            dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 600));
+            dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 800));
 
             SwingUtilities.invokeLater(() -> {
                 editor.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(660));
@@ -177,7 +177,7 @@ public class EditorPane extends HBox {
         }
 
         private void edit(T t) {
-            edit(Dict.EDIT.toString(), t);
+            edit(mEditableList.getDialogTitleEdit(t), t);
         }
 
         private void select(T t) {

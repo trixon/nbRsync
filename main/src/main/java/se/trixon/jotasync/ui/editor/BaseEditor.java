@@ -46,15 +46,20 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     protected BaseManager<T> mManager;
     protected final ValidationSupport mValidationSupport = new ValidationSupport();
     private final TextField mDescTextField = new TextField();
+    private DialogDescriptor mDialogDescriptor;
+    private final GridPane mGridPane = new GridPane(FxHelper.getUIScaled(8), 0);
     private T mItem;
     private final TextField mNameTextField = new TextField();
-    private DialogDescriptor mDialogDescriptor;
     private final TabPane mTabPane = new TabPane();
 
     public BaseEditor(BaseManager<T> manager) {
         mManager = manager;
         createUI();
         initValidation();
+    }
+
+    public GridPane getGridPane() {
+        return mGridPane;
     }
 
     public TabPane getTabPane() {
@@ -86,11 +91,10 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     private void createUI() {
         var nameLabel = new Label(Dict.NAME.toString());
         var descLabel = new Label(Dict.DESCRIPTION.toString());
-        var gp = new GridPane(FxHelper.getUIScaled(8), 0);
-        gp.addColumn(0, nameLabel, mNameTextField);
-        gp.addColumn(1, descLabel, mDescTextField);
-        FxHelper.autoSizeColumn(gp, 2);
-        setTop(gp);
+        mGridPane.addColumn(0, nameLabel, mNameTextField);
+        mGridPane.addColumn(1, descLabel, mDescTextField);
+        FxHelper.autoSizeColumn(mGridPane, 2);
+        setTop(mGridPane);
         setCenter(mTabPane);
 
         mTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
