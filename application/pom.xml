@@ -164,7 +164,7 @@
                     <!--<additionalArguments>&#045;&#045;list</additionalArguments>-->
                     <!--<additionalArguments>&#045;&#045;version</additionalArguments>-->
                     <!--<additionalArguments>-J-Xmx2048m</additionalArguments>-->
-                    <additionalArguments>&#045;&#045;locale en</additionalArguments>
+                    <!--<additionalArguments>&#045;&#045;locale en</additionalArguments>-->
                 </configuration>
             </plugin>
         </plugins>

@@ -21,6 +21,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.openide.modules.OnStart;
 import org.openide.util.NbPreferences;
 import se.trixon.almond.nbp.dialogs.NbOptionalDialog;
+import se.trixon.almond.nbp.output.OutputLineMode;
 import se.trixon.almond.util.PrefsHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.icons.material.MaterialIcon;
@@ -44,6 +45,7 @@ public class DoOnStart implements Runnable {
             PrefsHelper.putIfAbsent(preferences, key, defaultLAF);
 
             var nightMode = StringUtils.containsIgnoreCase(preferences.get(key, ""), "dark");
+            OutputLineMode.setNightMode(nightMode);
             if (nightMode) {
                 FxHelper.setDarkThemeEnabled(nightMode);
                 var color = FxHelper.getFillColorForDarkTheme();

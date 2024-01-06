@@ -16,13 +16,12 @@
 package se.trixon.jotasync;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import org.openide.util.Exceptions;
-import org.openide.windows.IOColorLines;
 import org.openide.windows.IOProvider;
+import se.trixon.almond.nbp.output.OutputHelper;
+import se.trixon.almond.nbp.output.OutputLineMode;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.GlobalState;
 import se.trixon.almond.util.SystemHelper;
@@ -40,12 +39,14 @@ public class Jota {
 
     public static void displaySystemInformation() {
         var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);
+        var outputHelper = new OutputHelper(Dict.INFORMATION.toString(), io, false);
+
         io.select();
         try (var out = io.getOut()) {
             out.reset();
-            IOColorLines.println(io, SystemHelper.getSystemInfo(), Colors.alert());
+            outputHelper.println(OutputLineMode.ALERT, SystemHelper.getSystemInfo());
             out.println();
-            IOColorLines.println(io, Rsync.getInfo(), Colors.alert());
+            outputHelper.println(OutputLineMode.ALERT, Rsync.getInfo());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -53,15 +54,6 @@ public class Jota {
 
     public static Jota getInstance() {
         return Holder.INSTANCE;
-    }
-
-    public static String millisToDateTime(long timestamp) {
-        Date date = new Date(timestamp);
-        return new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(date);
-    }
-
-    public static String nowToDateTime() {
-        return millisToDateTime(System.currentTimeMillis());
     }
 
     public static String prependTimestamp(String s) {
