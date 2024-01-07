@@ -16,8 +16,6 @@
 package se.trixon.jotasync;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import se.trixon.almond.nbp.output.OutputHelper;
@@ -34,7 +32,6 @@ import se.trixon.jotasync.core.Rsync;
 public class Jota {
 
     public static final String GSC_EDITOR = "key.editor";
-    private static final DateTimeFormatter sDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss");
     private final GlobalState mGlobalState = new GlobalState();
 
     public static void displaySystemInformation() {
@@ -54,10 +51,6 @@ public class Jota {
 
     public static Jota getInstance() {
         return Holder.INSTANCE;
-    }
-
-    public static String prependTimestamp(String s) {
-        return "%s %s".formatted(LocalDateTime.now().format(sDateTimeFormatter), s);
     }
 
     private Jota() {

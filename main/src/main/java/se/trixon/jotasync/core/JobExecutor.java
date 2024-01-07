@@ -43,7 +43,6 @@ import se.trixon.almond.nbp.output.OutputLineMode;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.Options;
 import se.trixon.jotasync.core.job.Job;
 import se.trixon.jotasync.core.task.Task;
@@ -85,18 +84,13 @@ public class JobExecutor {
             mDryRunIndicator = String.format(" (%s)", Dict.DRY_RUN.toString());
         }
 
-        try {
-            mInputOutput.getOut().reset();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        mOutputHelper = new OutputHelper(mJob.getName(), mInputOutput, mDryRun);
+        mOutputHelper.reset();
     }
 
     public void run() {
         var allowToCancel = (Cancellable) () -> {
             mExecutorThread.interrupt();
-            var s = NbBundle.getMessage(JobExecutor.class, "jobCancelled").formatted(mJob.getName());
-            mInputOutput.getErr().println(Jota.prependTimestamp(s));
             mInterrupted = true;
             mProgressHandle.finish();
             ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
@@ -105,7 +99,6 @@ public class JobExecutor {
             return true;
         };
 
-        mOutputHelper = new OutputHelper(mJob.getName(), mInputOutput, mDryRun);
         mInterrupted = false;
         mLastRun = System.currentTimeMillis();
         mStartTime = System.currentTimeMillis();
@@ -182,7 +175,7 @@ public class JobExecutor {
     }
 
     private String getLogLine(String header, String text) {
-        return Jota.prependTimestamp("%s '%s'".formatted(header.toUpperCase(Locale.ROOT), text));
+        return OutputHelper.prependTimestamp("%s '%s'".formatted(header.toUpperCase(Locale.ROOT), text));
     }
 
     private String getRsyncErrorCode(int exitValue) {
@@ -192,12 +185,12 @@ public class JobExecutor {
         return bundle.containsKey(key) ? bundle.getString(key) : Dict.SYSTEM_CODE.toString().formatted(key);
     }
 
-    private void jobEnded(OutputLineMode outputLineMode, String type, int status) {
+    private void jobEnded(OutputLineMode outputLineMode, String action, int status) {
         mMainFoldHandle.finish();
-        appendHistoryFile(getHistoryLine(mJob.getId(), type, mDryRunIndicator));
+        appendHistoryFile(getHistoryLine(mJob.getId(), action, mDryRunIndicator));
         updateJobStatus(status);
-        mStatusDisplayer.setStatusText(type);
-        mOutputHelper.printSummary(outputLineMode, type);
+        mStatusDisplayer.setStatusText(action);
+        mOutputHelper.printSummary(outputLineMode, action, Dict.JOB.toString());
 //        try {
 //            long millis = System.currentTimeMillis() - mStartTime;
 //            var minSec = DateHelper.millisToMinSec(millis);
