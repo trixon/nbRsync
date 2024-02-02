@@ -16,7 +16,6 @@
 package se.trixon.jotasync.ui.editor;
 
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
 import javax.swing.JFileChooser;
@@ -39,7 +38,7 @@ public class RunSectionPane extends VBox {
     public RunSectionPane(String header, boolean useCheckBox, boolean addSeparator) {
         super(FxHelper.getUIScaled(8));
         var dialogTitle = NbBundle.getMessage(BaseEditor.class, "JobEditor.selectFileToRun");
-        mFileChooser = new FileChooserPaneSwingFx(dialogTitle, Almond.getFrame(), JFileChooser.FILES_ONLY, SelectionMode.SINGLE, header);
+        mFileChooser = new FileChooserPaneSwingFx(dialogTitle, Almond.getFrame(), JFileChooser.FILES_ONLY, header);
         mCheckBox = new CheckBox(Dict.STOP_ON_ERROR.toString());
         mCheckBox.disableProperty().bind(mFileChooser.getCheckBox().selectedProperty().not());
         getChildren().setAll(mFileChooser);
