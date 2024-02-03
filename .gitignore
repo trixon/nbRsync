@@ -27,3 +27,4 @@ hs_err_pid*
 
 !/branding/src/main/nbm-branding/core/core.jar/
 !/branding/src/main/nbm-branding/modules/*
+/target/

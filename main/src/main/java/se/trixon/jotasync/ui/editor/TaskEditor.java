@@ -28,9 +28,11 @@ import javafx.scene.control.Tab;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.ListSelectionView;
@@ -205,8 +207,13 @@ public class TaskEditor extends BaseEditor<Task> {
         mDirSourceFileChooser = new FileChooserPaneSwingFx(sourceTitle, sourceTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY);
         mDirDestFileChooser = new FileChooserPaneSwingFx(destTitle, destTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY);
         getGridPane().addRow(2, mDirSourceFileChooser, mDirDestFileChooser);
-        mDirForceSourceSlashCheckBox = new CheckBox(mBundle.getString("TaskEditor.forceSourceSlash"));
-
+        var forceSourceSlash = mBundle.getString("TaskEditor.forceSourceSlash");
+        mDirForceSourceSlashCheckBox = new CheckBox();
+        var a = new Text(StringUtils.substringBefore(forceSourceSlash, "/"));
+        var b = new Text(StringUtils.substringBetween(forceSourceSlash, "/"));
+        var c = new Text(StringUtils.substringAfterLast(forceSourceSlash, "/"));
+        b.setUnderline(true);
+        mDirForceSourceSlashCheckBox.setGraphic(new HBox(a, b, c));
         var button = new Button(mBundle.getString("TaskEditor.swapSourceDest"));
         button.setOnAction(actionEvent -> {
             var oldSource = mDirSourceFileChooser.getPathAsString();
