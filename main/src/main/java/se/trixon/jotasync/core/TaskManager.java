@@ -28,6 +28,8 @@ import se.trixon.jotasync.ui.editor.TaskEditor;
  */
 public class TaskManager extends BaseManager<Task> {
 
+    private BaseEditor mEditor;
+
     public static TaskManager getInstance() {
         return Holder.INSTANCE;
     }
@@ -37,7 +39,11 @@ public class TaskManager extends BaseManager<Task> {
 
     @Override
     public BaseEditor getEditor() {
-        return new TaskEditor();
+        if (mEditor == null) {
+            mEditor = new TaskEditor();
+        }
+
+        return mEditor;
     }
 
     @Override

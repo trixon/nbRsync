@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,8 @@ import se.trixon.jotasync.ui.editor.JobEditor;
  */
 public class JobManager extends BaseManager<Job> {
 
+    private BaseEditor mEditor;
+
     public static JobManager getInstance() {
         return Holder.INSTANCE;
     }
@@ -35,7 +37,11 @@ public class JobManager extends BaseManager<Job> {
 
     @Override
     public BaseEditor getEditor() {
-        return new JobEditor();
+        if (mEditor == null) {
+            mEditor = new JobEditor();
+        }
+
+        return mEditor;
     }
 
     @Override

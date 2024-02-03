@@ -100,6 +100,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
 //        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
         mDirForceSourceSlashCheckBox.setSelected(StringUtils.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
+        getTabPane().getSelectionModel().selectFirst();
         super.load(item, dialogDescriptor);
         mItem = item;
     }
@@ -305,7 +306,7 @@ public class TaskEditor extends BaseEditor<Task> {
         }
 
         mListSelectionView.getSourceItems().removeAll(itemsToRemove);
-        mListSelectionView.getTargetItems().addAll(selectedItems);
+        mListSelectionView.getTargetItems().setAll(selectedItems);
     }
 
     class OptionListCell<T extends ArgBase> extends ListCell<T> {

@@ -18,6 +18,8 @@ package se.trixon.jotasync.ui.editor;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -138,19 +140,19 @@ public class EditorPane extends TabPane {
                     .setIconSize(UiHelper.getIconSizeToolBar())
                     .setItemSingular(mManager.getLabelSingular())
                     .setItemPlural(mManager.getLabelPlural())
-                    .setOnEdit((title, task) -> {
-                        edit(title, task);
+                    .setOnEdit((title, item) -> {
+                        edit(title, item);
                     })
                     .setOnRemoveAll(() -> {
                         mManager.getIdToItem().clear();
                         StorageManager.save();
                     })
-                    .setOnRemove(t -> {
-                        mManager.getIdToItem().remove(t.getId());
+                    .setOnRemove(item -> {
+                        mManager.getIdToItem().remove(item.getId());
                         StorageManager.save();
                     })
-                    .setOnClone(t -> {
-                        var original = t;
+                    .setOnClone(item -> {
+                        var original = item;
                         var json = GSON.toJson(original);
                         var clone = GSON.fromJson(json, original.getClass());
                         var uuid = UUID.randomUUID().toString();
@@ -173,13 +175,19 @@ public class EditorPane extends TabPane {
             setCenter(mEditableList);
         }
 
+        private final Map<Class<? extends BaseItem>, Scene> mItemClassToScene = new HashMap<>();
+
         private void edit(String title, T item) {
             var editor = mManager.getEditor();
             editor.setPadding(FxHelper.getUIScaledInsets(2, 8, 0, 8));
+            var scene = mItemClassToScene.computeIfAbsent(item.getClass(), k -> {
+                return new Scene(editor);
+            });
+
             var dialogPanel = new FxDialogPanel() {
                 @Override
                 protected void fxConstructor() {
-                    setScene(new Scene(editor));
+                    setScene(scene);
                 }
             };
             dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 800));

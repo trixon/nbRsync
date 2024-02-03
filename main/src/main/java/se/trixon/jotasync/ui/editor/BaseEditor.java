@@ -71,6 +71,8 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         mDialogDescriptor = dialogDescriptor;
         mNameTextField.setText(item.getName());
         mDescTextField.setText(item.getDescription());
+
+        mNameTextField.requestFocus();
     }
 
     public T save() {
