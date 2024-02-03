@@ -23,9 +23,7 @@ import org.openide.windows.IOContainer;
 import org.openide.windows.OnShowing;
 import org.openide.windows.WindowManager;
 import se.trixon.almond.util.SystemHelper;
-import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.Jota;
-import se.trixon.jotasync.actions.EditorAction;
 
 /**
  *
@@ -60,9 +58,5 @@ public class DoOnShowing implements Runnable {
         }
 
         Jota.displaySystemInformation();
-        SwingHelper.runLaterDelayed(500, () -> {
-            //Init global state listener
-            EditorAction action = new EditorAction();
-        });
     }
 }

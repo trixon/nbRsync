@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2023 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import se.trixon.almond.nbp.fx.FxTopComponent;
-import se.trixon.jotasync.ui.LauncherPane;
+import se.trixon.jotasync.ui.editor.EditorPane;
 
 /**
  * Top component which displays something.
@@ -59,7 +59,7 @@ public final class LauncherTopComponent extends FxTopComponent {
 
     @Override
     protected void initFX() {
-        setScene(new Scene(new LauncherPane()));
+        setScene(new Scene(new EditorPane()));
     }
 
     void writeProperties(java.util.Properties p) {

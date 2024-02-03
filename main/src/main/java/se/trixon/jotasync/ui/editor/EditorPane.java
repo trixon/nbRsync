@@ -15,21 +15,27 @@
  */
 package se.trixon.jotasync.ui.editor;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.function.Consumer;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javax.swing.SwingUtilities;
+import org.apache.commons.lang3.StringUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -37,10 +43,12 @@ import se.trixon.almond.nbp.fx.FxDialogPanel;
 import se.trixon.almond.nbp.fx.NbEditableList;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
+import static se.trixon.almond.util.fx.FxHelper.getScaledFontSize;
 import se.trixon.almond.util.fx.control.editable_list.EditableList;
 import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.jotasync.core.BaseItem;
 import se.trixon.jotasync.core.BaseManager;
+import se.trixon.jotasync.core.ExecutorManager;
 import se.trixon.jotasync.core.JobManager;
 import se.trixon.jotasync.core.StorageManager;
 import static se.trixon.jotasync.core.StorageManager.GSON;
@@ -53,9 +61,10 @@ import se.trixon.jotasync.ui.UiHelper;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class EditorPane extends HBox {
+public class EditorPane extends TabPane {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
+    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final JobManager mJobManager = JobManager.getInstance();
     private BaseItemPane mJobPane;
     private final TaskManager mTaskManager = TaskManager.getInstance();
@@ -81,16 +90,29 @@ public class EditorPane extends HBox {
     }
 
     private void createUI() {
-        mJobPane = new BaseItemPane<Job>(mJobManager) {
+        Consumer<Job> onStartJob = job -> {
+            mExecutorManager.requestStart(job);
         };
-        mJobPane.getEditableList().getTitleLabel().setText(Dict.JOBS.toString());
-        mTaskPane = new BaseItemPane<Task>(mTaskManager) {
-        };
-        mTaskPane.getEditableList().getTitleLabel().setText(Dict.TASKS.toString());
 
-        getChildren().setAll(mJobPane, mTaskPane);
-        HBox.setHgrow(mJobPane, Priority.ALWAYS);
-        HBox.setHgrow(mTaskPane, Priority.ALWAYS);
+        mJobPane = new BaseItemPane<Job>(mJobManager, onStartJob) {
+        };
+
+        mTaskPane = new BaseItemPane<Task>(mTaskManager, null) {
+        };
+
+        setSide(Side.LEFT);
+        setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+        var jobTab = new Tab(Dict.JOBS.toString(), mJobPane);
+
+        getTabs().setAll(jobTab,
+                new Tab(Dict.TASKS.toString(), mTaskPane)
+        );
+
+        getTabs().forEach(tab -> {
+            tab.setStyle("-fx-font-size: %dpx;".formatted((int) (getScaledFontSize() * 1.4)));
+
+        });
+        setTabMaxHeight(99);
     }
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {
@@ -98,18 +120,17 @@ public class EditorPane extends HBox {
         private EditableList<T> mEditableList;
         private final BaseManager mManager;
 
-        public BaseItemPane(BaseManager manager) {
+        public BaseItemPane(BaseManager manager, Consumer<T> onStart) {
             mManager = manager;
-            createUI();
+            createUI(onStart);
         }
 
         public EditableList<T> getEditableList() {
             return mEditableList;
         }
 
-        private void createUI() {
+        private void createUI(Consumer<T> onStart) {
             mEditableList = new NbEditableList.Builder<T>()
-                    .setTitle("-")
                     .setIconSize(UiHelper.getIconSizeToolBar())
                     .setItemSingular(mManager.getLabelSingular())
                     .setItemPlural(mManager.getLabelPlural())
@@ -138,6 +159,7 @@ public class EditorPane extends HBox {
 
                         return (T) mManager.getById(uuid);
                     })
+                    .setOnStart(onStart)
                     .setItemsProperty(mManager.itemsProperty())
                     .build();
 
@@ -189,8 +211,10 @@ public class EditorPane extends HBox {
 
         private final Font mDefaultFont = Font.getDefault();
         private final Label mDescLabel = new Label();
+        private final Label mLastLabel = new Label();
         private final Label mNameLabel = new Label();
-        private final VBox mRoot = new VBox();
+        private VBox mRoot;
+        private final SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat();
 
         public ItemListCellRenderer() {
             createUI();
@@ -211,12 +235,21 @@ public class EditorPane extends HBox {
             setText(null);
 
             mNameLabel.setText(item.getName());
-            mDescLabel.setText(item.getDescription());
-            mRoot.getChildren().setAll(mNameLabel, mDescLabel);
+            mDescLabel.setText(StringUtils.defaultIfBlank(item.getDescription(), "-"));
+            String lastRun = "-";
+            if (item.getLastRun() != 0) {
+                lastRun = mSimpleDateFormat.format(new Date(item.getLastRun()));
+            }
+            mLastLabel.setText(lastRun);
+
             mRoot.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
-                    var itemPane = (BaseItemPane<T>) getListView().getParent().getParent();
-                    itemPane.edit(getItem());
+                    if (item instanceof Job job) {
+                        mExecutorManager.requestStart(job);
+                    } else {
+                        var itemPane = (BaseItemPane<T>) getListView().getParent().getParent();
+                        itemPane.edit(getItem());
+                    }
                 }
             });
             setGraphic(mRoot);
@@ -233,6 +266,10 @@ public class EditorPane extends HBox {
 
             mNameLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.4));
             mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
+            mLastLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
+
+            mRoot = new VBox(mNameLabel, mDescLabel, mLastLabel);
+            mRoot.setAlignment(Pos.CENTER_LEFT);
         }
     }
 }
