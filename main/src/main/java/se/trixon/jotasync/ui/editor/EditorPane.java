@@ -39,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.nbp.fx.FxDialogPanel;
 import se.trixon.almond.nbp.fx.NbEditableList;
 import se.trixon.almond.util.Dict;
@@ -113,6 +114,9 @@ public class EditorPane extends TabPane {
 
         });
         setTabMaxHeight(99);
+        getSelectionModel().selectedItemProperty().addListener((p, o, n) -> {
+            SwingHelper.runLater(() -> Almond.getTopComponent("LauncherTopComponent").setHtmlDisplayName("<html><b>" + n.getText()));
+        });
     }
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {

@@ -22,6 +22,7 @@ import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import se.trixon.almond.nbp.fx.FxTopComponent;
+import se.trixon.almond.util.Dict;
 import se.trixon.jotasync.ui.editor.EditorPane;
 
 /**
@@ -44,13 +45,12 @@ import se.trixon.jotasync.ui.editor.EditorPane;
         preferredID = "LauncherTopComponent"
 )
 @Messages({
-    "CTL_LauncherAction=Launcher",
-    "CTL_LauncherTopComponent=Launcher"
+    "CTL_LauncherAction=Launcher"
 })
 public final class LauncherTopComponent extends FxTopComponent {
 
     public LauncherTopComponent() {
-        setName(Bundle.CTL_LauncherTopComponent());
+        setHtmlDisplayName("<html><b>" + Dict.JOBS.toString());
         putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
         putClientProperty(TopComponent.PROP_DRAGGING_DISABLED, Boolean.TRUE);
         putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);
