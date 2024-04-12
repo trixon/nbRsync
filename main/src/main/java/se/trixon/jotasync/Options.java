@@ -26,7 +26,6 @@ public class Options extends OptionsBase {
 
     public static final String DEFAULT_PATH_RSYNC = "rsync";
     public static final String KEY_PATH_RSYNC = "path.rsync";
-    private boolean mNightMode;
 
     public static Options getInstance() {
         return Holder.INSTANCE;
@@ -38,14 +37,6 @@ public class Options extends OptionsBase {
 
     public String getRsyncPath() {
         return mPreferences.get(KEY_PATH_RSYNC, DEFAULT_PATH_RSYNC);
-    }
-
-    public boolean isNightMode() {
-        return mNightMode;
-    }
-
-    public void setNightMode(boolean nightMode) {
-        this.mNightMode = nightMode;
     }
 
     public void setRsyncPath(String value) {

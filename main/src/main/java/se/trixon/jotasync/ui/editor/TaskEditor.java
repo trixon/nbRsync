@@ -23,7 +23,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
@@ -163,14 +162,14 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, false);
 
         mListSelectionView = new ListSelectionView();
-        mListSelectionView.setSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.TASKS.toLower())));
-        mListSelectionView.setTargetHeader(new Label("%s %s".formatted(Dict.SELECTED.toString(), Dict.TASKS.toLower())));
+        mListSelectionView.setSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
+        mListSelectionView.setTargetHeader(new Label("%s %s".formatted(Dict.SELECTED.toString(), Dict.COMMANDS.toLower())));
         mListSelectionView.getSourceItems().setAll(ArgRsync.values());
-        mListSelectionView.setCellFactory((ListView<ArgRsync> param) -> {
-            ListCell<ArgRsync> x = new OptionListCell();
-            return x;
-        });
-//        mListSelectionView.setCellFactory(listView -> new OptionListCell());
+//        mListSelectionView.setCellFactory((ListView<ArgRsync> param) -> {
+//            ListCell<ArgRsync> x = new OptionListCell();
+//            return x;
+//        });
+        mListSelectionView.setCellFactory(listView -> new OptionListCell());
 
         for (var arg : ArgRsync.values()) {
             arg.setDynamicArg(null);
@@ -213,7 +212,9 @@ public class TaskEditor extends BaseEditor<Task> {
         var b = new Text(StringUtils.substringBetween(forceSourceSlash, "/"));
         var c = new Text(StringUtils.substringAfterLast(forceSourceSlash, "/"));
         b.setUnderline(true);
-        mDirForceSourceSlashCheckBox.setGraphic(new HBox(a, b, c));
+        var hBox = new HBox(a, b, c);
+        hBox.setPadding(FxHelper.getUIScaledInsets(0, 0, 0, 8));
+        mDirForceSourceSlashCheckBox.setGraphic(hBox);
         var button = new Button(mBundle.getString("TaskEditor.swapSourceDest"));
         button.setOnAction(actionEvent -> {
             var oldSource = mDirSourceFileChooser.getPathAsString();
@@ -313,7 +314,7 @@ public class TaskEditor extends BaseEditor<Task> {
         }
 
         mListSelectionView.getSourceItems().removeAll(itemsToRemove);
-        mListSelectionView.getTargetItems().setAll(selectedItems);
+//        mListSelectionView.getTargetItems().addAll(new ArrayList<>(selectedItems));
     }
 
     class OptionListCell<T extends ArgBase> extends ListCell<T> {

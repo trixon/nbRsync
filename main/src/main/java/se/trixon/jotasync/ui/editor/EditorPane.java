@@ -175,12 +175,12 @@ public class EditorPane extends TabPane {
             setCenter(mEditableList);
         }
 
-        private final Map<Class<? extends BaseItem>, Scene> mItemClassToScene = new HashMap<>();
+        private final Map<Class<? extends BaseManager>, Scene> mItemClassToScene = new HashMap<>();
 
         private void edit(String title, T item) {
             var editor = mManager.getEditor();
             editor.setPadding(FxHelper.getUIScaledInsets(2, 8, 0, 8));
-            var scene = mItemClassToScene.computeIfAbsent(item.getClass(), k -> {
+            var scene = mItemClassToScene.computeIfAbsent(mManager.getClass(), k -> {
                 return new Scene(editor);
             });
 
@@ -215,7 +215,7 @@ public class EditorPane extends TabPane {
         }
 
         private void select(T t) {
-            mEditableList.selected(t);
+            mEditableList.select(t);
         }
     }
 
