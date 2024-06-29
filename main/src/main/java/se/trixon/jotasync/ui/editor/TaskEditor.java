@@ -47,7 +47,6 @@ import se.trixon.jotasync.core.task.Task;
 import se.trixon.jotasync.ui.editor.task.ArgBase;
 import se.trixon.jotasync.ui.editor.task.ArgExclude;
 import se.trixon.jotasync.ui.editor.task.ArgRsync;
-import se.trixon.jotasync.ui.editor.task.DualListPane;
 
 /**
  *
@@ -55,7 +54,7 @@ import se.trixon.jotasync.ui.editor.task.DualListPane;
  */
 public class TaskEditor extends BaseEditor<Task> {
 
-    private DualListPane<ArgExclude> mArgExcludeDualListPane;
+    private ListSelectionView<ArgExclude> mArgExcludeListSelectionView;
 //    private DualListPane<ArgRsync> mArgRsyncDualListPane;
     private ListSelectionView<ArgRsync> mListSelectionView;
 //    private ListSelectionView<ArgRsync> mArgRsyncListSelectionView;
@@ -129,7 +128,7 @@ public class TaskEditor extends BaseEditor<Task> {
                 .toList();
         mItem.getOptionSection().setOptions(StringUtils.join(opts, " "));
 
-        var excludes = mArgExcludeDualListPane.getSelectedPane().getItems().stream()
+        var excludes = mArgExcludeListSelectionView.getTargetItems().stream()
                 .map(o -> o.getArg())
                 .toList();
         mItem.getExcludeSection().setOptions(StringUtils.join(excludes, " "));
@@ -138,17 +137,18 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private Tab createArgExcludeTab() {
-        mArgExcludeDualListPane = new DualListPane<>();
-        mArgExcludeDualListPane.getRoot().setPadding(FxHelper.getUIScaledInsets(8, 0, 16, 0));
+        mArgExcludeListSelectionView = new ListSelectionView<>();
+        mArgExcludeListSelectionView.getSourceItems().setAll(ArgExclude.values());
+        mArgExcludeListSelectionView.setCellFactory(listView -> new OptionListCell<>());
+
+        mArgExcludeListSelectionView.setPadding(FxHelper.getUIScaledInsets(8, 0, 16, 0));
         mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
-        var borderPane = new BorderPane(mArgExcludeDualListPane.getRoot());
+        var borderPane = new BorderPane(mArgExcludeListSelectionView);
         borderPane.setBottom(mRunExcludeSection);
 
         for (var arg : ArgExclude.values()) {
             arg.setDynamicArg(null);
-            mArgExcludeDualListPane.getAvailablePane().getItems().add(arg);
         }
-        mArgExcludeDualListPane.updateLists();
 
         var tab = new Tab(Dict.EXCLUDE.toString(), borderPane);
 
@@ -165,18 +165,13 @@ public class TaskEditor extends BaseEditor<Task> {
         mListSelectionView.setSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
         mListSelectionView.setTargetHeader(new Label("%s %s".formatted(Dict.SELECTED.toString(), Dict.COMMANDS.toLower())));
         mListSelectionView.getSourceItems().setAll(ArgRsync.values());
-//        mListSelectionView.setCellFactory((ListView<ArgRsync> param) -> {
-//            ListCell<ArgRsync> x = new OptionListCell();
-//            return x;
-//        });
-        mListSelectionView.setCellFactory(listView -> new OptionListCell());
+        mListSelectionView.setCellFactory(listView -> new OptionListCell<>());
 
         for (var arg : ArgRsync.values()) {
             arg.setDynamicArg(null);
 //            mArgRsyncDualListPane.getAvailablePane().getItems().add(arg);
         }
 
-//        mArgRsyncDualListPane.updateLists();
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeSection);
         int row = 0;
         var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
@@ -271,13 +266,12 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private void loadArgExcludes(String joinedOptions) {
-        var options = StringUtils.splitPreserveAllTokens(joinedOptions, " ");
-        var availableItems = mArgExcludeDualListPane.getAvailablePane().getItems();
-        var selectedItems = mArgExcludeDualListPane.getSelectedPane().getItems();
-        var itemsToRemove = new ArrayList<ArgBase>();
+        var itemsToRemove = new ArrayList<ArgExclude>();
+        var selectedItems = mArgExcludeListSelectionView.getTargetItems();
+        selectedItems.clear();
 
-        for (var optionString : options) {
-            for (var option : availableItems) {
+        for (var optionString : StringUtils.splitPreserveAllTokens(joinedOptions, " ")) {
+            for (var option : ArgExclude.values()) {
                 if (StringUtils.equals(optionString, option.getArg())) {
                     selectedItems.add(option);
                     itemsToRemove.add(option);
@@ -286,17 +280,15 @@ public class TaskEditor extends BaseEditor<Task> {
             }
         }
 
-        availableItems.removeAll(itemsToRemove);
-
-        mArgExcludeDualListPane.updateLists();
+        mArgExcludeListSelectionView.getSourceItems().removeAll(itemsToRemove);
     }
 
     private void loadArgRsync(String joinedOptions) {
-        var options = StringUtils.splitPreserveAllTokens(joinedOptions, " ");
-        var selectedItems = mListSelectionView.getTargetItems();
         var itemsToRemove = new ArrayList<ArgRsync>();
+        var selectedItems = mListSelectionView.getTargetItems();
+        selectedItems.clear();
 
-        for (var optionString : options) {
+        for (var optionString : StringUtils.splitPreserveAllTokens(joinedOptions, " ")) {
             for (var option : ArgRsync.values()) {
                 if (optionString.contains("=")) {
                     String[] elements = StringUtils.split(optionString, "=", 2);
@@ -314,7 +306,6 @@ public class TaskEditor extends BaseEditor<Task> {
         }
 
         mListSelectionView.getSourceItems().removeAll(itemsToRemove);
-//        mListSelectionView.getTargetItems().addAll(new ArrayList<>(selectedItems));
     }
 
     class OptionListCell<T extends ArgBase> extends ListCell<T> {
