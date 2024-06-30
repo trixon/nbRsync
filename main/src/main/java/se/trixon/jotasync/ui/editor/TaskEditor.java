@@ -17,7 +17,9 @@ package se.trixon.jotasync.ui.editor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -39,6 +41,7 @@ import org.controlsfx.validation.Validator;
 import org.openide.DialogDescriptor;
 import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.util.Dict;
+import se.trixon.almond.util.StringHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPaneSwingFx;
 import se.trixon.jotasync.Jota;
@@ -54,11 +57,8 @@ import se.trixon.jotasync.ui.editor.task.ArgRsync;
  */
 public class TaskEditor extends BaseEditor<Task> {
 
-    private ListSelectionView<ArgExclude> mArgExcludeListSelectionView;
-//    private DualListPane<ArgRsync> mArgRsyncDualListPane;
+    private FilterableListSelectionView<ArgExclude> mArgExcludeListSelectionView;
     private ListSelectionView<ArgRsync> mListSelectionView;
-//    private ListSelectionView<ArgRsync> mArgRsyncListSelectionView;
-
     private FileChooserPaneSwingFx mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
     private FileChooserPaneSwingFx mDirSourceFileChooser;
@@ -125,22 +125,42 @@ public class TaskEditor extends BaseEditor<Task> {
 
         var opts = mListSelectionView.getTargetItems().stream()
                 .map(o -> o.getArg())
-                .toList();
-        mItem.getOptionSection().setOptions(StringUtils.join(opts, " "));
+                .collect(Collectors.joining(" "));
+        mItem.getOptionSection().setOptions(opts);
 
-        var excludes = mArgExcludeListSelectionView.getTargetItems().stream()
+        var excludes = mArgExcludeListSelectionView.getUnfilteredTargetItems().stream()
                 .map(o -> o.getArg())
-                .toList();
-        mItem.getExcludeSection().setOptions(StringUtils.join(excludes, " "));
+                .collect(Collectors.joining(" "));
+        mItem.getExcludeSection().setOptions(excludes);
 
         return super.save();
     }
 
     private Tab createArgExcludeTab() {
-        mArgExcludeListSelectionView = new ListSelectionView<>();
-        mArgExcludeListSelectionView.getSourceItems().setAll(ArgExclude.values());
+        mArgExcludeListSelectionView = new FilterableListSelectionView<>();
         mArgExcludeListSelectionView.setCellFactory(listView -> new OptionListCell<>());
+        mArgExcludeListSelectionView.setFilterableSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
+//        mArgExcludeListSelectionView.setComparator((o1, o2) -> {
+//            return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+//        });
+        mArgExcludeListSelectionView.setFilterSourcePredicate(argExclude -> {
+            var filterText = mArgExcludeListSelectionView.getFilterText(FilterableListSelectionView.FilterMode.SOURCE);
 
+            return StringHelper.matchesSimpleGlob(filterText, true, true,
+                    argExclude.getArg(),
+                    argExclude.getLongArg(),
+                    argExclude.getShortArg(),
+                    argExclude.getTitle());
+        });
+        mArgExcludeListSelectionView.setFilterTargetPredicate(argExclude -> {
+            var filterText = mArgExcludeListSelectionView.getFilterText(FilterableListSelectionView.FilterMode.TARGET);
+
+            return StringHelper.matchesSimpleGlob(filterText, true, true,
+                    argExclude.getArg(),
+                    argExclude.getLongArg(),
+                    argExclude.getShortArg(),
+                    argExclude.getTitle());
+        });
         mArgExcludeListSelectionView.setPadding(FxHelper.getUIScaledInsets(8, 0, 16, 0));
         mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
         var borderPane = new BorderPane(mArgExcludeListSelectionView);
@@ -266,21 +286,18 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private void loadArgExcludes(String joinedOptions) {
-        var itemsToRemove = new ArrayList<ArgExclude>();
-        var selectedItems = mArgExcludeListSelectionView.getTargetItems();
-        selectedItems.clear();
+        var targetItems = FXCollections.<ArgExclude>observableArrayList();
 
         for (var optionString : StringUtils.splitPreserveAllTokens(joinedOptions, " ")) {
             for (var option : ArgExclude.values()) {
                 if (StringUtils.equals(optionString, option.getArg())) {
-                    selectedItems.add(option);
-                    itemsToRemove.add(option);
+                    targetItems.add(option);
                     break;
                 }
             }
         }
 
-        mArgExcludeListSelectionView.getSourceItems().removeAll(itemsToRemove);
+        mArgExcludeListSelectionView.filterLoad(FXCollections.observableArrayList(ArgExclude.values()), targetItems);
     }
 
     private void loadArgRsync(String joinedOptions) {
