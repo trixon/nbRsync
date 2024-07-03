@@ -16,7 +16,6 @@
 package se.trixon.jotasync.ui.editor;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -36,7 +35,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
-import org.controlsfx.control.ListSelectionView;
 import org.controlsfx.validation.Validator;
 import org.openide.DialogDescriptor;
 import se.trixon.almond.nbp.Almond;
@@ -44,6 +42,7 @@ import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.StringHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.FileChooserPaneSwingFx;
+import se.trixon.almond.util.fx.control.FilterableListSelectionView;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.TaskManager;
 import se.trixon.jotasync.core.task.Task;
@@ -58,7 +57,7 @@ import se.trixon.jotasync.ui.editor.task.ArgRsync;
 public class TaskEditor extends BaseEditor<Task> {
 
     private FilterableListSelectionView<ArgExclude> mArgExcludeListSelectionView;
-    private ListSelectionView<ArgRsync> mListSelectionView;
+    private FilterableListSelectionView<ArgRsync> mArgRsyncListSelectionView;
     private FileChooserPaneSwingFx mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
     private FileChooserPaneSwingFx mDirSourceFileChooser;
@@ -123,7 +122,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
         execute.setJobHaltOnError(mRunStopJobOnErrorCheckBox.isSelected());
 
-        var opts = mListSelectionView.getTargetItems().stream()
+        var opts = mArgRsyncListSelectionView.getUnfilteredTargetItems().stream()
                 .map(o -> o.getArg())
                 .collect(Collectors.joining(" "));
         mItem.getOptionSection().setOptions(opts);
@@ -139,27 +138,18 @@ public class TaskEditor extends BaseEditor<Task> {
     private Tab createArgExcludeTab() {
         mArgExcludeListSelectionView = new FilterableListSelectionView<>();
         mArgExcludeListSelectionView.setCellFactory(listView -> new OptionListCell<>());
-        mArgExcludeListSelectionView.setFilterableSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
+        mArgExcludeListSelectionView.setFilterSourceHeader(new Label(Dict.AVAILABLE.toString()));
+        mArgExcludeListSelectionView.setFilterTargetHeader(new Label(Dict.SELECTED.toString()));
 //        mArgExcludeListSelectionView.setComparator((o1, o2) -> {
 //            return o1.getTitle().compareToIgnoreCase(o2.getTitle());
 //        });
-        mArgExcludeListSelectionView.setFilterSourcePredicate(argExclude -> {
-            var filterText = mArgExcludeListSelectionView.getFilterText(FilterableListSelectionView.FilterMode.SOURCE);
-
-            return StringHelper.matchesSimpleGlob(filterText, true, true,
-                    argExclude.getArg(),
-                    argExclude.getLongArg(),
-                    argExclude.getShortArg(),
-                    argExclude.getTitle());
+        mArgExcludeListSelectionView.setFilterSourcePredicate(arg -> {
+            var filterText = mArgExcludeListSelectionView.getFilterTextSource();
+            return matches(arg, filterText);
         });
-        mArgExcludeListSelectionView.setFilterTargetPredicate(argExclude -> {
-            var filterText = mArgExcludeListSelectionView.getFilterText(FilterableListSelectionView.FilterMode.TARGET);
-
-            return StringHelper.matchesSimpleGlob(filterText, true, true,
-                    argExclude.getArg(),
-                    argExclude.getLongArg(),
-                    argExclude.getShortArg(),
-                    argExclude.getTitle());
+        mArgExcludeListSelectionView.setFilterTargetPredicate(arg -> {
+            var filterText = mArgExcludeListSelectionView.getFilterTextTarget();
+            return matches(arg, filterText);
         });
         mArgExcludeListSelectionView.setPadding(FxHelper.getUIScaledInsets(8, 0, 16, 0));
         mRunExcludeSection = new RunSectionPane(mBundle.getString("TaskEditor.externalFile"), false, false);
@@ -181,11 +171,18 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true, false);
         mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, false);
 
-        mListSelectionView = new ListSelectionView();
-        mListSelectionView.setSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
-        mListSelectionView.setTargetHeader(new Label("%s %s".formatted(Dict.SELECTED.toString(), Dict.COMMANDS.toLower())));
-        mListSelectionView.getSourceItems().setAll(ArgRsync.values());
-        mListSelectionView.setCellFactory(listView -> new OptionListCell<>());
+        mArgRsyncListSelectionView = new FilterableListSelectionView();
+        mArgRsyncListSelectionView.setCellFactory(listView -> new OptionListCell<>());
+        mArgRsyncListSelectionView.setFilterSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
+        mArgRsyncListSelectionView.setFilterTargetHeader(new Label("%s %s".formatted(Dict.SELECTED.toString(), Dict.COMMANDS.toLower())));
+        mArgRsyncListSelectionView.setFilterSourcePredicate(arg -> {
+            var filterText = mArgRsyncListSelectionView.getFilterTextSource();
+            return matches(arg, filterText);
+        });
+        mArgRsyncListSelectionView.setFilterTargetPredicate(arg -> {
+            var filterText = mArgRsyncListSelectionView.getFilterTextTarget();
+            return matches(arg, filterText);
+        });
 
         for (var arg : ArgRsync.values()) {
             arg.setDynamicArg(null);
@@ -198,11 +195,11 @@ public class TaskEditor extends BaseEditor<Task> {
         mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
         gp.add(mRunStopJobOnErrorCheckBox, 0, row++, GridPane.REMAINING, 1);
         gp.add(mRunBeforeSection, 0, row++, GridPane.REMAINING, 1);
-        gp.add(mListSelectionView, 0, row++, GridPane.REMAINING, 1);
+        gp.add(mArgRsyncListSelectionView, 0, row++, GridPane.REMAINING, 1);
         gp.addRow(row++, mRunAfterFailSection, mRunAfterOkSection);
         gp.add(mRunAfterSection, 0, row++, GridPane.REMAINING, 1);
         FxHelper.autoSizeColumn(gp, 2);
-        GridPane.setVgrow(mListSelectionView, Priority.ALWAYS);
+        GridPane.setVgrow(mArgRsyncListSelectionView, Priority.ALWAYS);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 8, 0), gp);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0),
                 mRunBeforeSection,
@@ -301,9 +298,7 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private void loadArgRsync(String joinedOptions) {
-        var itemsToRemove = new ArrayList<ArgRsync>();
-        var selectedItems = mListSelectionView.getTargetItems();
-        selectedItems.clear();
+        var targetItems = FXCollections.<ArgRsync>observableArrayList();
 
         for (var optionString : StringUtils.splitPreserveAllTokens(joinedOptions, " ")) {
             for (var option : ArgRsync.values()) {
@@ -311,18 +306,24 @@ public class TaskEditor extends BaseEditor<Task> {
                     String[] elements = StringUtils.split(optionString, "=", 2);
                     if (StringUtils.equals(elements[0], StringUtils.split(option.getArg(), "=", 2)[0])) {
                         option.setDynamicArg(elements[1]);
-                        selectedItems.add(option);
-                        itemsToRemove.add(option);
+                        targetItems.add(option);
                     }
                 } else if (StringUtils.equals(optionString, option.getArg())) {
-                    selectedItems.add(option);
-                    itemsToRemove.add(option);
+                    targetItems.add(option);
                     break;
                 }
             }
         }
 
-        mListSelectionView.getSourceItems().removeAll(itemsToRemove);
+        mArgRsyncListSelectionView.filterLoad(FXCollections.observableArrayList(ArgRsync.values()), targetItems);
+    }
+
+    private boolean matches(ArgBase argExclude, String filterText) {
+        return StringHelper.matchesSimpleGlob(filterText, true, true,
+                argExclude.getArg(),
+                argExclude.getLongArg(),
+                argExclude.getShortArg(),
+                argExclude.getTitle());
     }
 
     class OptionListCell<T extends ArgBase> extends ListCell<T> {
