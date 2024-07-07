@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.jotasync.ui.editor.task;
+package se.trixon.jotasync.ui.editor;
 
 import java.util.ResourceBundle;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +23,7 @@ import se.trixon.almond.util.SystemHelper;
  *
  * @author Patrik Karlström
  */
-public enum ArgRsync implements ArgBase {
+public enum TaskArgRsync implements TaskArgBase {
     ACLS("A", "acls"),
     ADDRESS(null, "address=ADDRESS"),
     APPEND(null, "append"),
@@ -142,13 +142,13 @@ public enum ArgRsync implements ArgBase {
     WRITE_BATCH(null, "write-batch=FILE"),
     _8_BIT_OUTPUT("8", "8-bit-output");
 
-    private final ResourceBundle mBundle = SystemHelper.getBundle(ArgRsync.class, "ArgRsync");
+    private final ResourceBundle mBundle = SystemHelper.getBundle(TaskArgRsync.class, "ArgRsync");
     private final String mLongArg;
     private final String mShortArg;
     private final String mTitle;
     private String mDynamicArg;
 
-    private ArgRsync(String shortArg, String longArg) {
+    private TaskArgRsync(String shortArg, String longArg) {
         mShortArg = shortArg;
         mLongArg = longArg;
         String key = name();
@@ -209,7 +209,7 @@ public enum ArgRsync implements ArgBase {
     }
 
     public static void reset() {
-        for (ArgRsync value : ArgRsync.values()) {
+        for (TaskArgRsync value : TaskArgRsync.values()) {
             value.setDynamicArg(null);
         }
     }

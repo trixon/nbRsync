@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.jotasync.ui.editor.task;
+package se.trixon.jotasync.ui.editor;
 
 /**
  *
  * @author Patrik Karlström
  */
-public interface ArgBase {
+public interface TaskArgBase {
 
     boolean filter(String filter);
 

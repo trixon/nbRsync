@@ -50,9 +50,6 @@ import se.trixon.almond.util.fx.control.FilterableListSelectionView;
 import se.trixon.jotasync.Jota;
 import se.trixon.jotasync.core.TaskManager;
 import se.trixon.jotasync.core.task.Task;
-import se.trixon.jotasync.ui.editor.task.ArgBase;
-import se.trixon.jotasync.ui.editor.task.ArgExclude;
-import se.trixon.jotasync.ui.editor.task.ArgRsync;
 
 /**
  *
@@ -60,9 +57,9 @@ import se.trixon.jotasync.ui.editor.task.ArgRsync;
  */
 public class TaskEditor extends BaseEditor<Task> {
 
-    private FilterableListSelectionView<ArgExclude> mArgExcludeListSelectionView;
-    private ListChangeListener<ArgRsync> mArgInputListener;
-    private FilterableListSelectionView<ArgRsync> mArgRsyncListSelectionView;
+    private FilterableListSelectionView<TaskArgExclude> mArgExcludeListSelectionView;
+    private ListChangeListener<TaskArgRsync> mArgInputListener;
+    private FilterableListSelectionView<TaskArgRsync> mArgRsyncListSelectionView;
     private FileChooserPaneSwingFx mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
     private FileChooserPaneSwingFx mDirSourceFileChooser;
@@ -173,7 +170,7 @@ public class TaskEditor extends BaseEditor<Task> {
         var borderPane = new BorderPane(mArgExcludeListSelectionView);
         borderPane.setBottom(mRunExcludeSection);
 
-        for (var arg : ArgExclude.values()) {
+        for (var arg : TaskArgExclude.values()) {
             arg.setDynamicArg(null);
         }
 
@@ -204,7 +201,7 @@ public class TaskEditor extends BaseEditor<Task> {
             return matches(arg, filterText);
         });
 
-        for (var arg : ArgRsync.values()) {
+        for (var arg : TaskArgRsync.values()) {
             arg.setDynamicArg(null);
 //            mArgRsyncDualListPane.getAvailablePane().getItems().add(arg);
         }
@@ -292,8 +289,8 @@ public class TaskEditor extends BaseEditor<Task> {
             }
         });
 
-        mArgInputListener = (ListChangeListener.Change<? extends ArgRsync> c) -> {
-            var cancelledArgs = new ArrayList<ArgRsync>();
+        mArgInputListener = (ListChangeListener.Change<? extends TaskArgRsync> c) -> {
+            var cancelledArgs = new ArrayList<TaskArgRsync>();
             while (c.next()) {
                 if (c.wasPermutated() || c.wasUpdated()) {
                     continue;
@@ -330,10 +327,10 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     private void loadArgExcludes(String joinedOptions) {
-        var targetItems = FXCollections.<ArgExclude>observableArrayList();
+        var targetItems = FXCollections.<TaskArgExclude>observableArrayList();
 
         for (var optionString : StringUtils.splitPreserveAllTokens(joinedOptions, " ")) {
-            for (var option : ArgExclude.values()) {
+            for (var option : TaskArgExclude.values()) {
                 if (StringUtils.equals(optionString, option.getArg())) {
                     targetItems.add(option);
                     break;
@@ -341,14 +338,14 @@ public class TaskEditor extends BaseEditor<Task> {
             }
         }
 
-        mArgExcludeListSelectionView.filterLoad(FXCollections.observableArrayList(ArgExclude.values()), targetItems);
+        mArgExcludeListSelectionView.filterLoad(FXCollections.observableArrayList(TaskArgExclude.values()), targetItems);
     }
 
     private void loadArgRsync(String joinedOptions) {
-        var targetItems = FXCollections.<ArgRsync>observableArrayList();
+        var targetItems = FXCollections.<TaskArgRsync>observableArrayList();
 
         for (var optionString : StringUtils.splitPreserveAllTokens(joinedOptions, " ")) {
-            for (var option : ArgRsync.values()) {
+            for (var option : TaskArgRsync.values()) {
                 if (optionString.contains("=")) {
                     String[] elements = StringUtils.split(optionString, "=", 2);
                     if (StringUtils.equals(elements[0], StringUtils.split(option.getArg(), "=", 2)[0])) {
@@ -362,10 +359,10 @@ public class TaskEditor extends BaseEditor<Task> {
             }
         }
 
-        mArgRsyncListSelectionView.filterLoad(FXCollections.observableArrayList(ArgRsync.values()), targetItems);
+        mArgRsyncListSelectionView.filterLoad(FXCollections.observableArrayList(TaskArgRsync.values()), targetItems);
     }
 
-    private boolean matches(ArgBase argExclude, String filterText) {
+    private boolean matches(TaskArgBase argExclude, String filterText) {
         return StringHelper.matchesSimpleGlob(filterText, true, true,
                 argExclude.getArg(),
                 argExclude.getLongArg(),
@@ -373,7 +370,7 @@ public class TaskEditor extends BaseEditor<Task> {
                 argExclude.getTitle());
     }
 
-    private String requestArg(ArgBase arg) {
+    private String requestArg(TaskArgBase arg) {
         var d = new NotifyDescriptor.InputLine(
                 arg.getLongArg(),
                 arg.getTitle(),
@@ -387,7 +384,7 @@ public class TaskEditor extends BaseEditor<Task> {
         }
     }
 
-    class OptionListCell<T extends ArgBase> extends ListCell<T> {
+    class OptionListCell<T extends TaskArgBase> extends ListCell<T> {
 
         protected final Font mDefaultFont = Font.getDefault();
         private final Label mArgLabel = new Label();
@@ -408,7 +405,7 @@ public class TaskEditor extends BaseEditor<Task> {
             }
         }
 
-        private void addContent(ArgBase argBase) {
+        private void addContent(TaskArgBase argBase) {
             setText(null);
             String separator = (StringUtils.isBlank(argBase.getLongArg()) || StringUtils.isBlank(argBase.getShortArg())) ? "" : ", ";
 

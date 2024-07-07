@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.trixon.jotasync.ui.editor.task;
+package se.trixon.jotasync.ui.editor;
 
 import java.util.ResourceBundle;
 import org.apache.commons.lang3.SystemUtils;
@@ -24,7 +24,7 @@ import static se.trixon.jotasync.core.task.TaskSection.OPT_SEPARATOR;
  *
  * @author Patrik Karlström
  */
-public enum ArgExclude implements ArgBase {
+public enum TaskArgExclude implements TaskArgBase {
     //_DUMMY_WINDOWS("should only be visible on windows", SystemUtils.IS_OS_WINDOWS),
     TEMP_DIRS("--exclude=**/*tmp*/" + OPT_SEPARATOR + "--exclude=**/*temp*/" + OPT_SEPARATOR + "--exclude=**/*Tmp*/" + OPT_SEPARATOR + "--exclude=**/*Temp*/", true),
     BACKUP_FILES("--exclude=**~", true),
@@ -36,10 +36,10 @@ public enum ArgExclude implements ArgBase {
     GVFS("--exclude=**/.gvfs/", SystemUtils.IS_OS_LINUX);
     private final boolean mActive;
     private final String mArg;
-    private final ResourceBundle mBundle = SystemHelper.getBundle(ArgExclude.class, "ArgExclude");
+    private final ResourceBundle mBundle = SystemHelper.getBundle(TaskArgExclude.class, "ArgExclude");
     private final String mTitle;
 
-    private ArgExclude(String arg, boolean active) {
+    private TaskArgExclude(String arg, boolean active) {
         mArg = arg;
         mActive = active;
         mTitle = mBundle.containsKey(name()) ? mBundle.getString(name()) : "_MISSING DESCRIPTION " + name();
