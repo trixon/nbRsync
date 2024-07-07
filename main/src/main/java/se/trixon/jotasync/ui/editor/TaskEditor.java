@@ -33,6 +33,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javax.swing.JFileChooser;
@@ -241,6 +242,12 @@ public class TaskEditor extends BaseEditor<Task> {
         var b = new Text(StringUtils.substringBetween(forceSourceSlash, "/"));
         var c = new Text(StringUtils.substringAfterLast(forceSourceSlash, "/"));
         b.setUnderline(true);
+        if (FxHelper.isDarkThemeEnabled()) {
+            var color = Color.rgb(220, 220, 220);
+            a.setFill(color);
+            b.setFill(color);
+            c.setFill(color);
+        }
         var hBox = new HBox(a, b, c);
         hBox.setPadding(FxHelper.getUIScaledInsets(0, 0, 0, 8));
         mDirForceSourceSlashCheckBox.setGraphic(hBox);
