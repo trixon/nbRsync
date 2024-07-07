@@ -16,9 +16,11 @@
 package se.trixon.jotasync.ui.editor;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -37,6 +39,8 @@ import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.Validator;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.StringHelper;
@@ -57,6 +61,7 @@ import se.trixon.jotasync.ui.editor.task.ArgRsync;
 public class TaskEditor extends BaseEditor<Task> {
 
     private FilterableListSelectionView<ArgExclude> mArgExcludeListSelectionView;
+    private ListChangeListener<ArgRsync> mArgInputListener;
     private FilterableListSelectionView<ArgRsync> mArgRsyncListSelectionView;
     private FileChooserPaneSwingFx mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
@@ -77,7 +82,13 @@ public class TaskEditor extends BaseEditor<Task> {
     }
 
     @Override
+    public void cancel() {
+        mArgRsyncListSelectionView.getUnfilteredTargetItems().removeListener(mArgInputListener);
+    }
+
+    @Override
     public void load(Task item, DialogDescriptor dialogDescriptor) {
+        mArgRsyncListSelectionView.getUnfilteredTargetItems().removeListener(mArgInputListener);
         if (item == null) {
             item = new Task();
         }
@@ -102,10 +113,16 @@ public class TaskEditor extends BaseEditor<Task> {
         getTabPane().getSelectionModel().selectFirst();
         super.load(item, dialogDescriptor);
         mItem = item;
+
+        FxHelper.runLaterDelayed(500, () -> {
+            mArgRsyncListSelectionView.getUnfilteredTargetItems().addListener(mArgInputListener);
+        });
     }
 
     @Override
     public Task save() {
+        mArgRsyncListSelectionView.getUnfilteredTargetItems().removeListener(mArgInputListener);
+
         var map = mManager.getIdToItem();
         map.putIfAbsent(mItem.getId(), mItem);
 
@@ -141,7 +158,7 @@ public class TaskEditor extends BaseEditor<Task> {
         mArgExcludeListSelectionView.setFilterSourceHeader(new Label(Dict.AVAILABLE.toString()));
         mArgExcludeListSelectionView.setFilterTargetHeader(new Label(Dict.SELECTED.toString()));
 //        mArgExcludeListSelectionView.setComparator((o1, o2) -> {
-//            return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+//            return o1.getLongArg().compareToIgnoreCase(o2.getLongArg());
 //        });
         mArgExcludeListSelectionView.setFilterSourcePredicate(arg -> {
             var filterText = mArgExcludeListSelectionView.getFilterTextSource();
@@ -175,6 +192,9 @@ public class TaskEditor extends BaseEditor<Task> {
         mArgRsyncListSelectionView.setCellFactory(listView -> new OptionListCell<>());
         mArgRsyncListSelectionView.setFilterSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
         mArgRsyncListSelectionView.setFilterTargetHeader(new Label("%s %s".formatted(Dict.SELECTED.toString(), Dict.COMMANDS.toLower())));
+        mArgRsyncListSelectionView.setComparator((o1, o2) -> {
+            return o1.getLongArg().compareToIgnoreCase(o2.getLongArg());
+        });
         mArgRsyncListSelectionView.setFilterSourcePredicate(arg -> {
             var filterText = mArgRsyncListSelectionView.getFilterTextSource();
             return matches(arg, filterText);
@@ -271,6 +291,33 @@ public class TaskEditor extends BaseEditor<Task> {
                 mDirSourceFileChooser.setPath(StringUtils.removeEnd(path, File.separator));
             }
         });
+
+        mArgInputListener = (ListChangeListener.Change<? extends ArgRsync> c) -> {
+            var cancelledArgs = new ArrayList<ArgRsync>();
+            while (c.next()) {
+                if (c.wasPermutated() || c.wasUpdated()) {
+                    continue;
+                }
+                c.getAddedSubList().stream()
+                        .filter(arg -> StringUtils.contains(arg.getLongArg(), "="))
+                        .forEachOrdered(arg -> {
+                            var input = requestArg(arg);
+                            if (input != null) {
+                                arg.setDynamicArg(input);
+                            } else {
+                                cancelledArgs.add(arg);
+                            }
+                        });
+            }
+
+            if (!cancelledArgs.isEmpty()) {
+                FxHelper.runLaterDelayed(1, () -> {
+                    mArgRsyncListSelectionView.getSourceItems().addAll(cancelledArgs);
+                    mArgRsyncListSelectionView.updateLists();
+                });
+            }
+
+        };
     }
 
     private void initValidation() {
@@ -324,6 +371,20 @@ public class TaskEditor extends BaseEditor<Task> {
                 argExclude.getLongArg(),
                 argExclude.getShortArg(),
                 argExclude.getTitle());
+    }
+
+    private String requestArg(ArgBase arg) {
+        var d = new NotifyDescriptor.InputLine(
+                arg.getLongArg(),
+                arg.getTitle(),
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE);
+        d.setInputText(arg.getDynamicArg());
+        if (NotifyDescriptor.OK_OPTION == DialogDisplayer.getDefault().notify(d)) {
+            return d.getInputText();
+        } else {
+            return null;
+        }
     }
 
     class OptionListCell<T extends ArgBase> extends ListCell<T> {

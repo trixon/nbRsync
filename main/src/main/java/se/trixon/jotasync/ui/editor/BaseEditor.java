@@ -58,6 +58,8 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         initValidation();
     }
 
+    public abstract void cancel();
+
     public GridPane getGridPane() {
         return mGridPane;
     }

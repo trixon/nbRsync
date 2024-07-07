@@ -50,6 +50,10 @@ public class JobEditor extends BaseEditor<Job> {
     }
 
     @Override
+    public void cancel() {
+    }
+
+    @Override
     public void load(Job item, DialogDescriptor dialogDescriptor) {
         if (item == null) {
             item = new Job();
@@ -61,9 +65,11 @@ public class JobEditor extends BaseEditor<Job> {
         mRunAfterOkSection.load(execute.getAfterOk());
         mRunAfterSection.load(execute.getAfter());
 
-        var tasks = item.getTasks();
-        mListSelectionView.getSourceItems().removeAll(tasks);
-        mListSelectionView.getTargetItems().setAll(tasks);
+        var selectedTasks = item.getTasks();
+        var availableTasks = new ArrayList<>(TaskManager.getInstance().getItems());
+        availableTasks.removeAll(selectedTasks);
+        mListSelectionView.getSourceItems().setAll(availableTasks);
+        mListSelectionView.getTargetItems().setAll(selectedTasks);
 
         super.load(item, dialogDescriptor);
         mItem = item;

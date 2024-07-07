@@ -68,33 +68,6 @@ public class TaskManager extends BaseManager<Task> {
 
         return tasks;
     }
-//
-//    public void setItems(ArrayList<Task> items) {
-//        mItems.clear();
-//        mItems.addAll(items);
-//    }
-//
-//    void loadHistory() {
-//        try {
-//            mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
-//            for (Task task : mItems) {
-//                loadHistory(task);
-//            }
-//        } catch (IOException ex) {
-//            Logger.getLogger(JobManager.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-//
-//    private void loadHistory(Task task) {
-//        var builder = new StringBuilder();
-//        for (var line : mHistoryLines) {
-//            var id = String.valueOf(task.getId());
-//            if (StringUtils.contains(line, id)) {
-//                builder.append(StringUtils.remove(line, id + " ")).append("\n");
-//            }
-//        }
-//        task.setHistory(builder.toString());
-//    }
 
     private static class Holder {
 

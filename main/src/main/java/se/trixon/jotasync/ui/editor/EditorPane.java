@@ -206,6 +206,8 @@ public class EditorPane extends TabPane {
                         var editedItem = editor.save();
                         select((T) mManager.getById(editedItem.getId()));
                     });
+                } else {
+                    Platform.runLater(() -> editor.cancel());
                 }
             });
         }
