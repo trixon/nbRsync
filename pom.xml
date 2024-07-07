@@ -8,16 +8,16 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>se.trixon.jotasync</groupId>
+    <groupId>se.trixon.nbrsync</groupId>
     <artifactId>parent</artifactId>
     <version>0.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>parent</name>
     <scm>
-        <url>https://github.com/trixon/jotasync</url>
-        <connection>scm:git:git://github.com/trixon/jotasync.git</connection>
-        <developerConnection>scm:git:git@github.com:trixon/jotasync.git</developerConnection>
+        <url>https://github.com/trixon/nbrsync</url>
+        <connection>scm:git:git://github.com/trixon/nbrsync.git</connection>
+        <developerConnection>scm:git:git@github.com:trixon/nbrsync.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -28,6 +28,6 @@
     </modules>
 
     <properties>
-        <brandingToken>jotasync</brandingToken>
+        <brandingToken>nbrsync</brandingToken>
     </properties>
 </project>

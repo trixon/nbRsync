@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Install: se/trixon/jotasync/boot/Installer.class
-OpenIDE-Module-Layer: se/trixon/jotasync/layer.xml
-OpenIDE-Module-Localizing-Bundle: se/trixon/jotasync/Bundle.properties
+OpenIDE-Module-Install: se/trixon/nbrsync/boot/Installer.class
+OpenIDE-Module-Layer: se/trixon/nbrsync/layer.xml
+OpenIDE-Module-Localizing-Bundle: se/trixon/nbrsync/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.WindowManager
 
