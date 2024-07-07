@@ -65,7 +65,6 @@ public class JobExecutor {
     private final InputOutput mInputOutput;
     private boolean mInterrupted;
     private final Job mJob;
-    private long mLastRun;
     private FoldHandle mMainFoldHandle;
     private int mNumOfFailedTasks;
     private Options mOptions = Options.getInstance();
@@ -100,7 +99,6 @@ public class JobExecutor {
         };
 
         mInterrupted = false;
-        mLastRun = System.currentTimeMillis();
         mStartTime = System.currentTimeMillis();
         mProgressHandle = ProgressHandle.createHandle(mJob.getName(), allowToCancel);
         mProgressHandle.start();
@@ -185,10 +183,16 @@ public class JobExecutor {
         return bundle.containsKey(key) ? bundle.getString(key) : Dict.SYSTEM_CODE.toString().formatted(key);
     }
 
-    private void jobEnded(OutputLineMode outputLineMode, String action, int status) {
+    private void jobEnded(OutputLineMode outputLineMode, String action, int exitCode) {
         mMainFoldHandle.finish();
         appendHistoryFile(getHistoryLine(mJob.getId(), action, mDryRunIndicator));
-        updateJobStatus(status);
+        if (!mDryRun) {
+            var job = mStorageManager.getJobManager().getById(mJob.getId());
+            job.setLastRun(System.currentTimeMillis());
+            job.setLastRunExitCode(exitCode);
+            FxHelper.runLater(() -> StorageManager.save());
+        }
+
         mStatusDisplayer.setStatusText(action);
         mOutputHelper.printSummary(outputLineMode, action, Dict.JOB.toString());
 //        try {
@@ -391,6 +395,10 @@ public class JobExecutor {
 
         if (doNextStep) {
             int exitValue = runRsync(task);
+            if (!mDryRun) {
+                task.setLastRun(System.currentTimeMillis());
+                task.setLastRunExitCode(exitValue);
+            }
             boolean rsyncSuccess = exitValue == 0;
             var outputLineMode = rsyncSuccess ? OutputLineMode.OK : OutputLineMode.WARNING;
             mOutputHelper.printSectionHeader(outputLineMode, Dict.DONE.toString(), "rsync", getRsyncErrorCode(exitValue));
@@ -451,13 +459,6 @@ public class JobExecutor {
                 break;
             }
         }
-    }
-
-    private void updateJobStatus(int exitCode) {
-        var job = mStorageManager.getJobManager().getById(mJob.getId());
-        job.setLastRun(mLastRun);
-        job.setLastRunExitCode(exitCode);
-        FxHelper.runLater(() -> StorageManager.save());
     }
 
     class ExecutionFailedException extends Exception {

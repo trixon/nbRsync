@@ -16,8 +16,6 @@
 package se.trixon.jotasync.core;
 
 import com.google.gson.annotations.SerializedName;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.UUID;
 import se.trixon.almond.util.fx.control.editable_list.EditableListItem;
 
@@ -62,21 +60,6 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public long getLastRun() {
         return mLastRun;
-    }
-
-    public String getLastRunDateTime(String replacement, long lastRun) {
-        String lastRunDateTime = replacement;
-
-        if (lastRun > 0) {
-            Date date = new Date(lastRun);
-            lastRunDateTime = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(date);
-        }
-
-        return lastRunDateTime;
-    }
-
-    public String getLastRunDateTime(String replacement) {
-        return getLastRunDateTime(replacement, mLastRun);
     }
 
     public int getLastRunExitCode() {
