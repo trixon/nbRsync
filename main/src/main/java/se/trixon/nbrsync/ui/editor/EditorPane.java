@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
@@ -27,15 +28,18 @@ import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.StringUtils;
 import org.openide.DialogDescriptor;
@@ -251,22 +255,68 @@ public class EditorPane extends TabPane {
             mNameLabel.setText(item.getName());
             mDescLabel.setText(StringUtils.defaultIfBlank(item.getDescription(), "-"));
             String lastRun = "-";
-            if (item.getLastRun() != 0) {
+            if (item.getLastRun() > 0) {
                 lastRun = mSimpleDateFormat.format(new Date(item.getLastRun()));
             }
             mLastLabel.setText(lastRun);
 
             mRoot.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
-                    if (item instanceof Job job) {
-                        mExecutorManager.requestStart(job);
-                    } else {
+                    if (mouseEvent.isControlDown() || item instanceof Task) {
                         var itemPane = (BaseItemPane<T>) getListView().getParent().getParent();
                         itemPane.edit(getItem());
+                    } else if (item instanceof Job job) {
+                        mExecutorManager.requestStart(job);
                     }
                 }
             });
             setGraphic(mRoot);
+
+            var sb = new StringBuilder();
+            switch (item) {
+                case Job job -> {
+                    job.getTasks().forEach(task -> {
+                        appendTask(sb, task);
+                        sb.append("\r");
+                    });
+                }
+                case Task task -> {
+                    appendTask(sb, task);
+                }
+                default -> {
+                }
+            }
+
+            for (int i = sb.length() - 1; i > 0; i--) {
+                var c = sb.charAt(i);
+
+                if (c == '\r' || c == '\n' || c == ' ') {
+                    sb.deleteCharAt(i);
+                } else {
+                    break;
+                }
+            }
+
+            var tooltip = new Tooltip(sb.toString());
+            tooltip.setShowDelay(Duration.seconds(2));
+            tooltip.setHideDelay(Duration.seconds(5));
+
+            mRoot.getChildren().stream()
+                    .filter(n -> n instanceof Control)
+                    .map(n -> (Control) n)
+                    .forEach(c -> {
+                        c.setTooltip(tooltip);
+                        c.prefWidthProperty().bind(mRoot.widthProperty());
+                    });
+        }
+
+        private void appendTask(StringBuilder sb, Task task) {
+            var command = StringUtils.remove(task.getCommandAsString(), task.getPath(task.getSource()));
+            command = StringUtils.remove(command, task.getPath(task.getDestination()));
+            sb.append(task.getName().toUpperCase(Locale.ROOT)).append("\r");
+            sb.append(task.getSource()).append("\r");
+            sb.append(task.getDestination()).append("\r");
+            sb.append(command).append("\r");
         }
 
         private void clearContent() {

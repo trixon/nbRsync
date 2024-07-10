@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,24 +61,8 @@ public class Task extends BaseItem {
             mCommand.addAll(mExcludeSection.getCommand());
         }
 
-        String source;
-        String destination;
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            var s = StringUtils.remove(mSource, ":");
-            s = StringUtils.replace(s, "\\", "/");
-            source = "/cygdrive/" + s;
-
-            var d = StringUtils.remove(mDestination, ":");
-            d = StringUtils.replace(d, "\\", "/");
-            destination = "/cygdrive/" + d;
-        } else {
-            source = mSource;
-            destination = mDestination;
-        }
-
-        add(source);
-        add(destination);
+        add(getPath(mSource));
+        add(getPath(mDestination));
 
         return mCommand;
     }
@@ -105,6 +89,10 @@ public class Task extends BaseItem {
 
     public OptionSection getOptionSection() {
         return mOptionSection;
+    }
+
+    public String getPath(String path) {
+        return SystemUtils.IS_OS_WINDOWS ? convertToWindowsCygwinPath(path) : path;
     }
 
     public String getSource() {
@@ -144,6 +132,13 @@ public class Task extends BaseItem {
         if (!mCommand.contains(command)) {
             mCommand.add(command);
         }
+    }
+
+    private String convertToWindowsCygwinPath(String path) {
+        var s = StringUtils.remove(path, ":");
+        s = StringUtils.replace(s, "\\", "/");
+
+        return "/cygdrive/" + s;
     }
 
 }

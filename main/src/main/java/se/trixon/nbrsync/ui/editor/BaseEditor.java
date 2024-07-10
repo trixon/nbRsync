@@ -73,7 +73,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         mDialogDescriptor = dialogDescriptor;
         mNameTextField.setText(item.getName());
         mDescTextField.setText(item.getDescription());
-
+        mValidationSupport.revalidate();
         mNameTextField.requestFocus();
     }
 
