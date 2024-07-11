@@ -36,7 +36,9 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
@@ -62,7 +64,6 @@ import static se.trixon.nbrsync.core.StorageManager.GSON;
 import se.trixon.nbrsync.core.TaskManager;
 import se.trixon.nbrsync.core.job.Job;
 import se.trixon.nbrsync.core.task.Task;
-import se.trixon.nbrsync.ui.UiHelper;
 
 /**
  *
@@ -70,6 +71,7 @@ import se.trixon.nbrsync.ui.UiHelper;
  */
 public class EditorPane extends TabPane {
 
+    private static final int ICON_SIZE_TOOLBAR = FxHelper.getUIScaled(32);
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final JobManager mJobManager = JobManager.getInstance();
@@ -141,7 +143,7 @@ public class EditorPane extends TabPane {
 
         private void createUI(Consumer<T> onStart) {
             mEditableList = new NbEditableList.Builder<T>()
-                    .setIconSize(UiHelper.getIconSizeToolBar())
+                    .setIconSize(ICON_SIZE_TOOLBAR)
                     .setItemSingular(mManager.getLabelSingular())
                     .setItemPlural(mManager.getLabelPlural())
                     .setOnEdit((title, item) -> {
@@ -231,7 +233,7 @@ public class EditorPane extends TabPane {
         private final Label mDescLabel = new Label();
         private final Label mLastLabel = new Label();
         private final Label mNameLabel = new Label();
-        private VBox mRoot;
+        private GridPane mRoot;
         private final SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat();
 
         public ItemListCellRenderer() {
@@ -306,7 +308,7 @@ public class EditorPane extends TabPane {
                     .map(n -> (Control) n)
                     .forEach(c -> {
                         c.setTooltip(tooltip);
-                        c.prefWidthProperty().bind(mRoot.widthProperty());
+                        FxHelper.autoSizeRegionHorizontal(c);
                     });
         }
 
@@ -332,8 +334,8 @@ public class EditorPane extends TabPane {
             mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
             mLastLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
 
-            mRoot = new VBox(mNameLabel, mDescLabel, mLastLabel);
-            mRoot.setAlignment(Pos.CENTER_LEFT);
+            mRoot = new GridPane();
+            mRoot.addColumn(0, mNameLabel, mDescLabel, mLastLabel);
         }
     }
 }
