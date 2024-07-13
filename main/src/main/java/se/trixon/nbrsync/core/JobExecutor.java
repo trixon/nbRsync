@@ -30,14 +30,15 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.progress.ProgressHandle;
+import org.openide.LifecycleManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.FoldHandle;
 import org.openide.windows.IOFolding;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import se.trixon.almond.nbp.NbHelper;
 import se.trixon.almond.nbp.output.OutputHelper;
 import se.trixon.almond.nbp.output.OutputLineMode;
 import se.trixon.almond.util.Dict;
@@ -56,11 +57,10 @@ public class JobExecutor {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
     private long mCurrentStartTime;
-    private OutputHelper mOutputHelper;
-    private long mStartTime;
     private boolean mDryRun;
     private String mDryRunIndicator = "";
     private Thread mExecutorThread;
+    private boolean mGui = NbHelper.isGui().get() == true;
     private boolean mIndeterminate = true;
     private final InputOutput mInputOutput;
     private boolean mInterrupted;
@@ -68,7 +68,9 @@ public class JobExecutor {
     private FoldHandle mMainFoldHandle;
     private int mNumOfFailedTasks;
     private Options mOptions = Options.getInstance();
+    private OutputHelper mOutputHelper;
     private ProgressHandle mProgressHandle;
+    private long mStartTime;
     private final StatusDisplayer mStatusDisplayer = StatusDisplayer.getDefault();
     private final StorageManager mStorageManager = StorageManager.getInstance();
     private boolean mTaskFailed;
@@ -76,7 +78,7 @@ public class JobExecutor {
     public JobExecutor(Job job, boolean dryRun) {
         mJob = job;
         mDryRun = dryRun;
-        mInputOutput = IOProvider.getDefault().getIO(mJob.getName(), false);
+        mInputOutput = NbHelper.getDefaultOrTrivialIOProvider().getIO(mJob.getName(), false);
         mInputOutput.select();
 
         if (mDryRun) {
@@ -108,8 +110,9 @@ public class JobExecutor {
             mOutputHelper.start();
             appendHistoryFile(getHistoryLine(mJob.getId(), Dict.STARTED.toString(), mDryRunIndicator));
             mOutputHelper.printSectionHeader(OutputLineMode.INFO, Dict.START.toString(), Dict.JOB.toLower(), mJob.getName());
-            mMainFoldHandle = IOFolding.startFold(mInputOutput, true);
-
+            if (IOFolding.isSupported(mInputOutput)) {
+                mMainFoldHandle = IOFolding.startFold(mInputOutput, true);
+            }
             if (!mJob.getTasks().isEmpty()) {
                 mInputOutput.getOut().println(Dict.TASKS.toString());
                 for (var task : mJob.getTasks()) {
@@ -155,6 +158,9 @@ public class JobExecutor {
 
             mProgressHandle.finish();
             ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
+            if (!mGui) {
+                SystemHelper.runLaterDelayed(500, () -> LifecycleManager.getDefault().exit());
+            }
         }, "JobExecutor");
 
         mExecutorThread.start();
@@ -184,7 +190,9 @@ public class JobExecutor {
     }
 
     private void jobEnded(OutputLineMode outputLineMode, String action, int exitCode) {
-        mMainFoldHandle.finish();
+        if (IOFolding.isSupported(mInputOutput)) {
+            mMainFoldHandle.finish();
+        }
         appendHistoryFile(getHistoryLine(mJob.getId(), action, mDryRunIndicator));
         if (!mDryRun) {
             var job = mStorageManager.getJobManager().getById(mJob.getId());
@@ -209,19 +217,6 @@ public class JobExecutor {
 //        }
     }
 
-//    private void printSectionHeader(Color color, String action, String type, String id) {
-//        mCurrentStartTime = System.currentTimeMillis();
-//        var text = "----   %s %s %s '%s'   ".formatted(DateHelper.nowToDateTime(), action, type, id);
-//        final int width = 80;
-//        var paddedText = StringUtils.rightPad(text, width, '-');
-//        try {
-//            IOColorLines.println(mInputOutput, "-".repeat(width), color);
-//            IOColorLines.println(mInputOutput, paddedText, color);
-//            IOColorLines.println(mInputOutput, "-".repeat(width), color);
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
     private boolean run(String command, boolean stopOnError, String description) {
         mOutputHelper.printSectionHeader(OutputLineMode.INFO, Dict.START.toString(), "'%s':".formatted(description), command);
         boolean success = false;
@@ -386,7 +381,10 @@ public class JobExecutor {
         appendHistoryFile(getHistoryLine(task.getId(), Dict.STARTED.toString(), mDryRunIndicator));
 
         mOutputHelper.printSectionHeader(OutputLineMode.INFO, Dict.START.toString(), Dict.TASK.toLower(), task.getName());
-        var foldHandle = mMainFoldHandle.startFold(true);
+        FoldHandle foldHandle = null;
+        if (IOFolding.isSupported(mInputOutput)) {
+            foldHandle = mMainFoldHandle.startFold(true);
+        }
 
         mTaskFailed = false;
         var taskExecuteSection = task.getExecuteSection();
@@ -423,7 +421,9 @@ public class JobExecutor {
         var outputLineMode = mTaskFailed ? OutputLineMode.OK : OutputLineMode.WARNING;
         mOutputHelper.printSectionHeader(outputLineMode, Dict.DONE.toString(), Dict.TASK.toLower(), task.getName());
         //TODO fix color
-        foldHandle.finish();
+        if (foldHandle != null) {
+            foldHandle.finish();
+        }
 
         boolean doNextTask = !(mTaskFailed && taskExecuteSection.isJobHaltOnError());
 

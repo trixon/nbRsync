@@ -22,12 +22,16 @@ import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Env;
+import org.openide.LifecycleManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import se.trixon.almond.nbp.NbHelper;
 import se.trixon.almond.util.PomInfo;
+import se.trixon.almond.util.SystemHelper;
 import se.trixon.nbrsync.core.ExecutorManager;
 import se.trixon.nbrsync.core.JobManager;
+import se.trixon.nbrsync.core.Rsync;
 import se.trixon.nbrsync.core.StorageManager;
 import se.trixon.nbrsync.ui.SummaryBuilder;
 
@@ -61,7 +65,6 @@ public class DoArgsProcessing implements ArgsProcessor {
     @Messages("DoArgsProcessing.version.desc=print the version information and exit")
     public boolean mVersionOption;
     private final ResourceBundle mBundle = NbBundle.getBundle(DoArgsProcessing.class);
-//    private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
 
     {
         Installer.GUI = false;
@@ -74,26 +77,27 @@ public class DoArgsProcessing implements ArgsProcessor {
     public void process(Env env) throws CommandException {
         if (mVersionOption) {
             displayVersion();
+            LifecycleManager.getDefault().exit();
         } else if (mListOption) {
             load();
             listJobs();
+            LifecycleManager.getDefault().exit();
         } else if (mStartOption != null) {
+            NbHelper.disableGui();
             load();
             startJob(mStartOption);
         }
-
-//        LifecycleManager.getDefault().exit();
     }
 
     private void displayVersion() {
-        var pomInfo = new PomInfo(SummaryBuilder.class, "se.trixon.nbrsync", "nbrsync");
+        var pomInfo = new PomInfo(SummaryBuilder.class, "se.trixon.nbrsync", "main");
         System.out.println(mBundle.getString("DoArgsProcessing.version").formatted(pomInfo.getVersion()));
+        System.out.println(SystemHelper.getSystemInfo());
+        System.out.println(Rsync.getInfo());
     }
 
     private void listJobs() {
-        for (var job : JobManager.getInstance().getItems()) {
-            System.out.println(job.getName());
-        }
+        JobManager.getInstance().getItems().forEach(job -> System.out.println(job.getName()));
     }
 
     private void load() {
@@ -107,7 +111,7 @@ public class DoArgsProcessing implements ArgsProcessor {
     private void startJob(String jobName) {
         var job = JobManager.getInstance().getByName(jobName);
         if (job != null) {
-            ExecutorManager.getInstance().start(job, false);
+            ExecutorManager.getInstance().start(job, true);
         } else {
             System.out.println("JOB NOT FOUND " + jobName);
         }

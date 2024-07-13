@@ -22,6 +22,7 @@ import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OnShowing;
 import org.openide.windows.WindowManager;
+import se.trixon.almond.nbp.NbHelper;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.nbrsync.NbRsync;
 
@@ -34,6 +35,10 @@ public class DoOnShowing implements Runnable {
 
     @Override
     public void run() {
+        if (Boolean.FALSE.equals(NbHelper.isGui().get())) {
+            return;
+        }
+
         SystemHelper.setDesktopBrowser(url -> {
             try {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(URI.create(url).toURL());
