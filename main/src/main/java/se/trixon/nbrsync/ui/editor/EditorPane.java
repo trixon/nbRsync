@@ -25,7 +25,6 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javafx.application.Platform;
-import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.control.Control;
@@ -37,8 +36,6 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
@@ -76,10 +73,18 @@ public class EditorPane extends TabPane {
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final JobManager mJobManager = JobManager.getInstance();
     private BaseItemPane mJobPane;
+    private final Consumer<Task> mOnStartTask;
     private final TaskManager mTaskManager = TaskManager.getInstance();
     private BaseItemPane mTaskPane;
 
     public EditorPane() {
+        mOnStartTask = task -> {
+            var job = new Job();
+            job.setName("(%s)".formatted(task.getName()));
+            job.getTaskIds().add(task.getId());
+            mExecutorManager.requestStart(job);
+        };
+
         createUI();
     }
 
@@ -106,7 +111,7 @@ public class EditorPane extends TabPane {
         mJobPane = new BaseItemPane<Job>(mJobManager, onStartJob) {
         };
 
-        mTaskPane = new BaseItemPane<Task>(mTaskManager, null) {
+        mTaskPane = new BaseItemPane<Task>(mTaskManager, mOnStartTask) {
         };
 
         setSide(Side.LEFT);
@@ -264,11 +269,13 @@ public class EditorPane extends TabPane {
 
             mRoot.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
-                    if (mouseEvent.isControlDown() || item instanceof Task) {
+                    if (mouseEvent.isControlDown()) {
                         var itemPane = (BaseItemPane<T>) getListView().getParent().getParent();
                         itemPane.edit(getItem());
                     } else if (item instanceof Job job) {
                         mExecutorManager.requestStart(job);
+                    } else if (item instanceof Task task) {
+                        mOnStartTask.accept(task);
                     }
                 }
             });
