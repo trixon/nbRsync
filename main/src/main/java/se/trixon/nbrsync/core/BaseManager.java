@@ -15,17 +15,13 @@
  */
 package se.trixon.nbrsync.core;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import se.trixon.nbrsync.ui.editor.BaseEditor;
 
@@ -35,7 +31,6 @@ import se.trixon.nbrsync.ui.editor.BaseEditor;
  */
 public abstract class BaseManager<T extends BaseItem> {
 
-    private List<String> mHistoryLines = new ArrayList<>();
     private final ObjectProperty<ObservableMap<String, T>> mIdToItemProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<ObservableList<T>> mItemsProperty = new SimpleObjectProperty<>();
 
@@ -97,37 +92,5 @@ public abstract class BaseManager<T extends BaseItem> {
 
     public ObjectProperty<ObservableList<T>> itemsProperty() {
         return mItemsProperty;
-    }
-
-    void loadHistory() {
-        try {
-            mHistoryLines = FileUtils.readLines(StorageManager.getInstance().getHistoryFile(), Charset.defaultCharset());
-            for (var item : getIdToItem().values()) {
-                loadHistory(item);
-            }
-        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-        }
-    }
-
-//    void setItems(ObservableList<T> items) {
-//        mItemsProperty.get().setAll(items);
-//        if (!items.isEmpty() && items.get(0) instanceof Job job) {
-//            getIdToItem().forEach(item -> {
-////                job.setTasks(TaskManager.getInstance().getIdToItem(job.getTaskIds()));
-//            });
-//        }
-//    }
-    private void loadHistory(T item) {
-        var builder = new StringBuilder();
-
-        for (var line : mHistoryLines) {
-            var id = String.valueOf(item.getId());
-            if (StringUtils.contains(line, id)) {
-                builder.append(StringUtils.remove(line, id + " ")).append("\n");
-            }
-        }
-
-        item.setHistory(builder.toString());
     }
 }

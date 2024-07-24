@@ -201,10 +201,13 @@ public class EditorPane extends TabPane {
                     setScene(scene);
                 }
             };
-            dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 800));
 
+            if (editor instanceof JobEditor) {
+                dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(900, 550));
+            } else {
+                dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 800));
+            }
             SwingUtilities.invokeLater(() -> {
-                editor.setPrefSize(FxHelper.getUIScaled(600), FxHelper.getUIScaled(660));
                 var d = new DialogDescriptor(dialogPanel, title);
                 d.setValid(false);
                 dialogPanel.setNotifyDescriptor(d);

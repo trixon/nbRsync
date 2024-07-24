@@ -30,6 +30,10 @@ import se.trixon.nbrsync.core.task.Task;
  */
 public class Job extends BaseItem {
 
+    @SerializedName("cronActivated")
+    private boolean mCronActivated;
+    @SerializedName("cronItems")
+    private String mCronItems = "";
     @SerializedName("executeSection")
     private final JobExecuteSection mExecuteSection;
     private final transient ObjectProperty<ProcessState> mProcessStateProperty = new SimpleObjectProperty<>(ProcessState.STARTABLE);
@@ -45,6 +49,10 @@ public class Job extends BaseItem {
         mName = name;
         mDescription = description;
         mExecuteSection = new JobExecuteSection();
+    }
+
+    public String getCronItems() {
+        return mCronItems;
     }
 
     public JobExecuteSection getExecuteSection() {
@@ -71,8 +79,20 @@ public class Job extends BaseItem {
         return tasks;
     }
 
+    public boolean isCronActivated() {
+        return mCronActivated;
+    }
+
     public ObjectProperty<ProcessState> processStateProperty() {
         return mProcessStateProperty;
+    }
+
+    public void setCronActivated(boolean cronActivated) {
+        mCronActivated = cronActivated;
+    }
+
+    public void setCronItems(String cronItems) {
+        mCronItems = cronItems;
     }
 
     public void setProcessStateProperty(ProcessState processState) {

@@ -107,7 +107,6 @@ public class StorageManager {
             var jobItems = mJobManager.getIdToItem();
             jobItems.clear();
             jobItems.putAll(mStorage.getJobs());
-            mJobManager.loadHistory();
         } else {
             mStorage = new Storage();
         }

@@ -16,15 +16,22 @@
 package se.trixon.nbrsync.ui.editor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
 import org.openide.DialogDescriptor;
+import se.trixon.almond.nbp.fx.NbCronPane;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.almond.util.fx.dialogs.cron.CronItem;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.nbrsync.core.JobManager;
 import se.trixon.nbrsync.core.TaskManager;
@@ -37,6 +44,8 @@ import se.trixon.nbrsync.core.task.Task;
  */
 public class JobEditor extends BaseEditor<Job> {
 
+    private CheckBox mActivatedCheckBox = new CheckBox(Dict.ACTIVE.toString());
+    private NbCronPane mCronPane;
     private Job mItem;
     private ListSelectionView<Task> mListSelectionView;
     private RunSectionPane mRunAfterFailSection;
@@ -71,6 +80,10 @@ public class JobEditor extends BaseEditor<Job> {
         mListSelectionView.getSourceItems().setAll(availableTasks);
         mListSelectionView.getTargetItems().setAll(selectedTasks);
 
+        mActivatedCheckBox.setSelected(item.isCronActivated());
+        var cronItems = Arrays.stream(StringUtils.split(item.getCronItems(), "\n")).map(s -> new CronItem(s)).toList();
+        mCronPane.getItems().setAll(cronItems);
+
         super.load(item, dialogDescriptor);
         mItem = item;
     }
@@ -90,6 +103,8 @@ public class JobEditor extends BaseEditor<Job> {
                 .map(task -> task.getId())
                 .toList();
         mItem.setTaskIds(new ArrayList<>(taskIds));
+        mItem.setCronActivated(mActivatedCheckBox.isSelected());
+        mItem.setCronItems(String.join("\n", mCronPane.getItems().stream().sorted().map(c -> c.getName()).toList()));
 
         return super.save();
     }
@@ -125,15 +140,35 @@ public class JobEditor extends BaseEditor<Job> {
         mListSelectionView.getSourceItems().addAll(TaskManager.getInstance().getItems());
         mListSelectionView.getTargetActions().addAll(createTaskTargetActions());
 
+        var headerLabelStyle = "-fx-font-size: %dpx;".formatted((int) (FxHelper.getScaledFontSize() * 1.4));
+        var runLabel = new Label(Dict.RUN.toString());
+        runLabel.setStyle(headerLabelStyle);
+        var runBox = new VBox(FxHelper.getUIScaled(16),
+                mRunBeforeSection,
+                mRunAfterFailSection,
+                mRunAfterOkSection,
+                mRunAfterSection
+        );
+        var runBorderPane = new BorderPane(runBox);
+        runBorderPane.setTop(runLabel);
+
+        var cronLabel = new Label(Dict.SCHEDULER.toString());
+        cronLabel.setStyle(headerLabelStyle);
+
+        mCronPane = new NbCronPane(24);
+        mCronPane.getEditableList().setPrefHeight(100);
+        var cronBorderPane = new BorderPane(mCronPane.getEditableList());
+        var cronBox = new VBox(cronLabel, mActivatedCheckBox);
+        cronBorderPane.setTop(cronBox);
+        mCronPane.getEditableList().disableProperty().bind(mActivatedCheckBox.selectedProperty().not());
+
         int row = 0;
         var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
-        gp.add(mRunBeforeSection, 0, row++, GridPane.REMAINING, 1);
         gp.add(mListSelectionView, 0, row++, GridPane.REMAINING, 1);
-        gp.addRow(row++, mRunAfterFailSection, mRunAfterOkSection);
-        gp.add(mRunAfterSection, 0, row++, GridPane.REMAINING, 1);
+        gp.addRow(row++, runBorderPane, cronBorderPane);
         FxHelper.autoSizeColumn(gp, 2);
         GridPane.setVgrow(mListSelectionView, Priority.ALWAYS);
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 8, 0), gp);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 8, 0), gp, mActivatedCheckBox);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0),
                 mRunBeforeSection,
                 mListSelectionView,

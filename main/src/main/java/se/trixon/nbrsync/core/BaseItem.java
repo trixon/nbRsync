@@ -35,7 +35,6 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
     protected int mLastRunExitCode = -1;
     @SerializedName("name")
     protected String mName = "";
-    private transient String mHistory = "";
 
     public BaseItem() {
 
@@ -48,10 +47,6 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public String getDescription() {
         return mDescription;
-    }
-
-    public String getHistory() {
-        return mHistory;
     }
 
     public String getId() {
@@ -89,10 +84,6 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public void setDescription(String description) {
         mDescription = description;
-    }
-
-    public void setHistory(String history) {
-        mHistory = history == null ? "" : history;
     }
 
     public void setId(String id) {
