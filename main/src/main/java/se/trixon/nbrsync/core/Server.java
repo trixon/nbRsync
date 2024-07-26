@@ -69,10 +69,12 @@ public class Server {
     }
 
     public void markForReload() {
-        try {
-            FileUtils.touch(mReloadFile);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (isServerLocked()) {
+            try {
+                FileUtils.touch(mReloadFile);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -142,6 +144,7 @@ public class Server {
         if (mServerFile.exists()) {
             System.out.println("Stopping nbRsync server...");
             delete(mServerFile);
+            delete(mReloadFile);
         } else {
             System.out.println("nbRsync server not running!");
         }
@@ -153,10 +156,12 @@ public class Server {
     }
 
     private void delete(File file) {
-        try {
-            FileUtils.forceDelete(file);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (file.exists()) {
+            try {
+                FileUtils.forceDelete(file);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -180,7 +185,7 @@ public class Server {
                     job.getCronItemsAsList().stream().map(c -> c.getName()).forEachOrdered(cronString -> {
                         System.out.println("\t%s".formatted(cronString));
                         mScheduler.schedule(cronString, () -> {
-                            if (mExecutorManager.getJobExecutors().containsKey(job.getId())) {
+                            if (job.isLocked()) {
                                 System.out.println("Skipping already running job: %s".formatted(job.getName()));
                             } else {
                                 mExecutorManager.start(job, false);

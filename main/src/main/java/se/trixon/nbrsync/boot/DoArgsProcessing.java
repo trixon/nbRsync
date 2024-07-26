@@ -17,6 +17,7 @@ package se.trixon.nbrsync.boot;
 
 import java.io.IOException;
 import java.util.ResourceBundle;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Arg;
@@ -30,6 +31,7 @@ import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.nbp.NbHelper;
 import se.trixon.almond.util.PomInfo;
 import se.trixon.almond.util.SystemHelper;
+import se.trixon.nbrsync.NbRsync;
 import se.trixon.nbrsync.core.ExecutorManager;
 import se.trixon.nbrsync.core.JobManager;
 import se.trixon.nbrsync.core.Rsync;
@@ -59,6 +61,13 @@ public class DoArgsProcessing implements ArgsProcessor {
         "DoArgsProcessing.start.desc=start job"
     })
     public String mStartOption;
+
+    @Arg(longName = "remove-locks")
+    @Description(
+            shortDescription = "#DoArgsProcessing.remove-locks.desc"
+    )
+    @Messages("DoArgsProcessing.remove-locks.desc=remove locks for running jobs")
+    public boolean mRemoveLocksOption;
 
     @Arg(longName = "start-server")
     @Description(
@@ -103,6 +112,10 @@ public class DoArgsProcessing implements ArgsProcessor {
             NbHelper.disableGui();
             load();
             startJob(mStartOption);
+            LifecycleManager.getDefault().exit();
+        } else if (mRemoveLocksOption) {
+            removeLocks();
+            LifecycleManager.getDefault().exit();
         }
     }
 
@@ -131,10 +144,22 @@ public class DoArgsProcessing implements ArgsProcessor {
         }
     }
 
+    private void removeLocks() {
+        try {
+            FileUtils.forceDelete(NbRsync.getRunningJobsDirectory());
+        } catch (IOException ex) {
+            //nvm
+        }
+    }
+
     private void startJob(String jobName) {
         var job = JobManager.getInstance().getByName(jobName);
         if (job != null) {
-            ExecutorManager.getInstance().start(job, true);
+            if (job.isLocked()) {
+                System.out.println("Skipping already running job: %s".formatted(job.getName()));
+            } else {
+                ExecutorManager.getInstance().start(job, true);
+            }
         } else {
             System.out.println("JOB NOT FOUND " + jobName);
         }

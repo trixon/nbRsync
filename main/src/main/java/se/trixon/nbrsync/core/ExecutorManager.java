@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import se.trixon.almond.nbp.dialogs.NbMessage;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.almond.util.swing.dialogs.HtmlPanel;
@@ -48,6 +49,11 @@ public class ExecutorManager {
     }
 
     public void requestStart(Job job) {
+        if (job.isLocked()) {
+            NbMessage.error(Dict.Dialog.ERROR.toString(), "Job already running.");
+            return;
+        }
+
         var jobValidator = new JobValidator(job);
         var htmlPanel = new HtmlPanel();
         var dryRunButton = new JButton(Dict.DRY_RUN.toString());
@@ -88,6 +94,7 @@ public class ExecutorManager {
     public void start(Job job, boolean dryRun) {
         var jobExecutor = new JobExecutor(job, dryRun);
         mJobExecutors.put(job.getId(), jobExecutor);
+        job.setLocked(true);
         jobExecutor.run();
     }
 

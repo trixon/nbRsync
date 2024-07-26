@@ -17,31 +17,40 @@ package se.trixon.nbrsync.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.nbp.dialogs.NbMessage;
 import se.trixon.almond.util.Dict;
-import se.trixon.nbrsync.core.Server;
+import se.trixon.nbrsync.NbRsync;
 
 @ActionID(
         category = "Tools",
-        id = "se.trixon.nbrsync.actions.StopServerAction"
+        id = "se.trixon.nbrsync.actions.RemoveLocksAction"
 )
 @ActionRegistration(
-        displayName = "#CTL_StopServerAction"
+        displayName = "#CTL_RemoveLocksAction"
 )
-@ActionReference(path = "Menu/Tools", position = 0)
-@Messages("CTL_StopServerAction=Stop server")
-public final class StopServerAction implements ActionListener {
+@ActionReference(path = "Menu/Tools", position = 50, separatorAfter = 75)
+@Messages("CTL_RemoveLocksAction=Remove locks")
+public final class RemoveLocksAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (Server.getInstance().isServerLocked()) {
-            Server.getInstance().stopFromGui();
-        } else {
-            NbMessage.error(Dict.Dialog.ERROR.toString(), "nbRsync server is not running.");
+        try {
+            var locks = NbRsync.getRunningJobsDirectory();
+            if (locks.isDirectory()) {
+                FileUtils.forceDelete(locks);
+                NbMessage.information(Dict.INFORMATION.toString(), "Locks removed");
+            } else {
+                NbMessage.warning(Dict.WARNING.toString(), "There are no locks.");
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

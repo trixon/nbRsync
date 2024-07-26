@@ -16,13 +16,18 @@
 package se.trixon.nbrsync.core.job;
 
 import com.google.gson.annotations.SerializedName;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.openide.util.Exceptions;
 import se.trixon.almond.util.fx.dialogs.cron.CronItem;
+import se.trixon.nbrsync.NbRsync;
 import se.trixon.nbrsync.core.BaseItem;
 import se.trixon.nbrsync.core.ProcessState;
 import se.trixon.nbrsync.core.TaskManager;
@@ -91,6 +96,10 @@ public class Job extends BaseItem {
         return mCronActivated;
     }
 
+    public boolean isLocked() {
+        return getLockFile().isFile();
+    }
+
     public boolean isScheduled() {
         return isCronActivated() && !getCronItemsAsList().isEmpty();
     }
@@ -107,6 +116,18 @@ public class Job extends BaseItem {
         mCronItems = cronItems;
     }
 
+    public void setLocked(boolean locked) {
+        try {
+            if (locked) {
+                FileUtils.touch(getLockFile());
+            } else {
+                FileUtils.forceDelete(getLockFile());
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     public void setProcessStateProperty(ProcessState processState) {
         mProcessStateProperty.set(processState);
     }
@@ -118,5 +139,9 @@ public class Job extends BaseItem {
     @Override
     public String toString() {
         return getName();
+    }
+
+    private File getLockFile() {
+        return new File(NbRsync.getRunningJobsDirectory(), getId());
     }
 }

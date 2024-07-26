@@ -15,7 +15,9 @@
  */
 package se.trixon.nbrsync;
 
+import java.io.File;
 import java.io.IOException;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import se.trixon.almond.nbp.output.OutputHelper;
@@ -32,6 +34,7 @@ import se.trixon.nbrsync.core.Rsync;
 public class NbRsync {
 
     public static final String GSC_EDITOR = "key.editor";
+    private static File sRunningJobsDirectory = new File(Places.getUserDirectory(), "runningJobs");
     private final GlobalState mGlobalState = new GlobalState();
 
     public static void displaySystemInformation() {
@@ -51,6 +54,10 @@ public class NbRsync {
 
     public static NbRsync getInstance() {
         return Holder.INSTANCE;
+    }
+
+    public static File getRunningJobsDirectory() {
+        return sRunningJobsDirectory;
     }
 
     private NbRsync() {

@@ -95,6 +95,7 @@ public class JobExecutor {
             mInterrupted = true;
             mProgressHandle.finish();
             ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
+            mJob.setLocked(false);
             jobEnded(OutputLineMode.WARNING, Dict.CANCELED.toString(), 99);
 
             return true;
@@ -158,6 +159,7 @@ public class JobExecutor {
 
             mProgressHandle.finish();
             ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
+            mJob.setLocked(false);
             if (!mGui && !Server.getInstance().isRunning()) {
                 SystemHelper.runLaterDelayed(500, () -> LifecycleManager.getDefault().exit());
             }
