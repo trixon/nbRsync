@@ -17,8 +17,12 @@ package se.trixon.nbrsync.core.job;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.apache.commons.lang3.StringUtils;
+import se.trixon.almond.util.fx.dialogs.cron.CronItem;
 import se.trixon.nbrsync.core.BaseItem;
 import se.trixon.nbrsync.core.ProcessState;
 import se.trixon.nbrsync.core.TaskManager;
@@ -55,6 +59,10 @@ public class Job extends BaseItem {
         return mCronItems;
     }
 
+    public List<CronItem> getCronItemsAsList() {
+        return Arrays.stream(StringUtils.split(getCronItems(), "|")).map(s -> new CronItem(s)).toList();
+    }
+
     public JobExecuteSection getExecuteSection() {
         return mExecuteSection;
     }
@@ -81,6 +89,10 @@ public class Job extends BaseItem {
 
     public boolean isCronActivated() {
         return mCronActivated;
+    }
+
+    public boolean isScheduled() {
+        return isCronActivated() && !getCronItemsAsList().isEmpty();
     }
 
     public ObjectProperty<ProcessState> processStateProperty() {

@@ -16,7 +16,6 @@
 package se.trixon.nbrsync.ui.editor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -24,14 +23,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
 import org.openide.DialogDescriptor;
 import se.trixon.almond.nbp.fx.NbCronPane;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
-import se.trixon.almond.util.fx.dialogs.cron.CronItem;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.nbrsync.core.JobManager;
 import se.trixon.nbrsync.core.TaskManager;
@@ -81,8 +78,7 @@ public class JobEditor extends BaseEditor<Job> {
         mListSelectionView.getTargetItems().setAll(selectedTasks);
 
         mActivatedCheckBox.setSelected(item.isCronActivated());
-        var cronItems = Arrays.stream(StringUtils.split(item.getCronItems(), "\n")).map(s -> new CronItem(s)).toList();
-        mCronPane.getItems().setAll(cronItems);
+        mCronPane.getItems().setAll(item.getCronItemsAsList());
 
         super.load(item, dialogDescriptor);
         mItem = item;
@@ -104,7 +100,7 @@ public class JobEditor extends BaseEditor<Job> {
                 .toList();
         mItem.setTaskIds(new ArrayList<>(taskIds));
         mItem.setCronActivated(mActivatedCheckBox.isSelected());
-        mItem.setCronItems(String.join("\n", mCronPane.getItems().stream().sorted().map(c -> c.getName()).toList()));
+        mItem.setCronItems(String.join("|", mCronPane.getItems().stream().sorted().map(c -> c.getName()).toList()));
 
         return super.save();
     }

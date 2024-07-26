@@ -56,6 +56,7 @@ import se.trixon.nbrsync.core.BaseItem;
 import se.trixon.nbrsync.core.BaseManager;
 import se.trixon.nbrsync.core.ExecutorManager;
 import se.trixon.nbrsync.core.JobManager;
+import se.trixon.nbrsync.core.Server;
 import se.trixon.nbrsync.core.StorageManager;
 import static se.trixon.nbrsync.core.StorageManager.GSON;
 import se.trixon.nbrsync.core.TaskManager;
@@ -207,6 +208,7 @@ public class EditorPane extends TabPane {
             } else {
                 dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 800));
             }
+
             SwingUtilities.invokeLater(() -> {
                 var d = new DialogDescriptor(dialogPanel, title);
                 d.setValid(false);
@@ -219,6 +221,7 @@ public class EditorPane extends TabPane {
                     Platform.runLater(() -> {
                         var editedItem = editor.save();
                         select((T) mManager.getById(editedItem.getId()));
+                        Server.getInstance().markForReload();
                     });
                 } else {
                     Platform.runLater(() -> editor.cancel());

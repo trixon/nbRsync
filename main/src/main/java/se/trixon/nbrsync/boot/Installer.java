@@ -18,7 +18,6 @@ package se.trixon.nbrsync.boot;
 import java.io.IOException;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
-import se.trixon.almond.util.SystemHelper;
 import se.trixon.nbrsync.core.StorageManager;
 
 /**
@@ -27,7 +26,6 @@ import se.trixon.nbrsync.core.StorageManager;
  */
 public class Installer extends ModuleInstall {
 
-    static boolean GUI = true;
     private final StorageManager mStorageManager = StorageManager.getInstance();
 
     @Override
@@ -37,12 +35,5 @@ public class Installer extends ModuleInstall {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        //Give ArgsProcessor a chance to disable GUI
-        SystemHelper.runLaterDelayed(100, () -> {
-            if (GUI) {
-//                App.main(null);
-            }
-        });
     }
-
 }

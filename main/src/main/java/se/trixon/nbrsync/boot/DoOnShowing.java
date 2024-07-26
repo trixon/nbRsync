@@ -23,8 +23,11 @@ import org.openide.windows.IOContainer;
 import org.openide.windows.OnShowing;
 import org.openide.windows.WindowManager;
 import se.trixon.almond.nbp.NbHelper;
+import se.trixon.almond.nbp.dialogs.NbMessage;
+import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.nbrsync.NbRsync;
+import se.trixon.nbrsync.core.Server;
 
 /**
  *
@@ -63,5 +66,21 @@ public class DoOnShowing implements Runnable {
         }
 
         NbRsync.displaySystemInformation();
+
+        var server = Server.getInstance();
+
+        if (server.isServerLocked()) {
+            NbMessage.information(Dict.INFORMATION.toString(), "nbRsync server is running in the background.\nConfiguration changes will be applied immediately.");
+        }
+
+        server.getStartMonitors().add(() -> {
+            NbMessage.information(Dict.INFORMATION.toString(), "nbRsync server started.");
+        });
+
+        server.getStopMonitors().add(() -> {
+            NbMessage.information(Dict.INFORMATION.toString(), "nbRsync server stopped.");
+        });
+
+        server.startMonitor();
     }
 }

@@ -158,7 +158,7 @@ public class JobExecutor {
 
             mProgressHandle.finish();
             ExecutorManager.getInstance().getJobExecutors().remove(mJob.getId());
-            if (!mGui) {
+            if (!mGui && !Server.getInstance().isRunning()) {
                 SystemHelper.runLaterDelayed(500, () -> LifecycleManager.getDefault().exit());
             }
         }, "JobExecutor");
@@ -198,7 +198,12 @@ public class JobExecutor {
             var job = mStorageManager.getJobManager().getById(mJob.getId());
             job.setLastRun(System.currentTimeMillis());
             job.setLastRunExitCode(exitCode);
-            FxHelper.runLater(() -> StorageManager.save());
+            Runnable saver = () -> StorageManager.save();
+            if (Server.getInstance().isRunning()) {
+                saver.run();
+            } else {
+                FxHelper.runLater(saver);
+            }
         }
 
         mStatusDisplayer.setStatusText(action);
