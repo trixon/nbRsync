@@ -17,6 +17,7 @@ package se.trixon.nbrsync;
 
 import java.io.File;
 import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
@@ -34,8 +35,20 @@ import se.trixon.nbrsync.core.Rsync;
 public class NbRsync {
 
     public static final String GSC_EDITOR = "key.editor";
-    private static File sRunningJobsDirectory = new File(Places.getUserDirectory(), "runningJobs");
+    private static final File sRunningJobsDirectory = new File(Places.getUserDirectory(), "runningJobs");
     private final GlobalState mGlobalState = new GlobalState();
+
+    public static void delete(File... files) {
+        for (var file : files) {
+            if (file.exists()) {
+                try {
+                    FileUtils.forceDelete(file);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
 
     public static void displaySystemInformation() {
         var io = IOProvider.getDefault().getIO(Dict.INFORMATION.toString(), false);

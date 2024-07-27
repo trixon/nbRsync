@@ -30,6 +30,7 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.openide.LifecycleManager;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
+import se.trixon.nbrsync.NbRsync;
 
 /**
  *
@@ -38,10 +39,11 @@ import org.openide.util.Exceptions;
 public class Server {
 
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
+    private final File mLockFile = new File(Places.getUserDirectory(), "lock");
     private final JobManager mManager = JobManager.getInstance();
     private final File mReloadFile = new File(Places.getUserDirectory(), "server_marked_for_reload");
     private Scheduler mScheduler;
-    private final File mServerFile = new File(Places.getUserDirectory(), "server");
+    private final File mServerFile = new File(Places.getUserDirectory(), "runningServer");
     private final ArrayList<Runnable> mStartMonitors = new ArrayList<>();
     private final ArrayList<Runnable> mStopMonitors = new ArrayList<>();
 
@@ -85,7 +87,7 @@ public class Server {
         }
 
         try {
-            FileUtils.forceDelete(new File(Places.getUserDirectory(), "lock"));
+            FileUtils.forceDelete(mLockFile);
             FileUtils.touch(mServerFile);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -143,8 +145,7 @@ public class Server {
     public void stop() {
         if (mServerFile.exists()) {
             System.out.println("Stopping nbRsync server...");
-            delete(mServerFile);
-            delete(mReloadFile);
+            NbRsync.delete(mServerFile, mReloadFile);
         } else {
             System.out.println("nbRsync server not running!");
         }
@@ -152,17 +153,7 @@ public class Server {
     }
 
     public void stopFromGui() {
-        delete(mServerFile);
-    }
-
-    private void delete(File file) {
-        if (file.exists()) {
-            try {
-                FileUtils.forceDelete(file);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        NbRsync.delete(mServerFile);
     }
 
     private boolean hasScheduledJobs() {
@@ -204,7 +195,7 @@ public class Server {
     private void reload() {
         System.out.println("Reloading configuration...");
         try {
-            delete(mReloadFile);
+            NbRsync.delete(mReloadFile);
             mScheduler.stop();
             StorageManager.getInstance().load();
             load();
