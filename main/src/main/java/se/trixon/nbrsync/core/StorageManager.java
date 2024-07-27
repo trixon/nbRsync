@@ -22,8 +22,6 @@ import com.google.gson.annotations.SerializedName;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import javafx.collections.ObservableMap;
 import org.apache.commons.io.FileUtils;
@@ -46,7 +44,6 @@ public class StorageManager {
 
     private final File mHistoryFile;
     private final JobManager mJobManager = JobManager.getInstance();
-    private final File mProfilesBackupFile;
     private final File mProfilesFile;
     private Storage mStorage = new Storage();
     private final TaskManager mTaskManager = TaskManager.getInstance();
@@ -68,7 +65,6 @@ public class StorageManager {
         mUserDirectory = Places.getUserDirectory();
 
         mProfilesFile = new File(mUserDirectory, "profiles.json");
-        mProfilesBackupFile = new File(mUserDirectory, "profiles.bak");
         mHistoryFile = new File(mUserDirectory, "var/history");
     }
 
@@ -98,7 +94,7 @@ public class StorageManager {
 
     public void load() throws IOException {
         if (mProfilesFile.exists()) {
-            mStorage = mStorage.open(mProfilesFile);
+            mStorage = Storage.open(mProfilesFile);
 
             var taskItems = mTaskManager.getIdToItem();
             taskItems.clear();
@@ -115,9 +111,7 @@ public class StorageManager {
     private void saveToFile() throws IOException {
         mStorage.setJobs(mJobManager.getIdToItem());
         mStorage.setTasks(mTaskManager.getIdToItem());
-        String json = mStorage.save(mProfilesFile);
-        String tag = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        FileUtils.writeStringToFile(mProfilesBackupFile, String.format("%s=%s\n", tag, json), Charset.defaultCharset(), true);
+        mStorage.save(mProfilesFile);
 
         load(); //This will refresh and sort ListViews
     }
