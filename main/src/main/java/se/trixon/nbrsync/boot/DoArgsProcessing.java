@@ -16,6 +16,7 @@
 package se.trixon.nbrsync.boot;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ResourceBundle;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import se.trixon.almond.nbp.NbHelper;
+import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.PomInfo;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.nbrsync.NbRsync;
@@ -62,13 +64,6 @@ public class DoArgsProcessing implements ArgsProcessor {
     })
     public String mStartOption;
 
-    @Arg(longName = "remove-locks")
-    @Description(
-            shortDescription = "#DoArgsProcessing.remove-locks.desc"
-    )
-    @Messages("DoArgsProcessing.remove-locks.desc=remove locks for running jobs")
-    public boolean mRemoveLocksOption;
-
     @Arg(longName = "start-server")
     @Description(
             shortDescription = "#DoArgsProcessing.start-server.desc"
@@ -82,6 +77,13 @@ public class DoArgsProcessing implements ArgsProcessor {
     )
     @Messages("DoArgsProcessing.stop-server.desc=stop server")
     public boolean mStopServerOption;
+
+    @Arg(longName = "remove-locks")
+    @Description(
+            shortDescription = "#DoArgsProcessing.remove-locks.desc"
+    )
+    @Messages("DoArgsProcessing.remove-locks.desc=remove locks for jobs")
+    public boolean mRemoveLocksOption;
 
     @Arg(longName = "version")
     @Description(
@@ -156,12 +158,19 @@ public class DoArgsProcessing implements ArgsProcessor {
         var job = JobManager.getInstance().getByName(jobName);
         if (job != null) {
             if (job.isLocked()) {
-                System.out.println("Skipping already running job: %s".formatted(job.getName()));
+                System.out.println(mBundle.getString("skipRunningJob").formatted(job.getName()));
             } else {
-                ExecutorManager.getInstance().start(job, true);
+                ExecutorManager.getInstance().start(job, false);
+                while (true) {
+                    try {
+                        Thread.sleep(Duration.ofDays(1));
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
         } else {
-            System.out.println("JOB NOT FOUND " + jobName);
+            System.out.println("%s: %s".formatted(Dict.JOB_NOT_FOUND.toString(), jobName));
         }
     }
 }

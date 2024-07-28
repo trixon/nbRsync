@@ -41,7 +41,7 @@ public final class StopServerAction implements ActionListener {
         if (Server.getInstance().isServerLocked()) {
             Server.getInstance().stopFromGui();
         } else {
-            NbMessage.error(Dict.Dialog.ERROR.toString(), "nbRsync server is not running.");
+            NbMessage.error(Dict.Dialog.ERROR.toString(), Dict.SERVER_NOT_RUNNING.toString());
         }
     }
 }

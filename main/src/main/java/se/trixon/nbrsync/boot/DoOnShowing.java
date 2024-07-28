@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OnShowing;
 import org.openide.windows.WindowManager;
@@ -70,15 +71,15 @@ public class DoOnShowing implements Runnable {
         var server = Server.getInstance();
 
         if (server.isServerLocked()) {
-            NbMessage.information(Dict.INFORMATION.toString(), "nbRsync server is running in the background.\nConfiguration changes will be applied immediately.");
+            NbMessage.information(Dict.INFORMATION.toString(), NbBundle.getMessage(DoOnShowing.class, "serverIsRunning"));
         }
 
         server.getStartMonitors().add(() -> {
-            NbMessage.information(Dict.INFORMATION.toString(), "nbRsync server started.");
+            NbMessage.information(Dict.INFORMATION.toString(), Dict.SERVER_STARTED.toString());
         });
 
         server.getStopMonitors().add(() -> {
-            NbMessage.information(Dict.INFORMATION.toString(), "nbRsync server stopped.");
+            NbMessage.information(Dict.INFORMATION.toString(), Dict.SERVER_STOPPED.toString());
         });
 
         server.startMonitor();

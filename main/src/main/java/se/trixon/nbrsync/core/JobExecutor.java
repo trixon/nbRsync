@@ -201,7 +201,7 @@ public class JobExecutor {
             job.setLastRun(System.currentTimeMillis());
             job.setLastRunExitCode(exitCode);
             Runnable saver = () -> StorageManager.save();
-            if (Server.getInstance().isRunning()) {
+            if (Server.getInstance().isRunning() || Boolean.FALSE.equals(NbHelper.isGui().get())) {
                 saver.run();
             } else {
                 FxHelper.runLater(saver);

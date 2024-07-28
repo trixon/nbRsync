@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
@@ -30,7 +31,10 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.openide.LifecycleManager;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import se.trixon.almond.util.Dict;
 import se.trixon.nbrsync.NbRsync;
+import se.trixon.nbrsync.boot.DoArgsProcessing;
 
 /**
  *
@@ -38,6 +42,7 @@ import se.trixon.nbrsync.NbRsync;
  */
 public class Server {
 
+    private final ResourceBundle mBundle = NbBundle.getBundle(Server.class);
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final File mLockFile = new File(Places.getUserDirectory(), "lock");
     private final JobManager mManager = JobManager.getInstance();
@@ -82,7 +87,7 @@ public class Server {
 
     public void start() {
         if (mServerFile.isFile()) {
-            System.out.println("nbRsync server already started.");
+            System.out.println(Dict.SERVER_ALREADY_STARTED.toString());
             LifecycleManager.getDefault().exit();
         }
 
@@ -93,7 +98,7 @@ public class Server {
             Exceptions.printStackTrace(ex);
         }
 
-        System.out.println("Starting nbRsync in server mode...");
+        System.out.println(mBundle.getString("startingInServerMode"));
 
         load();
 
@@ -109,7 +114,7 @@ public class Server {
         }
 
         mScheduler.stop();
-        System.out.println("nbRsync server stopped.");
+        System.out.println(Dict.SERVER_STOPPED.toString());
 
         LifecycleManager.getDefault().exit();
     }
@@ -144,10 +149,10 @@ public class Server {
 
     public void stop() {
         if (mServerFile.exists()) {
-            System.out.println("Stopping nbRsync server...");
+            System.out.println(Dict.SERVER_STOPPING.toString());
             NbRsync.delete(mServerFile, mReloadFile);
         } else {
-            System.out.println("nbRsync server not running!");
+            System.out.println(Dict.SERVER_NOT_RUNNING.toString());
         }
         LifecycleManager.getDefault().exit();
     }
@@ -172,12 +177,12 @@ public class Server {
         if (hasScheduledJobs()) {
             for (var job : mManager.getItems()) {
                 if (job.isScheduled()) {
-                    System.out.println("Scheduling %s".formatted(job.getName()));
+                    System.out.println(mBundle.getString("scheduling_s").formatted(job.getName()));
                     job.getCronItemsAsList().stream().map(c -> c.getName()).forEachOrdered(cronString -> {
                         System.out.println("\t%s".formatted(cronString));
                         mScheduler.schedule(cronString, () -> {
                             if (job.isLocked()) {
-                                System.out.println("Skipping already running job: %s".formatted(job.getName()));
+                                System.out.println(NbBundle.getMessage(DoArgsProcessing.class, "skipRunningJob").formatted(job.getName()));
                             } else {
                                 mExecutorManager.start(job, false);
                             }
@@ -186,14 +191,14 @@ public class Server {
                 }
             }
         } else {
-            System.out.println("No scheduled jobs, awaiting configuration change...");
+            System.out.println(mBundle.getString("noScheduledJobs"));
         }
 
         mScheduler.start();
     }
 
     private void reload() {
-        System.out.println("Reloading configuration...");
+        System.out.println(Dict.RELOADING_CONFIGURATION);
         try {
             NbRsync.delete(mReloadFile);
             mScheduler.stop();

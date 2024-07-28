@@ -25,7 +25,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.openide.util.Exceptions;
 import se.trixon.almond.util.fx.dialogs.cron.CronItem;
 import se.trixon.nbrsync.NbRsync;
 import se.trixon.nbrsync.core.BaseItem;
@@ -124,7 +123,7 @@ public class Job extends BaseItem {
                 FileUtils.forceDelete(getLockFile());
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            //nvm
         }
     }
 
