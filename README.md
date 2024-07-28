@@ -1,2 +1,2 @@
 # nbRsync
-rsync ui with a cli
+rsync GUI with an integrated scheduler
