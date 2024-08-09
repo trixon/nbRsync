@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=nbRsync
+Comment=rsync GUI with an integrated scheduler, and a CLI
+Exec=nbrsync %F
+Icon=se.trixon.nbrsync
+Terminal=false
+Categories=System;
+StartupNotify=true
+StartupWMClass=nbRsync
+
