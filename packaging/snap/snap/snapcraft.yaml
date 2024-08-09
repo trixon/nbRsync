@@ -1,0 +1,46 @@
+name: nbrsync
+title: nbRsync
+base: core24
+version: 'REPLACE_WITH_VERSION'
+summary: rsync GUI with an integrated scheduler, and a CLI
+description: |
+    TODO.
+
+    https://github.com/trixon/nbrsync
+
+grade: stable
+platforms:
+    amd64:
+confinement: strict
+icon: snap/gui/nbrsync.png
+license: Apache-2.0
+
+apps:
+  nbrsync:
+    command: nbrsync/bin/nbrsync
+    extensions: [gnome]
+    plugs:
+        - home
+        - removable-media
+        - network
+        - system-backup
+
+parts:
+  nbrsync:
+    plugin: dump
+    #source: https://github.com/trixon/nbrsync/releases/download/v$SNAPCRAFT_PROJECT_VERSION/nbrsync-$SNAPCRAFT_PROJECT_VERSION-linux.zip
+    source: /root/project/nbrsync-$SNAPCRAFT_PROJECT_VERSION-linux.zip
+    source-type: zip
+    stage-packages:
+      - rsync
+
+  config:
+    after: [nbrsync]
+    plugin: nil
+    override-prime: |
+      craftctl default
+      sed -i 's/${HOME}\/.${APPNAME}/${SNAP_USER_COMMON}\/.nbrsync/' /root/prime/nbrsync/bin/nbrsync
+      sed -i 's/${HOME}\/.cache\/${APPNAME}/${SNAP_USER_COMMON}\/.cache\/nbrsync/' /root/prime/nbrsync/bin/nbrsync
+      
+lint:
+  ignore: [library]
