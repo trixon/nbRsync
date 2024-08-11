@@ -36,7 +36,6 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 import javax.swing.SwingUtilities;
@@ -49,7 +48,6 @@ import se.trixon.almond.nbp.fx.FxDialogPanel;
 import se.trixon.almond.nbp.fx.NbEditableList;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
-import static se.trixon.almond.util.fx.FxHelper.getScaledFontSize;
 import se.trixon.almond.util.fx.control.editable_list.EditableList;
 import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.nbrsync.core.BaseItem;
@@ -69,7 +67,7 @@ import se.trixon.nbrsync.core.task.Task;
  */
 public class EditorPane extends TabPane {
 
-    private static final int ICON_SIZE_TOOLBAR = FxHelper.getUIScaled(32);
+    private static final int ICON_SIZE_TOOLBAR = FxHelper.getUIScaled(28);
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final JobManager mJobManager = JobManager.getInstance();
@@ -124,7 +122,7 @@ public class EditorPane extends TabPane {
         );
 
         getTabs().forEach(tab -> {
-            tab.setStyle("-fx-font-size: %dpx;".formatted((int) (getScaledFontSize() * 1.4)));
+            tab.setStyle(FxHelper.createFontStyle(1.2, FontWeight.NORMAL));
 
         });
         setTabMaxHeight(99);
@@ -240,7 +238,6 @@ public class EditorPane extends TabPane {
 
     public abstract class ItemListCellRenderer<T extends BaseItem> extends ListCell<T> {
 
-        private final Font mDefaultFont = Font.getDefault();
         private final Label mDescLabel = new Label();
         private final Label mLastLabel = new Label();
         private final Label mNameLabel = new Label();
@@ -312,10 +309,11 @@ public class EditorPane extends TabPane {
                 }
             }
 
-            var tooltip = new Tooltip(sb.toString());
+            var tooltipString = StringUtils.defaultIfBlank(sb.toString(), mBundle.getString("noTasksForJob"));
+            var tooltip = new Tooltip(tooltipString);
             tooltip.setShowDelay(Duration.seconds(2));
             tooltip.setHideDelay(Duration.seconds(5));
-
+            tooltip.setStyle(FxHelper.createFontStyle(1.0, FontWeight.BOLD));
             mRoot.getChildren().stream()
                     .filter(n -> n instanceof Control)
                     .map(n -> (Control) n)
@@ -340,12 +338,9 @@ public class EditorPane extends TabPane {
         }
 
         private void createUI() {
-            var fontFamily = mDefaultFont.getFamily();
-            var fontSize = FxHelper.getScaledFontSize();
-
-            mNameLabel.setFont(Font.font(fontFamily, FontWeight.BOLD, fontSize * 1.4));
-            mDescLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
-            mLastLabel.setFont(Font.font(fontFamily, FontWeight.NORMAL, fontSize * 1.1));
+            mNameLabel.setStyle(FxHelper.createFontStyle(1.2, FontWeight.BOLD));
+            mDescLabel.setStyle(FxHelper.createFontStyle(1.1, FontWeight.NORMAL));
+            mLastLabel.setStyle(FxHelper.createFontStyle(1.1, FontWeight.NORMAL));
 
             mRoot = new GridPane();
             mRoot.addColumn(0, mNameLabel, mDescLabel, mLastLabel);

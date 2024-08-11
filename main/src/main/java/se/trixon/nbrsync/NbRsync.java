@@ -18,9 +18,11 @@ package se.trixon.nbrsync;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
+import se.trixon.almond.nbp.dialogs.NbMessage;
 import se.trixon.almond.nbp.output.OutputHelper;
 import se.trixon.almond.nbp.output.OutputLineMode;
 import se.trixon.almond.util.Dict;
@@ -57,9 +59,21 @@ public class NbRsync {
         io.select();
         try (var out = io.getOut()) {
             out.reset();
-            outputHelper.println(OutputLineMode.ALERT, SystemHelper.getSystemInfo());
+            outputHelper.println(OutputLineMode.INFO, SystemHelper.getSystemInfo());
             out.println();
-            outputHelper.println(OutputLineMode.ALERT, Rsync.getInfo());
+            var rsyncInfo = Rsync.getInfo();
+            boolean commandNotFound = StringUtils.contains(rsyncInfo, Dict.COMMAND_NOT_FOUND.toString());
+            outputHelper.println(commandNotFound ? OutputLineMode.ERROR : OutputLineMode.ALERT,
+                    rsyncInfo);
+
+            if (commandNotFound) {
+                outputHelper.println(OutputLineMode.ALERT, "\n• Install 'rsync'");
+                outputHelper.println(OutputLineMode.ALERT, "• Verify settings in menu Tools/Options/Rsync");
+
+                if (SystemHelper.isPackageAppImage()) {
+                    NbMessage.warning(Dict.COMMAND_NOT_FOUND_S.toString().formatted("rsync"), "The program 'rsync' can not be bundled inside this AppImage.\nPlease install 'rsync' and try again.");
+                }
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

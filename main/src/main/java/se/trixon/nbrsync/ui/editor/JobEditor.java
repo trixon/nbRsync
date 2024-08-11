@@ -23,6 +23,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.FontWeight;
 import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
 import org.openide.DialogDescriptor;
@@ -136,7 +137,7 @@ public class JobEditor extends BaseEditor<Job> {
         mListSelectionView.getSourceItems().addAll(TaskManager.getInstance().getItems());
         mListSelectionView.getTargetActions().addAll(createTaskTargetActions());
 
-        var headerLabelStyle = "-fx-font-size: %dpx;".formatted((int) (FxHelper.getScaledFontSize() * 1.4));
+        var headerLabelStyle = FxHelper.createFontStyle(1.4, FontWeight.NORMAL);
         var runLabel = new Label(Dict.RUN.toString());
         runLabel.setStyle(headerLabelStyle);
         var runBox = new VBox(FxHelper.getUIScaled(16),

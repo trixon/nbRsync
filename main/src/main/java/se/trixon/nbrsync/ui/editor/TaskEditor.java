@@ -34,7 +34,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
@@ -393,7 +393,6 @@ public class TaskEditor extends BaseEditor<Task> {
 
     class OptionListCell<T extends TaskArgBase> extends ListCell<T> {
 
-        protected final Font mDefaultFont = Font.getDefault();
         private final Label mArgLabel = new Label();
         private final Label mDescLabel = new Label();
         private VBox mRoot;
@@ -438,11 +437,8 @@ public class TaskEditor extends BaseEditor<Task> {
         }
 
         private void createUI() {
-            var fontSize = FxHelper.getScaledFontSize();
-            var fontStyle = "-fx-font-size: %.0fpx; -fx-font-weight: %s;";
-
-            mDescLabel.setStyle(fontStyle.formatted(fontSize * 1.0, "bold"));
-            mArgLabel.setStyle(fontStyle.formatted(fontSize * 1.0, "normal"));
+            mDescLabel.setStyle(FxHelper.createFontStyle(1.0, FontWeight.BOLD));
+            mArgLabel.setStyle(FxHelper.createFontStyle(1.0, FontWeight.NORMAL));
 
             mRoot = new VBox(mDescLabel, mArgLabel);
 
