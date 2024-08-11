@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-HERE="$(dirname "$(readlink -f "${0}")")"
-export JAVA_HOME="$HERE/usr/lib/jre/"
-exec "$HERE/usr/bin/nbrsync" --jdkhome "$HERE/usr/lib/jre" "$@"
+export JAVA_HOME="$APPDIR/usr/lib/jre/"
+exec "$APPDIR/usr/bin/nbrsync" --jdkhome "$APPDIR/usr/lib/jre" "$@"
 disown
 exit 0
