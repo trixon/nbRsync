@@ -263,7 +263,13 @@ public class EditorPane extends TabPane {
         private void addContent(T item) {
             setText(null);
 
-            mNameLabel.setText(item.getName());
+            if (item instanceof Job job) {
+                var cronIdicator = job.isScheduled() ? " ⏰" : "";
+                mNameLabel.setText(item.getName() + cronIdicator);
+            } else {
+                mNameLabel.setText(item.getName());
+            }
+
             mDescLabel.setText(StringUtils.defaultIfBlank(item.getDescription(), "-"));
             String lastRun = "-";
             if (item.getLastRun() > 0) {
