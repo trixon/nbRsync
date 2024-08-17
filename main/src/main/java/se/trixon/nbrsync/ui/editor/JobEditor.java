@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.FontWeight;
 import org.controlsfx.control.ListActionView;
 import org.controlsfx.control.ListSelectionView;
 import org.openide.DialogDescriptor;
@@ -42,7 +42,7 @@ import se.trixon.nbrsync.core.task.Task;
  */
 public class JobEditor extends BaseEditor<Job> {
 
-    private CheckBox mActivatedCheckBox = new CheckBox(Dict.ACTIVE.toString());
+    private final CheckBox mActivatedCheckBox = new CheckBox(Dict.ACTIVE.toString());
     private NbCronPane mCronPane;
     private Job mItem;
     private ListSelectionView<Task> mListSelectionView;
@@ -80,6 +80,7 @@ public class JobEditor extends BaseEditor<Job> {
 
         mActivatedCheckBox.setSelected(item.isCronActivated());
         mCronPane.getItems().setAll(item.getCronItemsAsList());
+        mEnvironmentTab.setEnvironment(item.getEnv());
 
         super.load(item, dialogDescriptor);
         mItem = item;
@@ -102,6 +103,7 @@ public class JobEditor extends BaseEditor<Job> {
         mItem.setTaskIds(new ArrayList<>(taskIds));
         mItem.setCronActivated(mActivatedCheckBox.isSelected());
         mItem.setCronItems(String.join("|", mCronPane.getItems().stream().sorted().map(c -> c.getName()).toList()));
+        mItem.setEnv(mEnvironmentTab.getEnv());
 
         return super.save();
     }
@@ -137,32 +139,26 @@ public class JobEditor extends BaseEditor<Job> {
         mListSelectionView.getSourceItems().addAll(TaskManager.getInstance().getItems());
         mListSelectionView.getTargetActions().addAll(createTaskTargetActions());
 
-        var headerLabelStyle = FxHelper.createFontStyle(1.4, FontWeight.NORMAL);
-        var runLabel = new Label(Dict.RUN.toString());
-        runLabel.setStyle(headerLabelStyle);
         var runBox = new VBox(FxHelper.getUIScaled(16),
                 mRunBeforeSection,
                 mRunAfterFailSection,
                 mRunAfterOkSection,
                 mRunAfterSection
         );
-        var runBorderPane = new BorderPane(runBox);
-        runBorderPane.setTop(runLabel);
-
-        var cronLabel = new Label(Dict.SCHEDULER.toString());
-        cronLabel.setStyle(headerLabelStyle);
 
         mCronPane = new NbCronPane(24);
         mCronPane.getEditableList().setPrefHeight(100);
         var cronBorderPane = new BorderPane(mCronPane.getEditableList());
-        var cronBox = new VBox(cronLabel, mActivatedCheckBox);
-        cronBorderPane.setTop(cronBox);
+        cronBorderPane.setTop(mActivatedCheckBox);
         mCronPane.getEditableList().disableProperty().bind(mActivatedCheckBox.selectedProperty().not());
 
+        var runTab = new Tab(Dict.RUN.toString(), runBox);
+        var cronTab = new Tab(Dict.SCHEDULER.toString(), cronBorderPane);
+        getTabPane().getTabs().setAll(runTab, cronTab, mEnvironmentTab);
         int row = 0;
         var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
         gp.add(mListSelectionView, 0, row++, GridPane.REMAINING, 1);
-        gp.addRow(row++, runBorderPane, cronBorderPane);
+        gp.add(getTabPane(), 0, row++, GridPane.REMAINING, 1);
         FxHelper.autoSizeColumn(gp, 2);
         GridPane.setVgrow(mListSelectionView, Priority.ALWAYS);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 8, 0), gp, mActivatedCheckBox);

@@ -108,7 +108,8 @@ public class TaskEditor extends BaseEditor<Task> {
 
 //        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
         mDirForceSourceSlashCheckBox.setSelected(StringUtils.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
-        getTabPane().getSelectionModel().selectFirst();
+        mEnvironmentTab.setEnvironment(item.getEnv());
+
         super.load(item, dialogDescriptor);
         mItem = item;
 
@@ -146,6 +147,8 @@ public class TaskEditor extends BaseEditor<Task> {
                 .map(o -> o.getArg())
                 .collect(Collectors.joining(" "));
         mItem.getExcludeSection().setOptions(excludes);
+
+        mItem.setEnv(mEnvironmentTab.getEnv());
 
         return super.save();
     }
@@ -276,9 +279,10 @@ public class TaskEditor extends BaseEditor<Task> {
         var borderPane = new BorderPane(getTabPane());
         borderPane.setTop(leftRightBorderPane);
 
-        getTabPane().getTabs().addAll(
+        getTabPane().getTabs().setAll(
                 createRunTab(),
-                createArgExcludeTab()
+                createArgExcludeTab(),
+                mEnvironmentTab
         );
 
         setCenter(borderPane);

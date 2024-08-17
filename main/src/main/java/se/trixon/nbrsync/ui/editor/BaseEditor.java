@@ -18,9 +18,11 @@ package se.trixon.nbrsync.ui.editor;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.control.Label;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -28,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.fx.FxHelper;
@@ -43,10 +46,12 @@ import se.trixon.nbrsync.core.StorageManager;
 public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
 
     protected ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
+    protected DialogDescriptor mDialogDescriptor;
+    protected EnvironmentTab mEnvironmentTab = new EnvironmentTab();
     protected BaseManager<T> mManager;
+    protected NotificationLineSupport mNotificationLineSupport;
     protected final ValidationSupport mValidationSupport = new ValidationSupport();
     private final TextField mDescTextField = new TextField();
-    private DialogDescriptor mDialogDescriptor;
     private final GridPane mGridPane = new GridPane(FxHelper.getUIScaled(8), 0);
     private T mItem;
     private final TextField mNameTextField = new TextField();
@@ -69,6 +74,8 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     }
 
     public void load(T item, DialogDescriptor dialogDescriptor) {
+        getTabPane().getSelectionModel().selectFirst();
+
         mItem = item;
         mDialogDescriptor = dialogDescriptor;
         mNameTextField.setText(item.getName());
@@ -90,6 +97,10 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         item.setEnabled(runSectionPane.isEnabled());
         item.setHaltOnError(runSectionPane.isHaltOnError());
         item.setCommand(runSectionPane.getCommand());
+    }
+
+    void setNotificationLineSupport(NotificationLineSupport notificationLineSupport) {
+        mNotificationLineSupport = notificationLineSupport;
     }
 
     private void createUI() {
@@ -115,7 +126,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         final String textRequired = "Text is required";
         final String textUnique = "Text has to be unique";
 
-        Predicate uniqueNamePredicate = (Predicate) (Object o) -> {
+        Predicate<String> uniqueNamePredicate = (Predicate) s -> {
             var newName = mNameTextField.getText();
             if (!mManager.exists(newName)) {
                 return true;
@@ -129,6 +140,23 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
                     Validator.createEmptyValidator(textRequired),
                     Validator.createPredicateValidator(uniqueNamePredicate, textUnique)
             ));
+
+            mValidationSupport.validationResultProperty().addListener((p, o, n) -> {
+                mDialogDescriptor.setValid(!mValidationSupport.isInvalid() && !FxHelper.isFocusedNodeOfType(getGridPane().getScene(), TextArea.class));
+            });
+
+            ChangeListener<Boolean> focusListener = (p, o, n) -> {
+                mValidationSupport.revalidate();
+
+                if (FxHelper.isFocusedNodeOfType(getGridPane().getScene(), TextArea.class)) {
+                    mNotificationLineSupport.setInformationMessage(Dict.Dialog.OTHER_LEAVE_TEXT_AREA.toString());
+                } else {
+                    mNotificationLineSupport.clearMessages();
+                }
+            };
+
+            mEnvironmentTab.getEnvTextArea().focusedProperty().addListener(focusListener);
+
         });
     }
 }

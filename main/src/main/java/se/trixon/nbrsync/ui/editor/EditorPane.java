@@ -134,6 +134,7 @@ public class EditorPane extends TabPane {
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {
 
         private EditableList<T> mEditableList;
+        private final Map<Class<? extends BaseManager>, Scene> mItemClassToScene = new HashMap<>();
         private final BaseManager mManager;
 
         public BaseItemPane(BaseManager manager, Consumer<T> onStart) {
@@ -185,8 +186,6 @@ public class EditorPane extends TabPane {
             setCenter(mEditableList);
         }
 
-        private final Map<Class<? extends BaseManager>, Scene> mItemClassToScene = new HashMap<>();
-
         private void edit(String title, T item) {
             var editor = mManager.getEditor();
             editor.setPadding(FxHelper.getUIScaledInsets(2, 8, 0, 8));
@@ -202,7 +201,7 @@ public class EditorPane extends TabPane {
             };
 
             if (editor instanceof JobEditor) {
-                dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(900, 550));
+                dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 650));
             } else {
                 dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 800));
             }
@@ -210,6 +209,7 @@ public class EditorPane extends TabPane {
             SwingUtilities.invokeLater(() -> {
                 var d = new DialogDescriptor(dialogPanel, title);
                 d.setValid(false);
+                editor.setNotificationLineSupport(d.createNotificationLineSupport());
                 dialogPanel.setNotifyDescriptor(d);
                 dialogPanel.initFx(() -> {
                     editor.load(item, d);

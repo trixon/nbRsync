@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -57,6 +58,7 @@ public class JobExecutor {
 
     private final ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
     private long mCurrentStartTime;
+    private LinkedHashMap<String, String> mCurrentTaskEnvironmentMap = new LinkedHashMap<>();
     private boolean mDryRun;
     private String mDryRunIndicator = "";
     private Thread mExecutorThread;
@@ -198,13 +200,15 @@ public class JobExecutor {
         appendHistoryFile(getHistoryLine(mJob.getId(), action, mDryRunIndicator));
         if (!mDryRun) {
             var job = mStorageManager.getJobManager().getById(mJob.getId());
-            job.setLastRun(System.currentTimeMillis());
-            job.setLastRunExitCode(exitCode);
-            Runnable saver = () -> StorageManager.save();
-            if (Server.getInstance().isRunning() || Boolean.FALSE.equals(NbHelper.isGui().get())) {
-                saver.run();
-            } else {
-                FxHelper.runLater(saver);
+            if (job != null) {//Might be null if started as task only
+                job.setLastRun(System.currentTimeMillis());
+                job.setLastRunExitCode(exitCode);
+                Runnable saver = () -> StorageManager.save();
+                if (Server.getInstance().isRunning() || Boolean.FALSE.equals(NbHelper.isGui().get())) {
+                    saver.run();
+                } else {
+                    FxHelper.runLater(saver);
+                }
             }
         }
 
@@ -282,6 +286,12 @@ public class JobExecutor {
         if (command.size() > 1) {
             processBuilder.setArguments(command.subList(1, command.size()));
         }
+
+        List.of(mJob.getEnvMap(), mCurrentTaskEnvironmentMap).forEach(map -> {
+            map.entrySet().forEach(entry -> {
+                processBuilder.getEnvironment().setVariable(entry.getKey(), entry.getValue());
+            });
+        });
 
         var outLineConvertorFactory = new ExecutionDescriptor.LineConvertorFactory() {
             private String mPrevLine;
@@ -394,6 +404,7 @@ public class JobExecutor {
         }
 
         mTaskFailed = false;
+        mCurrentTaskEnvironmentMap = task.getEnvMap();
         var taskExecuteSection = task.getExecuteSection();
 
         boolean doNextStep = runTaskStep(taskExecuteSection.getBefore(), "TaskEditor.runBefore");

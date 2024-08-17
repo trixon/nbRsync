@@ -16,7 +16,10 @@
 package se.trixon.nbrsync.core;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import se.trixon.almond.util.fx.control.editable_list.EditableListItem;
 
 /**
@@ -35,6 +38,8 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
     protected int mLastRunExitCode = -1;
     @SerializedName("name")
     protected String mName = "";
+    @SerializedName("env")
+    private String mEnv;
 
     public BaseItem() {
 
@@ -47,6 +52,26 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public String getDescription() {
         return mDescription;
+    }
+
+    public String getEnv() {
+        return mEnv;
+    }
+
+    public LinkedHashMap<String, String> getEnvMap() {
+        var map = new LinkedHashMap<String, String>();
+        if (StringUtils.isNotBlank(mEnv)) {
+            Arrays.stream(StringUtils.split(mEnv, "\n"))
+                    .filter(s -> !StringUtils.startsWith(s, "#"))
+                    .filter(s -> StringUtils.contains(s, "="))
+                    .forEachOrdered(s -> {
+                        var key = StringUtils.substringBefore(s, "=");
+                        var val = StringUtils.substringAfter(s, "=");
+                        map.put(key, val);
+                    });
+        }
+
+        return map;
     }
 
     public String getId() {
@@ -84,6 +109,10 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public void setDescription(String description) {
         mDescription = description;
+    }
+
+    public void setEnv(String env) {
+        mEnv = env;
     }
 
     public void setId(String id) {
