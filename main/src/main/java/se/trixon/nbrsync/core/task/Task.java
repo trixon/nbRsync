@@ -17,6 +17,7 @@ package se.trixon.nbrsync.core.task;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -37,6 +38,8 @@ public class Task extends BaseItem {
     private final ExcludeSection mExcludeSection;
     @SerializedName("executeSection")
     private final TaskExecuteSection mExecuteSection;
+    @SerializedName("extraOptions")
+    private String mExtraOptions;
     @SerializedName("noAdditionalDir")
     private boolean mNoAdditionalDir;
     @SerializedName("optionSection")
@@ -60,6 +63,8 @@ public class Task extends BaseItem {
         if (!StringUtils.isBlank(StringUtils.join(mExcludeSection.getCommand(), ""))) {
             mCommand.addAll(mExcludeSection.getCommand());
         }
+
+        mCommand.addAll(Arrays.asList(StringUtils.split(getExtraOptions())));
 
         add(getPath(mSource));
         add(getPath(mDestination));
@@ -85,6 +90,10 @@ public class Task extends BaseItem {
 
     public TaskExecuteSection getExecuteSection() {
         return mExecuteSection;
+    }
+
+    public String getExtraOptions() {
+        return mExtraOptions;
     }
 
     public OptionSection getOptionSection() {
@@ -113,6 +122,10 @@ public class Task extends BaseItem {
 
     public void setEnvironment(String environment) {
         mEnvironment = environment;
+    }
+
+    public void setExtraOptions(String extraOptions) {
+        mExtraOptions = extraOptions;
     }
 
     public void setNoAdditionalDir(boolean value) {

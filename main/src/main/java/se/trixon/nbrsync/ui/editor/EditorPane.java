@@ -203,7 +203,7 @@ public class EditorPane extends TabPane {
             if (editor instanceof JobEditor) {
                 dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 650));
             } else {
-                dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 800));
+                dialogPanel.setPreferredSize(SwingHelper.getUIScaledDim(800, 650));
             }
 
             SwingUtilities.invokeLater(() -> {

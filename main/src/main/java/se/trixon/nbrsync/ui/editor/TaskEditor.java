@@ -27,6 +27,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -64,6 +65,7 @@ public class TaskEditor extends BaseEditor<Task> {
     private FileChooserPaneSwingFx mDirDestFileChooser;
     private CheckBox mDirForceSourceSlashCheckBox;
     private FileChooserPaneSwingFx mDirSourceFileChooser;
+    private TextField mExtraOptionsTextField;
     private Task mItem;
     private RunSectionPane mRunAfterFailSection;
     private RunSectionPane mRunAfterOkSection;
@@ -109,6 +111,7 @@ public class TaskEditor extends BaseEditor<Task> {
 //        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
         mDirForceSourceSlashCheckBox.setSelected(StringUtils.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
         mEnvironmentTab.setEnvironment(item.getEnv());
+        mExtraOptionsTextField.setText(item.getExtraOptions());
 
         super.load(item, dialogDescriptor);
         mItem = item;
@@ -149,6 +152,7 @@ public class TaskEditor extends BaseEditor<Task> {
         mItem.getExcludeSection().setOptions(excludes);
 
         mItem.setEnv(mEnvironmentTab.getEnv());
+        mItem.setExtraOptions(mExtraOptionsTextField.getText());
 
         return super.save();
     }
@@ -183,12 +187,7 @@ public class TaskEditor extends BaseEditor<Task> {
         return tab;
     }
 
-    private Tab createRunTab() {
-        mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, false);
-        mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, false);
-        mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true, false);
-        mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, false);
-
+    private Tab createOptionsTab() {
         mArgRsyncListSelectionView = new FilterableListSelectionView();
         mArgRsyncListSelectionView.setCellFactory(listView -> new OptionListCell<>());
         mArgRsyncListSelectionView.setFilterSourceHeader(new Label("%s %s".formatted(Dict.AVAILABLE.toString(), Dict.COMMANDS.toLower())));
@@ -204,28 +203,45 @@ public class TaskEditor extends BaseEditor<Task> {
             var filterText = mArgRsyncListSelectionView.getFilterTextTarget();
             return matches(arg, filterText);
         });
-
         for (var arg : TaskArgRsync.values()) {
             arg.setDynamicArg(null);
 //            mArgRsyncDualListPane.getAvailablePane().getItems().add(arg);
         }
 
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0), mRunBeforeSection);
+        var extraOptionsLabel = new Label(mBundle.getString("extraOptions"));
+        mExtraOptionsTextField = new TextField();
+
         int row = 0;
         var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
-        mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
-        gp.add(mRunStopJobOnErrorCheckBox, 0, row++, GridPane.REMAINING, 1);
-        gp.add(mRunBeforeSection, 0, row++, GridPane.REMAINING, 1);
         gp.add(mArgRsyncListSelectionView, 0, row++, GridPane.REMAINING, 1);
-        gp.addRow(row++, mRunAfterFailSection, mRunAfterOkSection);
-        gp.add(mRunAfterSection, 0, row++, GridPane.REMAINING, 1);
-        FxHelper.autoSizeColumn(gp, 2);
+        gp.add(extraOptionsLabel, 0, row++, GridPane.REMAINING, 1);
+        gp.add(mExtraOptionsTextField, 0, row++, GridPane.REMAINING, 1);
+
         GridPane.setVgrow(mArgRsyncListSelectionView, Priority.ALWAYS);
+        FxHelper.autoSizeColumn(gp, 1);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 8, 0), gp);
-        FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0),
+
+        var tab = new Tab(Dict.OPTIONS.toString(), gp);
+
+        return tab;
+
+    }
+
+    private Tab createRunTab() {
+        mRunBeforeSection = new RunSectionPane(mBundle.getString("TaskEditor.runBefore"), true, false);
+        mRunAfterFailSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterFail"), true, false);
+        mRunAfterOkSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfterOk"), true, false);
+        mRunAfterSection = new RunSectionPane(mBundle.getString("TaskEditor.runAfter"), true, false);
+
+        var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(16));
+        gp.addColumn(0,
                 mRunBeforeSection,
+                mRunAfterFailSection,
+                mRunAfterOkSection,
                 mRunAfterSection
         );
+        FxHelper.autoSizeColumn(gp, 1);
+        FxHelper.setPadding(FxHelper.getUIScaledInsets(16, 0, 8, 0), gp);
 
         var tab = new Tab(Dict.RUN.toString(), gp);
 
@@ -235,10 +251,12 @@ public class TaskEditor extends BaseEditor<Task> {
     private void createUI() {
         var sourceTitle = Dict.SOURCE.toString();
         var destTitle = Dict.DESTINATION.toString();
+        mRunStopJobOnErrorCheckBox = new CheckBox(mBundle.getString("TaskEditor.stopJobOnError"));
 
         mDirSourceFileChooser = new FileChooserPaneSwingFx(sourceTitle, sourceTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY);
         mDirDestFileChooser = new FileChooserPaneSwingFx(destTitle, destTitle, Almond.getFrame(), JFileChooser.DIRECTORIES_ONLY);
-        getGridPane().addRow(2, mDirSourceFileChooser, mDirDestFileChooser);
+        int row = 2;
+        getGridPane().addRow(row++, mDirSourceFileChooser, mDirDestFileChooser);
         var forceSourceSlash = mBundle.getString("TaskEditor.forceSourceSlash");
         mDirForceSourceSlashCheckBox = new CheckBox();
         var a = new Text(StringUtils.substringBefore(forceSourceSlash, "/"));
@@ -270,22 +288,23 @@ public class TaskEditor extends BaseEditor<Task> {
         var leftRightBorderPane = new BorderPane(mDirForceSourceSlashCheckBox);
         BorderPane.setAlignment(mDirForceSourceSlashCheckBox, Pos.CENTER_LEFT);
         leftRightBorderPane.setRight(button);
+
+        getGridPane().add(leftRightBorderPane, 0, row++, GridPane.REMAINING, 1);
+        getGridPane().add(mRunStopJobOnErrorCheckBox, 0, row++, GridPane.REMAINING, 1);
         FxHelper.setPadding(FxHelper.getUIScaledInsets(8, 0, 0, 0),
                 mDirSourceFileChooser,
                 mDirDestFileChooser,
                 leftRightBorderPane
         );
 
-        var borderPane = new BorderPane(getTabPane());
-        borderPane.setTop(leftRightBorderPane);
-
         getTabPane().getTabs().setAll(
-                createRunTab(),
+                createOptionsTab(),
                 createArgExcludeTab(),
+                createRunTab(),
                 mEnvironmentTab
         );
 
-        setCenter(borderPane);
+        setCenter(getTabPane());
     }
 
     private void initListeners() {
