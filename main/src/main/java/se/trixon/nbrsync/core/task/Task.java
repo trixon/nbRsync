@@ -64,7 +64,9 @@ public class Task extends BaseItem {
             mCommand.addAll(mExcludeSection.getCommand());
         }
 
-        mCommand.addAll(Arrays.asList(StringUtils.split(getExtraOptions())));
+        if (StringUtils.isNotBlank(mExtraOptions)) {
+            mCommand.addAll(Arrays.asList(StringUtils.split(mExtraOptions)));
+        }
 
         add(getPath(mSource));
         add(getPath(mDestination));

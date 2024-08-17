@@ -44,6 +44,7 @@ import se.trixon.almond.nbp.output.OutputHelper;
 import se.trixon.almond.nbp.output.OutputLineMode;
 import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.SystemHelper;
+import se.trixon.almond.util.TimeHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.nbrsync.Options;
 import se.trixon.nbrsync.core.job.Job;
@@ -179,7 +180,7 @@ public class JobExecutor {
     }
 
     private String getHistoryLine(String id, String status, String dryRunIndicator) {
-        return String.format("%s %s %s%s\n", id, OutputHelper.nowToDateTime(), status, dryRunIndicator);
+        return String.format("%s %s %s%s\n", id, TimeHelper.nowToDateTime(), status, dryRunIndicator);
     }
 
     private String getLogLine(String header, String text) {
@@ -201,6 +202,7 @@ public class JobExecutor {
         if (!mDryRun) {
             var job = mStorageManager.getJobManager().getById(mJob.getId());
             if (job != null) {//Might be null if started as task only
+                job.setLastStarted(mStartTime);
                 job.setLastRun(System.currentTimeMillis());
                 job.setLastRunExitCode(exitCode);
                 Runnable saver = () -> StorageManager.save();
@@ -214,18 +216,6 @@ public class JobExecutor {
 
         mStatusDisplayer.setStatusText(action);
         mOutputHelper.printSummary(outputLineMode, action, Dict.JOB.toString());
-//        try {
-//            long millis = System.currentTimeMillis() - mStartTime;
-//            var minSec = DateHelper.millisToMinSec(millis);
-//            var details = String.format("%s (%d %s, %d %s)", mJob.getName(), minSec[0], Dict.TIME_MIN.toString(), minSec[1], Dict.TIME_SEC.toString());
-//            printSectionHeader(color, Dict.DONE.toString(), Dict.JOB.toLower(), details);
-//
-//            if (mDryRun) {
-//                IOColorLines.println(mInputOutput, "DRY-RUN (performed a trial run with no changes made EXCEPT FOR SCRIPTS)", Colors.warning());
-//            }
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
     }
 
     private boolean run(String command, boolean stopOnError, String description) {
@@ -403,6 +393,7 @@ public class JobExecutor {
             foldHandle = mMainFoldHandle.startFold(true);
         }
 
+        task.setLastStarted(System.currentTimeMillis());
         mTaskFailed = false;
         mCurrentTaskEnvironmentMap = task.getEnvMap();
         var taskExecuteSection = task.getExecuteSection();

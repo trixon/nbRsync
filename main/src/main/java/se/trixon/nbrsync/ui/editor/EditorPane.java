@@ -47,6 +47,7 @@ import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.nbp.fx.FxDialogPanel;
 import se.trixon.almond.nbp.fx.NbEditableList;
 import se.trixon.almond.util.Dict;
+import se.trixon.almond.util.TimeHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.editable_list.EditableList;
 import se.trixon.almond.util.swing.SwingHelper;
@@ -266,7 +267,12 @@ public class EditorPane extends TabPane {
             mDescLabel.setText(StringUtils.defaultIfBlank(item.getDescription(), "-"));
             String lastRun = "-";
             if (item.getLastRun() > 0) {
-                lastRun = mSimpleDateFormat.format(new Date(item.getLastRun()));
+                var minSec = TimeHelper.millisToMinSec(item.getDuration());
+                lastRun = String.format("%s (%dm %ds)",
+                        mSimpleDateFormat.format(new Date(item.getLastRun())),
+                        minSec[0],
+                        minSec[1]
+                );
             }
             mLastLabel.setText(lastRun);
 

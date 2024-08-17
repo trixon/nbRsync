@@ -36,6 +36,8 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
     protected long mLastRun = -1;
     @SerializedName("lastRunExitCode")
     protected int mLastRunExitCode = -1;
+    @SerializedName("lastStarted")
+    protected long mLastStarted = -1;
     @SerializedName("name")
     protected String mName = "";
     @SerializedName("env")
@@ -52,6 +54,10 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public String getDescription() {
         return mDescription;
+    }
+
+    public long getDuration() {
+        return mLastRun - mLastStarted;
     }
 
     public String getEnv() {
@@ -98,6 +104,10 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
         return status;
     }
 
+    public long getLastStarted() {
+        return mLastStarted;
+    }
+
     @Override
     public String getName() {
         return mName;
@@ -125,6 +135,10 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public void setLastRunExitCode(int lastRunExitCode) {
         mLastRunExitCode = lastRunExitCode;
+    }
+
+    public void setLastStarted(long lastStarted) {
+        mLastStarted = lastStarted;
     }
 
     public void setName(String name) {
