@@ -137,7 +137,7 @@ public class JobExecutor {
                         // run after last task - if all ok
                         run(jobExecuteSection.getAfterOk(), "JobEditor.runAfterOk");
                     } else {
-                        var s = String.format(Dict.TASKS_FAILED.toString(), mNumOfFailedTasks);
+                        var s = (mNumOfFailedTasks == 1 ? Dict.TASK_FAILED.toString() : Dict.TASKS_FAILED.toString()).formatted(mNumOfFailedTasks);
                         mInputOutput.getErr().println(s);
 
                         // run after last task - if any failed
