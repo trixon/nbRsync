@@ -17,6 +17,7 @@ package se.trixon.nbrsync.ui.editor;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -40,6 +41,8 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.StringUtils;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.control.action.ActionUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -47,9 +50,11 @@ import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.nbp.fx.FxDialogPanel;
 import se.trixon.almond.nbp.fx.NbEditableList;
 import se.trixon.almond.util.Dict;
+import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.TimeHelper;
 import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.editable_list.EditableList;
+import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.almond.util.swing.SwingHelper;
 import se.trixon.nbrsync.core.BaseItem;
 import se.trixon.nbrsync.core.BaseManager;
@@ -356,6 +361,34 @@ public class EditorPane extends TabPane {
 
             mRoot = new GridPane();
             mRoot.addColumn(0, mNameLabel, mDescLabel, mLastLabel);
+
+            var copyRsyncAction = new Action(mBundle.getString("copyRsyncOptions"), actionEvent -> {
+                var rsync = "rsync ";
+                var command = rsync;
+                switch (getItem()) {
+                    case Job job ->
+                        command = String.join("\n", job.getTasks().stream().map(task -> rsync + task.getCommandAsString()).toList());
+                    case Task task ->
+                        command = rsync + task.getCommandAsString();
+                    default -> {
+                    }
+                }
+
+                SystemHelper.copyToClipboard(command);
+            });
+            copyRsyncAction.setGraphic(MaterialIcon._Content.CONTENT_COPY.getImageView(FxHelper.getUIScaled(16)));
+
+            var actions = Arrays.asList(copyRsyncAction);
+            var contextMenu = ActionUtils.createContextMenu(actions);
+
+            setOnMousePressed(mouseEvent -> {
+                getScene().getWindow().requestFocus();
+                if (getItem() != null) {
+                    if (mouseEvent.isSecondaryButtonDown()) {
+                        contextMenu.show(this, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+                    }
+                }
+            });
         }
     }
 }
