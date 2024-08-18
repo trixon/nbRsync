@@ -38,8 +38,6 @@ public class Task extends BaseItem {
     private final ExcludeSection mExcludeSection;
     @SerializedName("executeSection")
     private final TaskExecuteSection mExecuteSection;
-    @SerializedName("extraOptions")
-    private String mExtraOptions;
     @SerializedName("noAdditionalDir")
     private boolean mNoAdditionalDir;
     @SerializedName("optionSection")
@@ -64,8 +62,8 @@ public class Task extends BaseItem {
             mCommand.addAll(mExcludeSection.getCommand());
         }
 
-        if (StringUtils.isNotBlank(mExtraOptions)) {
-            mCommand.addAll(Arrays.asList(StringUtils.split(mExtraOptions)));
+        if (StringUtils.isNotBlank(mOptionSection.getExtras())) {
+            mCommand.addAll(Arrays.asList(StringUtils.split(mOptionSection.getExtras())));
         }
 
         add(getPath(mSource));
@@ -94,10 +92,6 @@ public class Task extends BaseItem {
         return mExecuteSection;
     }
 
-    public String getExtraOptions() {
-        return mExtraOptions;
-    }
-
     public OptionSection getOptionSection() {
         return mOptionSection;
     }
@@ -124,10 +118,6 @@ public class Task extends BaseItem {
 
     public void setEnvironment(String environment) {
         mEnvironment = environment;
-    }
-
-    public void setExtraOptions(String extraOptions) {
-        mExtraOptions = extraOptions;
     }
 
     public void setNoAdditionalDir(boolean value) {

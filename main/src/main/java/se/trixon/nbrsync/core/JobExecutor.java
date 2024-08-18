@@ -236,7 +236,8 @@ public class JobExecutor {
             }
 
             if (!mInterrupted) {
-                mInputOutput.getOut().println(getLogLine(status, description));
+                var outputLineMode = success ? OutputLineMode.OK : OutputLineMode.WARNING;
+                mOutputHelper.printSectionHeader(outputLineMode, Dict.DONE.toString(), getLogLine(status, description), null);
             }
 
             if (stopOnError && result != 0) {
@@ -407,6 +408,7 @@ public class JobExecutor {
                 task.setLastRunExitCode(exitValue);
             }
             boolean rsyncSuccess = exitValue == 0;
+            mTaskFailed = !rsyncSuccess || mTaskFailed;
             var outputLineMode = rsyncSuccess ? OutputLineMode.OK : OutputLineMode.WARNING;
             mOutputHelper.printSectionHeader(outputLineMode, Dict.DONE.toString(), "rsync", getRsyncErrorCode(exitValue));
 
@@ -418,7 +420,7 @@ public class JobExecutor {
         }
 
         if (doNextStep) {
-            runTaskStep(taskExecuteSection.getAfterOk(), "TaskEditor.runAfter");
+            runTaskStep(taskExecuteSection.getAfter(), "TaskEditor.runAfter");
         }
 
         if (mTaskFailed) {

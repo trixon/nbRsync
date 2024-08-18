@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,6 @@
  */
 package se.trixon.nbrsync.core.task;
 
-import java.io.File;
-import se.trixon.almond.util.Dict;
 import se.trixon.nbrsync.core.BaseValidator;
 
 /**
@@ -34,7 +32,6 @@ public class TaskValidator extends BaseValidator {
         mHtmlBuilder = new StringBuilder("<h2>").append(mTask.getName()).append("</h2>");
         mStringBuilder = new StringBuilder();
 
-        validateDirs();
         validateExecutors();
         validateExclusion();
     }
@@ -57,20 +54,6 @@ public class TaskValidator extends BaseValidator {
     @Override
     public boolean isValid() {
         return !mInvalid;
-    }
-
-    private void validateDir(String path, String message) {
-        //TODO Add support for remote - well, don't fail...
-        var file = new File(path);
-        if (!file.isDirectory()) {
-            addSummary(message, path);
-            mInvalid = true;
-        }
-    }
-
-    private void validateDirs() {
-        validateDir(mTask.getSource(), Dict.DIRECTORY_NOT_FOUND_SOURCE.toString());
-        validateDir(mTask.getDestination(), Dict.DIRECTORY_NOT_FOUND_DEST.toString());
     }
 
     private void validateExclusion() {

@@ -111,7 +111,7 @@ public class TaskEditor extends BaseEditor<Task> {
 //        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
         mDirForceSourceSlashCheckBox.setSelected(StringUtils.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
         mEnvironmentTab.setEnvironment(item.getEnv());
-        mExtraOptionsTextField.setText(item.getExtraOptions());
+        mExtraOptionsTextField.setText(item.getOptionSection().getExtras());
 
         super.load(item, dialogDescriptor);
         mItem = item;
@@ -152,7 +152,7 @@ public class TaskEditor extends BaseEditor<Task> {
         mItem.getExcludeSection().setOptions(excludes);
 
         mItem.setEnv(mEnvironmentTab.getEnv());
-        mItem.setExtraOptions(mExtraOptionsTextField.getText());
+        mItem.getOptionSection().setExtras(mExtraOptionsTextField.getText());
 
         return super.save();
     }

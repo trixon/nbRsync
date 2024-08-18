@@ -24,6 +24,8 @@ import java.util.List;
  */
 public class OptionSection extends TaskSection {
 
+    @SerializedName("extras")
+    private String mExtras;
     @SerializedName("options")
     private String mOptions = "--archive --itemize-changes --verbose --human-readable -P --update";
 
@@ -38,8 +40,16 @@ public class OptionSection extends TaskSection {
         return mCommand;
     }
 
+    public String getExtras() {
+        return mExtras;
+    }
+
     public String getOptions() {
         return mOptions;
+    }
+
+    public void setExtras(String extras) {
+        mExtras = extras;
     }
 
     public void setOptions(String options) {
