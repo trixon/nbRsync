@@ -10,7 +10,7 @@
 
     <groupId>se.trixon.nbrsync</groupId>
     <artifactId>parent</artifactId>
-    <version>2024.08.1-SNAPSHOT</version>
+    <version>24.08.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>parent</name>

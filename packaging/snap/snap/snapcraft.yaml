@@ -11,7 +11,7 @@ description: |
 grade: stable
 platforms:
     amd64:
-confinement: strict
+confinement: classic
 icon: snap/gui/nbrsync.png
 license: Apache-2.0
 
