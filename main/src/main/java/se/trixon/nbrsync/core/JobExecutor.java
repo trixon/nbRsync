@@ -285,12 +285,15 @@ public class JobExecutor {
         });
 
         var outLineConvertorFactory = new ExecutionDescriptor.LineConvertorFactory() {
+            private boolean mPrevLineWasEmptyTrigger;
             private String mPrevLine;
             private final Progress mProgress = new Progress();
+            private int i = 0;
 
             @Override
             public LineConvertor newLineConvertor() {
                 return (LineConvertor) line -> {
+                    //System.out.println("%d\t%s\tprevLine=\t".formatted(++i, line, mPrevLine));
                     var lines = new ArrayList<ConvertedLine>();
 
                     try {
@@ -304,7 +307,7 @@ public class JobExecutor {
                                 mProgressHandle.switchToDeterminate(100);
                             }
                             mProgressHandle.progress(mProgress.getStep());
-                            var currentProgressString = new StringBuilder(mPrevLine).append(" ").append(mProgress.toString()).toString();
+                            var currentProgressString = new StringBuilder(mProgress.toString()).append(" ").append(mPrevLine).toString();
                             mProgressHandle.progress(currentProgressString);
                             mStatusDisplayer.setStatusText(currentProgressString);
                         } else {
@@ -315,6 +318,12 @@ public class JobExecutor {
                         lines.add(ConvertedLine.forText(e.toString(), null));
                     }
 
+                    if (StringUtils.isBlank(line) && mPrevLineWasEmptyTrigger) {
+                        lines.clear();
+//                        lines.removeLast();
+                    }
+
+                    mPrevLineWasEmptyTrigger = StringUtils.startsWithAny(line, ">f", "<f");
                     if (StringUtils.contains(line, "(xfr#")) {
                         mProgressHandle.switchToIndeterminate();
                         mIndeterminate = true;
@@ -332,12 +341,6 @@ public class JobExecutor {
                 .errLineBased(true)
                 .outLineBased(true)
                 .outConvertorFactory(outLineConvertorFactory)
-                .preExecution(() -> {
-                    //mInputOutput.getErr().println("PRE");
-                })
-                .postExecution(exitCode -> {
-                    //mInputOutput.getErr().println("POST exitCode=" + exitCode);
-                })
                 .showProgress(false);
 
         var service = ExecutionService.newService(
