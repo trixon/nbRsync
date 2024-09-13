@@ -225,7 +225,7 @@ public class JobExecutor {
         if (new File(command).isFile()) {
             var commandLine = new ArrayList<String>();
             commandLine.add(command);
-            var result = runProcess(commandLine);
+            var result = runProcess(commandLine, false);
 
             String status;
             if (result == 0) {
@@ -264,7 +264,7 @@ public class JobExecutor {
         }
     }
 
-    private int runProcess(List<String> command) {
+    private int runProcess(List<String> command, boolean rsyncProcess) {
         if (mInterrupted) {
             return -1;
         }
@@ -285,15 +285,12 @@ public class JobExecutor {
         });
 
         var outLineConvertorFactory = new ExecutionDescriptor.LineConvertorFactory() {
-            private boolean mPrevLineWasEmptyTrigger;
             private String mPrevLine;
             private final Progress mProgress = new Progress();
-            private int i = 0;
 
             @Override
             public LineConvertor newLineConvertor() {
                 return (LineConvertor) line -> {
-                    //System.out.println("%d\t%s\tprevLine=\t".formatted(++i, line, mPrevLine));
                     var lines = new ArrayList<ConvertedLine>();
 
                     try {
@@ -318,12 +315,18 @@ public class JobExecutor {
                         lines.add(ConvertedLine.forText(e.toString(), null));
                     }
 
-                    if (StringUtils.isBlank(line) && mPrevLineWasEmptyTrigger) {
+                    if (StringUtils.isBlank(line) && rsyncProcess) {
                         lines.clear();
-//                        lines.removeLast();
                     }
 
-                    mPrevLineWasEmptyTrigger = StringUtils.startsWithAny(line, ">f", "<f");
+                    var summary = StringUtils.containsIgnoreCase(line, "sent")
+                            && StringUtils.containsIgnoreCase(line, "bytes")
+                            && StringUtils.containsIgnoreCase(line, "received");
+
+                    if (summary) {
+                        lines.add(0, ConvertedLine.forText("", null));
+                    }
+
                     if (StringUtils.contains(line, "(xfr#")) {
                         mProgressHandle.switchToIndeterminate();
                         mIndeterminate = true;
@@ -377,7 +380,7 @@ public class JobExecutor {
         var s = String.format("%s\n", StringUtils.join(command, " "));
         mInputOutput.getOut().println(s);
 
-        return runProcess(command);
+        return runProcess(command, true);
     }
 
     private boolean runTask(Task task) {
