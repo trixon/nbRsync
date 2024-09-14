@@ -46,6 +46,7 @@ import se.trixon.almond.util.Dict;
 import se.trixon.almond.util.SystemHelper;
 import se.trixon.almond.util.TimeHelper;
 import se.trixon.almond.util.fx.FxHelper;
+import se.trixon.nbrsync.NbRsync;
 import se.trixon.nbrsync.Options;
 import se.trixon.nbrsync.core.job.Job;
 import se.trixon.nbrsync.core.task.Task;
@@ -213,7 +214,10 @@ public class JobExecutor {
                 if (Server.getInstance().isRunning() || Boolean.FALSE.equals(NbHelper.isGui().get())) {
                     saver.run();
                 } else {
-                    FxHelper.runLater(saver);
+                    FxHelper.runLater(() -> {
+                        saver.run();
+                        NbRsync.getInstance().getGlobalState().put(NbRsync.GSC_LAST_JOB_ID, job.getId());
+                    });
                 }
             }
         }

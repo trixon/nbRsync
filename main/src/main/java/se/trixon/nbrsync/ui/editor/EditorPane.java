@@ -56,6 +56,7 @@ import se.trixon.almond.util.fx.FxHelper;
 import se.trixon.almond.util.fx.control.editable_list.EditableList;
 import se.trixon.almond.util.icons.material.MaterialIcon;
 import se.trixon.almond.util.swing.SwingHelper;
+import se.trixon.nbrsync.NbRsync;
 import se.trixon.nbrsync.core.BaseItem;
 import se.trixon.nbrsync.core.BaseManager;
 import se.trixon.nbrsync.core.ExecutorManager;
@@ -91,6 +92,7 @@ public class EditorPane extends TabPane {
         };
 
         createUI();
+        initListeners();
     }
 
     public BaseItemPane getJobPane() {
@@ -135,6 +137,13 @@ public class EditorPane extends TabPane {
         getSelectionModel().selectedItemProperty().addListener((p, o, n) -> {
             SwingHelper.runLater(() -> Almond.getTopComponent("LauncherTopComponent").setHtmlDisplayName("<html><b>" + n.getText()));
         });
+    }
+
+    private void initListeners() {
+        NbRsync.getInstance().getGlobalState().addListener((gsce -> {
+            var job = mJobManager.getById(gsce.getValue());
+            mJobPane.getEditableList().getListView().getSelectionModel().select(job);
+        }), NbRsync.GSC_LAST_JOB_ID);
     }
 
     public abstract class BaseItemPane<T extends BaseItem> extends BorderPane {

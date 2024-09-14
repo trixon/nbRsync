@@ -37,6 +37,7 @@ import se.trixon.nbrsync.core.Rsync;
 public class NbRsync {
 
     public static final String GSC_EDITOR = "key.editor";
+    public static final String GSC_LAST_JOB_ID = "key.last_job_id";
     private static final File sRunningJobsDirectory = new File(Places.getUserDirectory(), "runningJobs");
     private final GlobalState mGlobalState = new GlobalState();
 
