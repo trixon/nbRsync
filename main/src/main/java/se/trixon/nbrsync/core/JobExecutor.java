@@ -105,6 +105,8 @@ public class JobExecutor {
             return true;
         };
 
+        NbRsync.getInstance().getGlobalState().put(NbRsync.GSC_TIMER_START, System.currentTimeMillis());
+
         mInterrupted = false;
         mStartTime = System.currentTimeMillis();
         mProgressHandle = ProgressHandle.createHandle(mJob.getName(), allowToCancel);
@@ -224,6 +226,7 @@ public class JobExecutor {
 
         mStatusDisplayer.setStatusText(action);
         mOutputHelper.printSummary(outputLineMode, action, Dict.JOB.toString());
+        NbRsync.getInstance().getGlobalState().put(NbRsync.GSC_TIMER_STOP, System.currentTimeMillis());
     }
 
     private boolean run(String command, boolean stopOnError, String description) {
