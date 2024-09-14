@@ -196,6 +196,10 @@ public class JobExecutor {
 
     private void jobEnded(OutputLineMode outputLineMode, String action, int exitCode) {
         if (IOFolding.isSupported(mInputOutput)) {
+            var nestedFold = mMainFoldHandle.getCurrentNestedFold();
+            if (nestedFold != null) {
+                nestedFold.finish();
+            }
             mMainFoldHandle.finish();
         }
         appendHistoryFile(getHistoryLine(mJob.getId(), action, mDryRunIndicator));
@@ -439,7 +443,7 @@ public class JobExecutor {
         mOutputHelper.printSectionHeader(outputLineMode, Dict.DONE.toString(), Dict.TASK.toLower(), task.getName());
         //TODO fix color
         if (foldHandle != null) {
-            foldHandle.finish();
+            foldHandle.silentFinish();
         }
 
         boolean doNextTask = !(mTaskFailed && taskExecuteSection.isJobHaltOnError());
