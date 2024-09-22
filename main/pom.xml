@@ -4,7 +4,7 @@
     <parent>
         <groupId>se.trixon.nbrsync</groupId>
         <artifactId>parent</artifactId>
-        <version>24.08.1-SNAPSHOT</version>
+        <version>24.09.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>main</artifactId>
