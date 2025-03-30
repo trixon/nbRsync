@@ -12,3 +12,5 @@ rsync GUI with an integrated scheduler
 ![alt tag](https://trixon.se/files/screenshots/nbrsync_appstream04.png)
 
 ![alt tag](https://trixon.se/files/screenshots/nbrsync_appstream05.png)
+
+Prepare for snap
