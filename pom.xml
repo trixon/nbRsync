@@ -10,7 +10,7 @@
 
     <groupId>se.trixon.nbrsync</groupId>
     <artifactId>parent</artifactId>
-    <version>25-SNAPSHOT</version>
+    <version>25.04</version>
     <packaging>pom</packaging>
 
     <name>parent</name>
