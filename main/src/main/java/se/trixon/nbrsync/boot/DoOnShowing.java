@@ -15,6 +15,7 @@
  */
 package se.trixon.nbrsync.boot;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import org.openide.awt.HtmlBrowser;
@@ -82,6 +83,10 @@ public class DoOnShowing implements Runnable {
             NbMessage.information(Dict.INFORMATION.toString(), Dict.SERVER_STOPPED.toString());
         });
 
-        server.startMonitor();
+        try {
+            server.startMonitor();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

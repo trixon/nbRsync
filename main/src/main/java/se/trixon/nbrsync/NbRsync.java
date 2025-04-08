@@ -66,7 +66,7 @@ public class NbRsync {
             out.println();
             var rsyncInfo = Rsync.getInfo();
             boolean commandNotFound = StringUtils.contains(rsyncInfo, Dict.COMMAND_NOT_FOUND.toString());
-            outputHelper.println(commandNotFound ? OutputLineMode.ERROR : OutputLineMode.ALERT,
+            outputHelper.println(commandNotFound ? OutputLineMode.ERROR : OutputLineMode.INFO,
                     rsyncInfo);
 
             if (commandNotFound) {

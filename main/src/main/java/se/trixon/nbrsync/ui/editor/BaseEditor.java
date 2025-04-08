@@ -126,7 +126,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
         final String textRequired = "Text is required";
         final String textUnique = "Text has to be unique";
 
-        Predicate<String> uniqueNamePredicate = (Predicate) s -> {
+        Predicate<String> uniqueNamePredicate = (Predicate<String>) s -> {
             var newName = mNameTextField.getText();
             if (!mManager.exists(newName)) {
                 return true;

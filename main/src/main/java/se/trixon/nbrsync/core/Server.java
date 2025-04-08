@@ -119,7 +119,7 @@ public class Server {
         LifecycleManager.getDefault().exit();
     }
 
-    public void startMonitor() {
+    public void startMonitor() throws IOException {
         var directory = Places.getUserDirectory();
         var filter = FileFilterUtils.nameFileFilter(mServerFile.getName());
         var fileAlterationListener = new FileAlterationListenerAdaptor() {
@@ -134,7 +134,11 @@ public class Server {
             }
         };
 
-        var observer = new FileAlterationObserver(directory, filter, IOCase.INSENSITIVE);
+        var observer = FileAlterationObserver.builder()
+                .setFile(directory)
+                .setFileFilter(filter)
+                .setIOCase(IOCase.INSENSITIVE)
+                .get();
         observer.addListener(fileAlterationListener);
 
         var monitor = new FileAlterationMonitor(TimeUnit.SECONDS.toMillis(1));

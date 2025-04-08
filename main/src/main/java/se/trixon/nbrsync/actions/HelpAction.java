@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
+import se.trixon.almond.util.SystemHelper;
 
 @ActionID(
         category = "Help",
@@ -39,6 +40,6 @@ public final class HelpAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("DISPLAY HELP");
+        SystemHelper.desktopBrowse("https://trixon.se/projects/nbrsync/documentation/");
     }
 }
