@@ -4,10 +4,15 @@ base: core24
 version: 'REPLACE_WITH_VERSION'
 summary: rsync GUI with an integrated scheduler, and a CLI
 description: |
-    TODO.
+    nbRsync is a GUI for rsync that simplifies synchronization of files and directories while preserving the details of the rsync options.
 
-    https://github.com/trixon/nbrsync
+    nbRsync works with the concept of Jobs and Tasks. Jobs can contain zero or more Tasks and Tasks can belong to zero or more Jobs.
 
+    It is possible to execute commands before and after jobs and tasks.
+
+    nbRsync also comes with a built-in scheduler, a scheduler that has to be started from the command line.
+
+    _Make sure to backup your data before using nbRsync_ 🙃
 grade: stable
 platforms:
     amd64:
