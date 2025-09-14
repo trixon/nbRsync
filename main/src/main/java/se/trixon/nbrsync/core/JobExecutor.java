@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -307,7 +308,7 @@ public class JobExecutor {
                     try {
                         if (StringUtils.isBlank(line)) {
                             lines.add(ConvertedLine.forText("", null));
-                        } else if (StringUtils.startsWith(line, "*deleting   ") || StringUtils.startsWith(line, "deleting ")) {
+                        } else if (Strings.CS.startsWith(line, "*deleting   ") || Strings.CS.startsWith(line, "deleting ")) {
                             mInputOutput.getErr().println(line);
                         } else if (mProgress.parse(line)) {
                             if (mIndeterminate) {
@@ -330,15 +331,15 @@ public class JobExecutor {
                         lines.clear();
                     }
 
-                    var summary = StringUtils.containsIgnoreCase(line, "sent")
-                            && StringUtils.containsIgnoreCase(line, "bytes")
-                            && StringUtils.containsIgnoreCase(line, "received");
+                    var summary = Strings.CI.contains(line, "sent")
+                            && Strings.CI.contains(line, "bytes")
+                            && Strings.CI.contains(line, "received");
 
                     if (summary) {
                         lines.add(0, ConvertedLine.forText("", null));
                     }
 
-                    if (StringUtils.contains(line, "(xfr#")) {
+                    if (Strings.CS.contains(line, "(xfr#")) {
                         mProgressHandle.switchToIndeterminate();
                         mIndeterminate = true;
                     }

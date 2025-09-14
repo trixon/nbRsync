@@ -18,7 +18,7 @@ package se.trixon.nbrsync;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
@@ -65,7 +65,7 @@ public class NbRsync {
             outputHelper.println(OutputLineMode.INFO, SystemHelper.getSystemInfo());
             out.println();
             var rsyncInfo = Rsync.getInfo();
-            boolean commandNotFound = StringUtils.contains(rsyncInfo, Dict.COMMAND_NOT_FOUND.toString());
+            boolean commandNotFound = Strings.CS.contains(rsyncInfo, Dict.COMMAND_NOT_FOUND.toString());
             outputHelper.println(commandNotFound ? OutputLineMode.ERROR : OutputLineMode.INFO,
                     rsyncInfo);
 

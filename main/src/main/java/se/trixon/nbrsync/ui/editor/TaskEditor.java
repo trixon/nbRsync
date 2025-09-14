@@ -39,6 +39,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.controlsfx.validation.Validator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -109,7 +110,7 @@ public class TaskEditor extends BaseEditor<Task> {
         loadArgExcludes(item.getExcludeSection().getOptions());
 
 //        mDirForceSourceSlashCheckBox.setSelected(item.isNoAdditionalDir());
-        mDirForceSourceSlashCheckBox.setSelected(StringUtils.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
+        mDirForceSourceSlashCheckBox.setSelected(Strings.CS.endsWith(mDirSourceFileChooser.getPathAsString(), File.separator));
         mEnvironmentTab.setEnvironment(item.getEnv());
         mExtraOptionsTextField.setText(item.getOptionSection().getExtras());
 
@@ -277,9 +278,9 @@ public class TaskEditor extends BaseEditor<Task> {
             var oldSource = mDirSourceFileChooser.getPathAsString();
             var oldDest = mDirDestFileChooser.getPathAsString();
             if (mDirForceSourceSlashCheckBox.isSelected()) {
-                oldDest = StringUtils.appendIfMissing(oldDest, "/");
+                oldDest = Strings.CS.appendIfMissing(oldDest, "/");
             } else {
-                oldDest = StringUtils.removeEnd(oldDest, "/");
+                oldDest = Strings.CS.removeEnd(oldDest, "/");
             }
             mDirSourceFileChooser.setPath(oldDest);
             mDirDestFileChooser.setPath(oldSource);
@@ -311,11 +312,11 @@ public class TaskEditor extends BaseEditor<Task> {
         mDirForceSourceSlashCheckBox.selectedProperty().addListener((p, o, n) -> {
             var path = mDirSourceFileChooser.getPathAsString();
             if (n) {
-                if (!StringUtils.endsWith(path, File.separator)) {
+                if (!Strings.CS.endsWith(path, File.separator)) {
                     mDirSourceFileChooser.setPath(path + File.separator);
                 }
             } else {
-                mDirSourceFileChooser.setPath(StringUtils.removeEnd(path, File.separator));
+                mDirSourceFileChooser.setPath(Strings.CS.removeEnd(path, File.separator));
             }
         });
 
@@ -326,7 +327,7 @@ public class TaskEditor extends BaseEditor<Task> {
                     continue;
                 }
                 c.getAddedSubList().stream()
-                        .filter(arg -> StringUtils.contains(arg.getLongArg(), "="))
+                        .filter(arg -> Strings.CS.contains(arg.getLongArg(), "="))
                         .forEachOrdered(arg -> {
                             var input = requestArg(arg);
                             if (input != null) {
@@ -361,7 +362,7 @@ public class TaskEditor extends BaseEditor<Task> {
 
         for (var optionString : StringUtils.splitPreserveAllTokens(joinedOptions, " ")) {
             for (var option : TaskArgExclude.values()) {
-                if (StringUtils.equals(optionString, option.getArg())) {
+                if (Strings.CS.equals(optionString, option.getArg())) {
                     targetItems.add(option);
                     break;
                 }
@@ -378,11 +379,11 @@ public class TaskEditor extends BaseEditor<Task> {
             for (var option : TaskArgRsync.values()) {
                 if (optionString.contains("=")) {
                     String[] elements = StringUtils.split(optionString, "=", 2);
-                    if (StringUtils.equals(elements[0], StringUtils.split(option.getArg(), "=", 2)[0])) {
+                    if (Strings.CS.equals(elements[0], StringUtils.split(option.getArg(), "=", 2)[0])) {
                         option.setDynamicArg(elements[1]);
                         targetItems.add(option);
                     }
-                } else if (StringUtils.equals(optionString, option.getArg())) {
+                } else if (Strings.CS.equals(optionString, option.getArg())) {
                     targetItems.add(option);
                     break;
                 }

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import se.trixon.almond.util.fx.control.editable_list.EditableListItem;
 
 /**
@@ -68,8 +69,8 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
         var map = new LinkedHashMap<String, String>();
         if (StringUtils.isNotBlank(mEnv)) {
             Arrays.stream(StringUtils.split(mEnv, "\n"))
-                    .filter(s -> !StringUtils.startsWith(s, "#"))
-                    .filter(s -> StringUtils.contains(s, "="))
+                    .filter(s -> !Strings.CS.startsWith(s, "#"))
+                    .filter(s -> Strings.CS.contains(s, "="))
                     .forEachOrdered(s -> {
                         var key = StringUtils.substringBefore(s, "=");
                         var val = StringUtils.substringAfter(s, "=");

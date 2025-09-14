@@ -22,7 +22,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import se.trixon.nbrsync.ui.editor.BaseEditor;
 
 /**
@@ -51,7 +51,7 @@ public abstract class BaseManager<T extends BaseItem> {
 
     public boolean exists(String name) {
         return getItems().stream()
-                .anyMatch(item -> (StringUtils.equalsIgnoreCase(name, item.getName())));
+                .anyMatch(item -> (Strings.CI.equals(name, item.getName())));
     }
 
     public T getById(String id) {
@@ -60,7 +60,7 @@ public abstract class BaseManager<T extends BaseItem> {
 
     public T getByName(String name) {
         for (var item : getItems()) {
-            if (StringUtils.equalsIgnoreCase(name, item.getName())) {
+            if (Strings.CI.equals(name, item.getName())) {
                 return item;
             }
         }

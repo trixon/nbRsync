@@ -26,7 +26,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 import org.openide.DialogDescriptor;
@@ -131,7 +131,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
             if (!mManager.exists(newName)) {
                 return true;
             } else {
-                return StringUtils.equalsIgnoreCase(newName, mItem.getName());
+                return Strings.CI.equals(newName, mItem.getName());
             }
         };
 

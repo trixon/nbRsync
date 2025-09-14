@@ -41,6 +41,7 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.openide.DialogDescriptor;
@@ -78,10 +79,10 @@ public class EditorPane extends TabPane {
     private final ResourceBundle mBundle = NbBundle.getBundle(EditorPane.class);
     private final ExecutorManager mExecutorManager = ExecutorManager.getInstance();
     private final JobManager mJobManager = JobManager.getInstance();
-    private BaseItemPane mJobPane;
+    private BaseItemPane<Job> mJobPane;
     private final Consumer<Task> mOnStartTask;
     private final TaskManager mTaskManager = TaskManager.getInstance();
-    private BaseItemPane mTaskPane;
+    private BaseItemPane<Task> mTaskPane;
 
     public EditorPane() {
         mOnStartTask = task -> {
@@ -350,8 +351,8 @@ public class EditorPane extends TabPane {
         }
 
         private void appendTask(StringBuilder sb, Task task) {
-            var command = StringUtils.remove(task.getCommandAsString(), task.getPath(task.getSource()));
-            command = StringUtils.remove(command, task.getPath(task.getDestination()));
+            var command = Strings.CS.remove(task.getCommandAsString(), task.getPath(task.getSource()));
+            command = Strings.CS.remove(command, task.getPath(task.getDestination()));
             sb.append(task.getName().toUpperCase(Locale.ROOT)).append("\r");
             sb.append(task.getSource()).append("\r");
             sb.append(task.getDestination()).append("\r");

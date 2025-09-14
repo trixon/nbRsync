@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
 import se.trixon.nbrsync.core.BaseItem;
 
@@ -140,8 +141,8 @@ public class Task extends BaseItem {
     }
 
     private String convertToWindowsCygwinPath(String path) {
-        var s = StringUtils.remove(path, ":");
-        s = StringUtils.replace(s, "\\", "/");
+        var s = Strings.CS.remove(path, ":");
+        s = Strings.CS.replace(s, "\\", "/");
 
         return "/cygdrive/" + s;
     }
