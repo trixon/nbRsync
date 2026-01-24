@@ -43,6 +43,8 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
     protected String mName = "";
     @SerializedName("env")
     private String mEnv;
+    @SerializedName("reminder")
+    private String mReminder;
 
     public BaseItem() {
 
@@ -114,6 +116,10 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
         return mName;
     }
 
+    public String getReminder() {
+        return mReminder;
+    }
+
     public boolean isValid() {
         return !getName().isEmpty();
     }
@@ -144,5 +150,9 @@ public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem
 
     public void setName(String name) {
         mName = name;
+    }
+
+    public void setReminder(String reminder) {
+        this.mReminder = reminder;
     }
 }

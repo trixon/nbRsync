@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
+ * Copyright 2026 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import se.trixon.almond.util.Dict;
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class EnvironmentTab extends BaseTextTab {
+public class ReminderTab extends BaseTextTab {
 
-    public EnvironmentTab() {
-        super(Dict.ENVIRONMENT_VARIABLES.toString(), NbBundle.getMessage(EnvironmentTab.class, "hintEnv"));
+    public ReminderTab() {
+        super(Dict.REMINDER.toString(), NbBundle.getMessage(EnvironmentTab.class, "hintReminder"));
     }
 }

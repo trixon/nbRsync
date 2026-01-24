@@ -48,6 +48,7 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
     protected ResourceBundle mBundle = NbBundle.getBundle(BaseEditor.class);
     protected DialogDescriptor mDialogDescriptor;
     protected EnvironmentTab mEnvironmentTab = new EnvironmentTab();
+    protected ReminderTab mReminderTab = new ReminderTab();
     protected BaseManager<T> mManager;
     protected NotificationLineSupport mNotificationLineSupport;
     protected final ValidationSupport mValidationSupport = new ValidationSupport();
@@ -155,7 +156,8 @@ public abstract class BaseEditor<T extends BaseItem> extends BorderPane {
                 }
             };
 
-            mEnvironmentTab.getEnvTextArea().focusedProperty().addListener(focusListener);
+            mEnvironmentTab.getTextArea().focusedProperty().addListener(focusListener);
+            mReminderTab.getTextArea().focusedProperty().addListener(focusListener);
 
         });
     }

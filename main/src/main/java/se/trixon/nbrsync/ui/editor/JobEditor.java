@@ -80,7 +80,8 @@ public class JobEditor extends BaseEditor<Job> {
 
         mActivatedCheckBox.setSelected(item.isCronActivated());
         mCronPane.getItems().setAll(item.getCronItemsAsList());
-        mEnvironmentTab.setEnvironment(item.getEnv());
+        mEnvironmentTab.setTextContent(item.getEnv());
+        mReminderTab.setTextContent(item.getReminder());
 
         super.load(item, dialogDescriptor);
         mItem = item;
@@ -103,7 +104,8 @@ public class JobEditor extends BaseEditor<Job> {
         mItem.setTaskIds(new ArrayList<>(taskIds));
         mItem.setCronActivated(mActivatedCheckBox.isSelected());
         mItem.setCronItems(String.join("|", mCronPane.getItems().stream().sorted().map(c -> c.getName()).toList()));
-        mItem.setEnv(mEnvironmentTab.getEnv());
+        mItem.setEnv(mEnvironmentTab.getTextContent());
+        mItem.setReminder(mReminderTab.getTextContent());
 
         return super.save();
     }
@@ -154,7 +156,12 @@ public class JobEditor extends BaseEditor<Job> {
 
         var runTab = new Tab(Dict.RUN.toString(), runBox);
         var cronTab = new Tab(Dict.SCHEDULER.toString(), cronBorderPane);
-        getTabPane().getTabs().setAll(runTab, cronTab, mEnvironmentTab);
+        getTabPane().getTabs().setAll(
+                runTab,
+                cronTab,
+                mEnvironmentTab,
+                mReminderTab
+        );
         int row = 0;
         var gp = new GridPane(FxHelper.getUIScaled(8), FxHelper.getUIScaled(8));
         gp.add(mListSelectionView, 0, row++, GridPane.REMAINING, 1);

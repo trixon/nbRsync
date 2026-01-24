@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
+ * Copyright 2026 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,33 @@
  */
 package se.trixon.nbrsync.ui.editor;
 
-import org.openide.util.NbBundle;
-import se.trixon.almond.util.Dict;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TextArea;
 
 /**
  *
  * @author Patrik Karlström <patrik@trixon.se>
  */
-public class EnvironmentTab extends BaseTextTab {
+public abstract class BaseTextTab extends Tab {
 
-    public EnvironmentTab() {
-        super(Dict.ENVIRONMENT_VARIABLES.toString(), NbBundle.getMessage(EnvironmentTab.class, "hintEnv"));
+    private final TextArea mTextArea = new TextArea();
+
+    public BaseTextTab(String title, String promptText) {
+        super(title);
+        setContent(mTextArea);
+        mTextArea.setPromptText(promptText);
     }
+
+    public TextArea getTextArea() {
+        return mTextArea;
+    }
+
+    String getTextContent() {
+        return mTextArea.getText();
+    }
+
+    void setTextContent(String text) {
+        mTextArea.setText(text);
+    }
+
 }

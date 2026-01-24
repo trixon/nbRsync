@@ -18,6 +18,7 @@ package se.trixon.nbrsync.core;
 import java.util.HashMap;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.apache.commons.lang3.StringUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import se.trixon.almond.nbp.dialogs.NbMessage;
@@ -73,6 +74,10 @@ public class ExecutorManager {
         });
 
         if (jobValidator.isValid()) {
+            if (StringUtils.isNotBlank(job.getReminder())) {
+                NbMessage.information(Dict.REMINDER.toString(), job.getReminder());
+            }
+
             htmlPanel.setHtml(mSummaryBuilder.getHtml(job));
             SwingHelper.runLaterDelayed(100, () -> dryRunButton.requestFocus());
             var result = DialogDisplayer.getDefault().notify(d);
