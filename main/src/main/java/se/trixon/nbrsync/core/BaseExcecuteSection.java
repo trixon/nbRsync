@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
@@ -23,13 +23,13 @@ import com.google.gson.annotations.SerializedName;
  */
 public abstract class BaseExcecuteSection {
 
-    @SerializedName("after")
+    @JsonProperty("after")
     private ExecuteItem mAfter = new ExecuteItem();
-    @SerializedName("afterFail")
+    @JsonProperty("afterFail")
     private ExecuteItem mAfterFail = new ExecuteItem();
-    @SerializedName("afterOk")
+    @JsonProperty("afterOk")
     private ExecuteItem mAfterOk = new ExecuteItem();
-    @SerializedName("before")
+    @JsonProperty("before")
     private ExecuteItem mBefore = new ExecuteItem();
 
     public BaseExcecuteSection() {

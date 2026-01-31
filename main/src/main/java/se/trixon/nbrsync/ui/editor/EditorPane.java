@@ -15,6 +15,7 @@
  */
 package se.trixon.nbrsync.ui.editor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import se.trixon.almond.nbp.Almond;
 import se.trixon.almond.nbp.fx.FxDialogPanel;
@@ -64,7 +66,7 @@ import se.trixon.nbrsync.core.ExecutorManager;
 import se.trixon.nbrsync.core.JobManager;
 import se.trixon.nbrsync.core.Server;
 import se.trixon.nbrsync.core.StorageManager;
-import static se.trixon.nbrsync.core.StorageManager.GSON;
+import static se.trixon.nbrsync.core.StorageManager.JSON;
 import se.trixon.nbrsync.core.TaskManager;
 import se.trixon.nbrsync.core.job.Job;
 import se.trixon.nbrsync.core.task.Task;
@@ -179,18 +181,24 @@ public class EditorPane extends TabPane {
                         StorageManager.save();
                     })
                     .setOnClone(item -> {
-                        var original = item;
-                        var json = GSON.toJson(original);
-                        var clone = GSON.fromJson(json, original.getClass());
-                        var uuid = UUID.randomUUID().toString();
-                        clone.setId(uuid);
-                        clone.setLastRun(0);
-                        clone.setName("%s %s".formatted(clone.getName(), LocalDate.now().toString()));
-                        mManager.getIdToItem().put(clone.getId(), clone);
+                        try {
+                            var original = item;
+                            var json = JSON.writeValueAsString(original);
+                            var clone = JSON.readValue(json, original.getClass());
+                            var uuid = UUID.randomUUID().toString();
+                            clone.setId(uuid);
+                            clone.setLastRun(0);
+                            clone.setName("%s %s".formatted(clone.getName(), LocalDate.now().toString()));
+                            mManager.getIdToItem().put(clone.getId(), clone);
 
-                        StorageManager.save();
+                            StorageManager.save();
 
-                        return (T) mManager.getById(uuid);
+                            return (T) mManager.getById(uuid);
+                        } catch (JsonProcessingException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return null;
+
                     })
                     .setOnStart(onStart)
                     .setItemsProperty(mManager.itemsProperty())

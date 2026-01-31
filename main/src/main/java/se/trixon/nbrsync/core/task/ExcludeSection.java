@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core.task;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import se.trixon.nbrsync.core.ExecuteItem;
@@ -26,9 +26,9 @@ import se.trixon.nbrsync.core.ExecuteItem;
  */
 public class ExcludeSection extends TaskSection {
 
-    @SerializedName("externalFile")
+    @JsonProperty("externalFile")
     private ExecuteItem mExternalFile = new ExecuteItem();
-    @SerializedName("options")
+    @JsonProperty("options")
     private String mOptions = "";
 
     @Override

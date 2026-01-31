@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
@@ -23,11 +23,11 @@ import com.google.gson.annotations.SerializedName;
  */
 public class ExecuteItem {
 
-    @SerializedName("enabled")
+    @JsonProperty("enabled")
     private boolean mEnabled;
-    @SerializedName("command")
+    @JsonProperty("command")
     private String mCommand = "";
-    @SerializedName("haltOnError")
+    @JsonProperty("haltOnError")
     private boolean mHaltOnError;
 
     public ExecuteItem() {

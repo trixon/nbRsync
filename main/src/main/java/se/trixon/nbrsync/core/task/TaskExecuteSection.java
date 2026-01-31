@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2024 Patrik Karlström <patrik@trixon.se>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core.task;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import se.trixon.nbrsync.core.BaseExcecuteSection;
 
 /**
@@ -24,7 +24,7 @@ import se.trixon.nbrsync.core.BaseExcecuteSection;
  */
 public class TaskExecuteSection extends BaseExcecuteSection {
 
-    @SerializedName("jobHaltOnError")
+    @JsonProperty("jobHaltOnError")
     private boolean mJobHaltOnError;
 
     public TaskExecuteSection() {

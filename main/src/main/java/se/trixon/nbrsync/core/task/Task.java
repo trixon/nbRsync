@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core.task;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,19 +31,19 @@ import se.trixon.nbrsync.core.BaseItem;
 public class Task extends BaseItem {
 
     private final transient List<String> mCommand = new ArrayList<>();
-    @SerializedName("destination")
+    @JsonProperty("destination")
     private String mDestination;
-    @SerializedName("environment")
+    @JsonProperty("environment")
     private String mEnvironment = "";
-    @SerializedName("excludeSection")
+    @JsonProperty("excludeSection")
     private final ExcludeSection mExcludeSection;
-    @SerializedName("executeSection")
+    @JsonProperty("executeSection")
     private final TaskExecuteSection mExecuteSection;
-    @SerializedName("noAdditionalDir")
+    @JsonProperty("noAdditionalDir")
     private boolean mNoAdditionalDir;
-    @SerializedName("optionSection")
+    @JsonProperty("optionSection")
     private final OptionSection mOptionSection;
-    @SerializedName("source")
+    @JsonProperty("source")
     private String mSource;
 
     public Task() {

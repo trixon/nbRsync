@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core.job;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,14 +38,14 @@ import se.trixon.nbrsync.core.task.Task;
  */
 public class Job extends BaseItem {
 
-    @SerializedName("cronActivated")
+    @JsonProperty("cronActivated")
     private boolean mCronActivated;
-    @SerializedName("cronItems")
+    @JsonProperty("cronItems")
     private String mCronItems = "";
-    @SerializedName("executeSection")
+    @JsonProperty("executeSection")
     private final JobExecuteSection mExecuteSection;
     private final transient ObjectProperty<ProcessState> mProcessStateProperty = new SimpleObjectProperty<>(ProcessState.STARTABLE);
-    @SerializedName("tasks")
+    @JsonProperty("tasks")
     private ArrayList<String> mTaskIds = new ArrayList<>();
 
     public Job() {

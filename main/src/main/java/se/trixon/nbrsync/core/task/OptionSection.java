@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core.task;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 /**
@@ -24,9 +24,9 @@ import java.util.List;
  */
 public class OptionSection extends TaskSection {
 
-    @SerializedName("extras")
+    @JsonProperty("extras")
     private String mExtras;
-    @SerializedName("options")
+    @JsonProperty("options")
     private String mOptions = "--archive --itemize-changes --verbose --human-readable -P --update";
 
     @Override

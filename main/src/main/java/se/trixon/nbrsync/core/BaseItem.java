@@ -15,7 +15,7 @@
  */
 package se.trixon.nbrsync.core;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.UUID;
@@ -29,21 +29,21 @@ import se.trixon.almond.util.fx.control.editable_list.EditableListItem;
  */
 public abstract class BaseItem implements Comparable<BaseItem>, EditableListItem {
 
-    @SerializedName("description")
+    @JsonProperty("description")
     protected String mDescription = "";
-    @SerializedName("id")
+    @JsonProperty("id")
     protected String mId = UUID.randomUUID().toString();
-    @SerializedName("lastRun")
+    @JsonProperty("lastRun")
     protected long mLastRun = -1;
-    @SerializedName("lastRunExitCode")
+    @JsonProperty("lastRunExitCode")
     protected int mLastRunExitCode = -1;
-    @SerializedName("lastStarted")
+    @JsonProperty("lastStarted")
     protected long mLastStarted = -1;
-    @SerializedName("name")
+    @JsonProperty("name")
     protected String mName = "";
-    @SerializedName("env")
+    @JsonProperty("env")
     private String mEnv;
-    @SerializedName("reminder")
+    @JsonProperty("reminder")
     private String mReminder;
 
     public BaseItem() {
