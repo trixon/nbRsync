@@ -12,8 +12,6 @@
     <artifactId>application</artifactId>
     <packaging>nbm-application</packaging>
 
-    <name>application</name>
-
     <dependencies>
         <!-- NetBeans -->
         <dependency>

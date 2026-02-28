@@ -19,6 +19,18 @@ platforms:
 confinement: classic
 icon: snap/gui/nbrsync.png
 license: Apache-2.0
+compression: lzo
+
+source-code:
+  - https://github.com/trixon/nbrsync
+contact:
+  - patrik@trixon.se
+website:
+  - https://trixon.se
+issues:
+  - https://github.com/trixon/nbrsync/issues
+donation:
+  - https://buymeacoffee.com/trixon
 
 apps:
   nbrsync:
